@@ -13,6 +13,8 @@ die () {
   exit $errnum
 }
 
+exec 3>&1
+
 if [ "${DEBUG}" == "bash" ]; then
   run-supervisord.sh &
   cd /var/log/cont

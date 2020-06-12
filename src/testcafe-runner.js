@@ -8,14 +8,14 @@
     'chrome': 'chrome:headless',
     'firefox': 'firefox:headless:marionettePort=9223'
   }
-
-  const browserName = supportedBrowsers[process.env.BROWSER_NAME] || supportedBrowsers['chrome'];
+  const browserName = process.env.BROWSER_NAME || 'chrome';
+  const testCafeBrowserName = supportedBrowsers[browserName];
 
   let results = await runner
     .src([
       'tests/**/?(*.)+(spec|test).[jt]s?(x)'
     ])
-    .browsers(browserName)
+    .browsers(testCafeBrowserName)
     .concurrency(1)
     .reporter([
       { name: 'xunit', output: 'reports/report.xml' },
@@ -49,4 +49,5 @@
   } else {
     console.log('Skipping asset uploads! Remeber to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
   }
+  process.exit(results === 0 ? 0 : 1);
 })();

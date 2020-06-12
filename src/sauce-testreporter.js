@@ -85,8 +85,9 @@ exports.createSauceJson = async (reportsFolder, xunitReport) => {
   return [nativeLogFile, jsonLogFile];
 }
 
-exports.sauceReporter = async (assets, results) => {
+exports.sauceReporter = async (browserName, assets, results) => {
   let testName  = `devx testcafe ${(new Date().getTime())}`
+  let status = results === 0;
   try {
     let browser = await remote({
       user: process.env.SAUCE_USERNAME,
@@ -94,7 +95,7 @@ exports.sauceReporter = async (assets, results) => {
       connectionRetryCount: 0,
       logLevel: 'silent',
       capabilities: {
-          browserName: 'Chrome',
+          browserName: browserName,
           platformName: '*',
           browserVersion: '*',
           'sauce:options': {
@@ -139,5 +140,4 @@ exports.sauceReporter = async (assets, results) => {
     )
   ])
   console.log(`\nOpen job details page: https://app.saucelabs.com/tests/${sessionId}\n`);
-  process.exit(results === 0 ? 0 : 1);
 }
