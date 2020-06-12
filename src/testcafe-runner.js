@@ -2,7 +2,7 @@
   const { sleep } = require('asyncbox');
   // await sleep(500000);
   const createTestCafe = require('testcafe');
-  const testCafe       = await createTestCafe('127.0.0.1', 1337, 1338);
+  const testCafe       = await createTestCafe('localhost', 1337, 1338);
   const runner         = testCafe.createRunner();
   const { sauceReporter }   = require('./sauce-testreporter');
 
@@ -15,7 +15,7 @@
 
   let results = await runner
     .src([
-      '**/tests/**/?(*.)+(spec|test).[jt]s?(x)'
+      'tests/**/?(*.)+(spec|test).[jt]s?(x)'
     ])
     .browsers(browserName)
     .concurrency(1)
