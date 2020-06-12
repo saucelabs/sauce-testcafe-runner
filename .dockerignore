@@ -1,0 +1,10 @@
+node_modules
+**/node_modules/**
+reports
+tests
+Dockerfile
+.dockerignore
+.git
+.gitignore
+README.md
+LICENSE
