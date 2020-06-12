@@ -1,6 +1,4 @@
 (async() => {
-  const { sleep } = require('asyncbox');
-  // await sleep(500000);
   const createTestCafe = require('testcafe');
   const testCafe       = await createTestCafe('localhost', 1337, 1338);
   const runner         = testCafe.createRunner();
