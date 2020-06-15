@@ -1,8 +1,8 @@
 {
   "name": "testcafe-tests",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.1",
+  "description": "Sauce Labs Testcafe runner",
+  "main": "src/testcafe-runner.js",
   "scripts": {
     "test": "node ./src/testcafe-runner.js"
   },
@@ -12,8 +12,6 @@
   "author": "<dev@saucelabs.com>",
   "license": "MIT",
   "dependencies": {
-    "asyncbox": "^2.6.0",
-    "get-port": "5.1.1",
     "saucelabs": "orchestrator-experiment",
     "testcafe": "1.8.5",
     "webdriverio": "6.1.14",

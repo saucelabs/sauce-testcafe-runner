@@ -41,7 +41,7 @@
     console.warn('Failed to close testcafe :(');
   }
   if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
-    await sauceReporter([
+    await sauceReporter(browserName, [
       'reports/report.xml',
       'reports/report.json',
       'reports/video.mp4'
