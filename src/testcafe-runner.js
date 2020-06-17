@@ -9,8 +9,11 @@
     'firefox': 'firefox:headless:marionettePort=9223'
   }
   const browserName = process.env.BROWSER_NAME || 'chrome';
-  const testCafeBrowserName = supportedBrowsers[browserName];
-
+  const testCafeBrowserName = supportedBrowsers[browserName.toLowerCase()];
+  if (!testCafeBrowserName) {
+    console.error(`Unsupported browser: ${browserName}. Sorry.`);
+    process.exit(1);
+  }
   let results = await runner
     .src([
       'tests/**/?(*.)+(spec|test).[jt]s?(x)'
