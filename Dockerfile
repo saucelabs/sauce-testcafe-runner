@@ -1,4 +1,4 @@
-FROM saucelabs/testrunner-image:chrome-81.0.4044.138
+FROM saucelabs/testrunner-image:v0.1.0
 
 WORKDIR /home/seluser
 
@@ -30,7 +30,7 @@ RUN sudo chown -R seluser:seluser /home/seluser
 
 USER seluser
 
-ARG SAUCECTL_VERSION
+ARG SAUCECTL_VERSION=0.7.0
 ENV SAUCECTL_BINARY=saucectl_${SAUCECTL_VERSION}_linux_64-bit.tar.gz
 
 RUN curl -L -o ${SAUCECTL_BINARY} \
