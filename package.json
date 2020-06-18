@@ -1,0 +1,20 @@
+{
+  "name": "@saucelabs/stt-testcafe-node",
+  "version": "0.0.1",
+  "description": "Sauce Labs Testcafe runner",
+  "main": "src/testcafe-runner.js",
+  "scripts": {
+    "test": "node ./src/testcafe-runner.js"
+  },
+  "keywords": [
+    "testcafe"
+  ],
+  "author": "<dev@saucelabs.com>",
+  "license": "MIT",
+  "dependencies": {
+    "saucelabs": "orchestrator-experiment",
+    "testcafe": "1.8.5",
+    "webdriverio": "6.1.17",
+    "xml2js": "0.4.23"
+  }
+}
