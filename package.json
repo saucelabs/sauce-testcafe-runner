@@ -1,5 +1,5 @@
 {
-  "name": "testcafe-tests",
+  "name": "@saucelabs/stt-testcafe-node",
   "version": "0.0.1",
   "description": "Sauce Labs Testcafe runner",
   "main": "src/testcafe-runner.js",
@@ -14,7 +14,7 @@
   "dependencies": {
     "saucelabs": "orchestrator-experiment",
     "testcafe": "1.8.5",
-    "webdriverio": "6.1.14",
+    "webdriverio": "6.1.17",
     "xml2js": "0.4.23"
   }
 }
