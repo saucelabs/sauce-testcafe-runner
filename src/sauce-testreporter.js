@@ -1,8 +1,9 @@
 const SauceLabs = require('saucelabs').default
+const region = process.env.SAUCE_REGION || 'us-west-1'
 const api = new SauceLabs({
   user: process.env.SAUCE_USERNAME,
   key: process.env.SAUCE_ACCESS_KEY,
-  region: 'us-west-1'
+  region: region
 });
 
 const { remote } = require('webdriverio');
@@ -92,6 +93,7 @@ exports.sauceReporter = async (browserName, assets, results) => {
     let browser = await remote({
       user: process.env.SAUCE_USERNAME,
       key: process.env.SAUCE_ACCESS_KEY,
+      region: region,
       connectionRetryCount: 0,
       logLevel: 'silent',
       capabilities: {
@@ -139,5 +141,16 @@ exports.sauceReporter = async (browserName, assets, results) => {
       (e) => console.log('Failed to update job status', e)
     )
   ])
-  console.log(`\nOpen job details page: https://app.saucelabs.com/tests/${sessionId}\n`);
+
+  let domain
+
+  switch (region) {
+    case "us-west-1":
+      domain = "saucelabs.com"
+      break
+    default:
+      domain = `${region}.saucelabs.com`
+  }
+
+  console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
 }
