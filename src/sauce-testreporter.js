@@ -95,6 +95,17 @@ exports.sauceReporter = async (browserName, assets, results) => {
     tags = tags.split(",")
   }
 
+  let build = process.env.SAUCE_BUILD_NAME
+
+  /**
+   * replace placeholders (e.g. $BUILD_ID) with environment values
+   */
+  const buildMatches = (build || '').match(/\$[a-zA-Z0-9_-]+/g) || []
+  for (const match of buildMatches) {
+    const replacement = process.env[match.slice(1)]
+    build = build.replace(match, replacement || '')
+  }
+
   try {
     let browser = await remote({
       user: process.env.SAUCE_USERNAME,
@@ -110,7 +121,8 @@ exports.sauceReporter = async (browserName, assets, results) => {
               devX: true,
               name: testName,
               framework: 'testcafe',
-              tags: tags
+              tags: tags,
+              build
           }
       }
     }).catch((err) => err)
