@@ -89,6 +89,12 @@ exports.createSauceJson = async (reportsFolder, xunitReport) => {
 exports.sauceReporter = async (browserName, assets, results) => {
   let testName  = `devx testcafe ${(new Date().getTime())}`
   let status = results === 0;
+
+  let tags = process.env.SAUCE_TAGS
+  if (tags) {
+    tags = tags.split(",")
+  }
+
   try {
     let browser = await remote({
       user: process.env.SAUCE_USERNAME,
@@ -103,7 +109,8 @@ exports.sauceReporter = async (browserName, assets, results) => {
           'sauce:options': {
               devX: true,
               name: testName,
-              framework: 'testcafe'
+              framework: 'testcafe',
+              tags: tags
           }
       }
     }).catch((err) => err)
