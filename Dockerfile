@@ -2,7 +2,7 @@ FROM saucelabs/testrunner-image:v0.1.0
 
 WORKDIR /home/seluser
 
-USER seluser
+USER root
 
 #================
 # Install Node.JS
