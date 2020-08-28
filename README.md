@@ -16,7 +16,7 @@ To work on code the following dependencies are required:
 You can pull the latest version of this image via:
 
 ```sh
-$ docker pull saucelabs/stt-testcafe-jest-node:latest
+$ docker pull saucelabs/stt-testcafe-node:latest
 ```
 
 ## Run
@@ -25,9 +25,9 @@ In order to test your changes, just build the image and run a test with an examp
 
 ```sh
 # build image
-$ docker build -t saucelabs/stt-testcafe-jest-node:latest --cache-from saucelabs/stt-testcafe-jest-node:latest .
+$ docker build -t saucelabs/stt-testcafe-node:latest --cache-from saucelabs/stt-testcafe-node:latest .
 # start container
-$ docker run --env SAUCE_USERNAME --env SAUCE_ACCESS_KEY -d --name=testrunner saucelabs/stt-testcafe-jest-node:latest
+$ docker run --env SAUCE_USERNAME --env SAUCE_ACCESS_KEY -d --name=testrunner saucelabs/stt-testcafe-node:latest
 # push file into container
 $ docker cp ./path/to/testfile.test.js testrunner:/home/seluser/tests
 # run test
