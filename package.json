@@ -1,7 +1,10 @@
 {
-  "name": "@saucelabs/stt-testcafe-node",
-  "version": "0.0.1",
+  "name": "sauce-testcafe-runner",
+  "version": "0.0.0",
   "description": "Sauce Labs Testcafe runner",
+  "author": "<dev@saucelabs.com>",
+  "license": "MIT",
+  "private": true,
   "main": "src/testcafe-runner.js",
   "scripts": {
     "test": "node ./src/testcafe-runner.js"
@@ -9,8 +12,6 @@
   "keywords": [
     "testcafe"
   ],
-  "author": "<dev@saucelabs.com>",
-  "license": "MIT",
   "dependencies": {
     "saucelabs": "orchestrator-experiment",
     "testcafe": "1.8.5",
