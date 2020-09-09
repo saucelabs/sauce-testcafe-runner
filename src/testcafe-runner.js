@@ -1,3 +1,42 @@
+const path = require('path')
+const fs = require('fs');
+const yaml = require('js-yaml');
+const {promisify} = require('util');
+const {HOME_DIR} = require('./constants')
+
+// Promisify callback functions
+const fileExists = promisify(fs.exists)
+const readFile = promisify(fs.readFile)
+
+// the default test matching behavior for versions <= v0.1.4
+const DefaultRunCfg = {
+  projectPath: `${HOME_DIR}`,
+  match: [
+    `${HOME_DIR}/tests/?(*.)+(spec|test).[jt]s?(x)`,
+    `${HOME_DIR}/tests/**/?(*.)+(spec|test).[jt]s?(x)`
+  ]
+}
+
+async function loadRunConfig(cfgPath) {
+  if (await fileExists(cfgPath)) {
+    return yaml.safeLoad(await readFile(cfgPath, 'utf8'));
+  }
+  console.log(`Run config (${cfgPath}) unavailable. Loading defaults.`)
+
+  return DefaultRunCfg
+}
+
+function resolveTestMatches(runCfg) {
+  return runCfg.match.map(
+      p => {
+        if (path.isAbsolute(p)) {
+          return p
+        }
+        return path.join(runCfg.projectPath, p)
+      }
+  );
+}
+
 (async() => {
   const createTestCafe = require('testcafe');
   const testCafe       = await createTestCafe('localhost', 1337, 1338);
@@ -14,10 +53,13 @@
     console.error(`Unsupported browser: ${browserName}. Sorry.`);
     process.exit(1);
   }
+
+  const runCfgPath = path.join(HOME_DIR, 'run.yaml')
+  const runCfg = await loadRunConfig(runCfgPath)
+  const testMatch = resolveTestMatches(runCfg)
+
   let results = await runner
-    .src([
-      'tests/**/?(*.)+(spec|test).[jt]s?(x)'
-    ])
+    .src(testMatch)
     .browsers(testCafeBrowserName)
     .concurrency(1)
     .reporter([
