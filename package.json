@@ -9,8 +9,8 @@
   "main": "src/console-wrapper.js",
   "scripts": {
     "test": "node src/console-wrapper.js",
-    "lint": "echo 'TODO: ADD ESLINT!!!'",
-    "unit-test": "echo 'TODO: ADD UNIT TESTS!!!'"
+    "lint": "eslint tests/ src/",
+    "unit-test": "jest --env node"
   },
   "keywords": [
     "testcafe"
