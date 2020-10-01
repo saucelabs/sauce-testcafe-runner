@@ -25,7 +25,7 @@ COPY --chown=seluser:seluser . .
 RUN mkdir -p reports
 RUN mkdir -p tests
 
-ARG SAUCECTL_VERSION=0.11.1
+ARG SAUCECTL_VERSION=0.13.0
 ENV SAUCECTL_BINARY=saucectl_${SAUCECTL_VERSION}_linux_64-bit.tar.gz
 
 RUN curl -L -o ${SAUCECTL_BINARY} \
