@@ -110,3 +110,8 @@ dist
 .tern-port
 
 /**/*/__assets__/
+
+# saucectl configuration folder
+.sauce
+
+bundle/
