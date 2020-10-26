@@ -89,7 +89,8 @@ function resolveTestMatches(runCfg) {
     await sauceReporter(browserName, [
       'reports/report.xml',
       'reports/report.json',
-      'reports/video.mp4'
+      'reports/video.mp4',
+      'reports/testcafe.log',
     ], results);
   } else {
     console.log('Skipping asset uploads! Remeber to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
