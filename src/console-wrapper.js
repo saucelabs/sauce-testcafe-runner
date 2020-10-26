@@ -2,6 +2,7 @@
 
 const { HOME_DIR } = require('./constants');
 const fs = require('fs');
+const path = require('path');
 const child_process = require('child_process');
 
 (async () => {
