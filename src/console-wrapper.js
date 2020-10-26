@@ -19,5 +19,5 @@ const child_process = require('child_process');
     child.stdout.pipe(ws);
     child.stderr.pipe(ws);
 
-    child.on('exit', () => fs.closeSync(fd));
+    child.on('exit', () => ws.end(() => fs.closeSync(fd)));
 })();
