@@ -5,9 +5,9 @@
   "author": "<dev@saucelabs.com>",
   "license": "MIT",
   "private": true,
-  "main": "src/testcafe-runner.js",
+  "main": "src/console-wrapper.js",
   "scripts": {
-    "test": "node ./src/testcafe-runner.js"
+    "test": "node src/console-wrapper.js"
   },
   "keywords": [
     "testcafe"
