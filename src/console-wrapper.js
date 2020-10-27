@@ -7,7 +7,7 @@ const stream = require('stream');
 const child_process = require('child_process');
 
 (async () => {
-    const fd = fs.openSync(path.join(HOME_DIR, '/reports/testcafe.log'), 'w+', 0644);
+    const fd = fs.openSync(path.join(HOME_DIR, '/reports/console.log'), 'w+', 0644);
     const ws = stream.Writable({
         write: (data, encoding, cb) => fs.write(fd, data, undefined, encoding, cb),
     })
