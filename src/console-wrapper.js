@@ -12,7 +12,8 @@ const child_process = require('child_process');
         write (data, encoding, cb) { fs.write(fd, data, undefined, encoding, cb) },
     });
 
-    const child = child_process.spawn('node', [path.join(HOME_DIR, 'src', 'testcafe-runner.js')]);
+    const [nodeBin] = process.argv;
+    const child = child_process.spawn(nodeBin, [path.join(HOME_DIR, 'src', 'testcafe-runner.js')]);
 
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);
