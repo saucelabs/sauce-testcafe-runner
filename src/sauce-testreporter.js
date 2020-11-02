@@ -87,8 +87,8 @@ exports.createSauceJson = async (reportsFolder, xunitReport) => {
 }
 
 exports.sauceReporter = async (browserName, assets, results) => {
-  let testName  = `devx testcafe ${(new Date().getTime())}`
-  let status = results === 0;
+// SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
+  const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
   let tags = process.env.SAUCE_TAGS
   if (tags) {
@@ -160,7 +160,7 @@ exports.sauceReporter = async (browserName, assets, results) => {
     ),
     api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
       name: testName,
-      passed: results === 0 ? true : false
+      passed: results === 0
     }).then(
       () => {},
       (e) => console.log('Failed to update job status', e)
