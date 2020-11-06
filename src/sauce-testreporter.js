@@ -22,10 +22,10 @@ exports.createSauceJson = async (reportsFolder, xunitReport) => {
   let testsuite = result.testsuite;
 
   const jsonLog = [];
-  const nativeLog = { 
-    total_tests: testsuite["attr"].tests,
-    total_success: testsuite["attr"].errors === 0 ? true : false,
-    total_failures: testsuite["attr"].errors,
+  const nativeLog = {
+    total_tests: parseInt(testsuite["attr"].tests),
+    total_success: testsuite["attr"].tests - testsuite["attr"].errors,
+    total_failures: parseInt(testsuite["attr"].errors),
     total_time: testsuite["attr"].time,
     tests: []
   }
@@ -40,8 +40,8 @@ exports.createSauceJson = async (reportsFolder, xunitReport) => {
       class: fixture,
       failure_reason: testFailed ? testcase["failure"][0] : null,
       name: testcase["attr"].name,
-      status: testFailed ? "failure" : "success",
-      status_code: testFailed ? 0 : 1,
+      status: testFailed ? "error" : "success",
+      status_code: testFailed ? 1 : 0,
       test_time: testcase["attr"].time
     }
     nativeLog.tests.push(test);
