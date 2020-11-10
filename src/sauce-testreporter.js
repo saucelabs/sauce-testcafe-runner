@@ -136,6 +136,12 @@ exports.sauceReporter = async (browserName, assets, results) => {
   } catch (e) {
     console.warn("Failed to prepare test", e);
   }
+
+  if (undefined === sessionId || 0 === sessionId) {
+    console.error('Unable to retrieve test entry. Assets won\'t be uploaded.');
+    return 'unable to retrieve test';
+  }
+
   // create sauce asset
   console.log('Preparing assets');
   let [nativeLogJson, logJson] = await exports.createSauceJson(
