@@ -3,7 +3,7 @@ const region = process.env.SAUCE_REGION || 'us-west-1'
 const api = new SauceLabs({
   user: process.env.SAUCE_USERNAME,
   key: process.env.SAUCE_ACCESS_KEY,
-  region: region
+  region
 });
 
 const { remote } = require('webdriverio');
@@ -86,6 +86,96 @@ exports.createSauceJson = async (reportsFolder, xunitReport) => {
   return [nativeLogFile, jsonLogFile];
 }
 
+// NOTE: this function is not available currently.
+// It will be ready once data store API actually works.
+// Keep these pieces of code for future integration.
+const createJobShell = async (api, testName, browserName, tags) => {
+  const body = {
+    name: testName,
+    acl: [
+      {
+        type: 'username',
+        value: process.env.SAUCE_USERNAME
+      }
+    ],
+    //'start_time: startTime,
+    //'end_time: endTime,
+    source: 'vdc', // will use devx
+    platform: 'webdriver', // will use testcafe
+    status: 'complete',
+    live: false,
+    metadata: {},
+    tags: tags,
+    attributes: {
+      container: false,
+      browser: browserName,
+      browser_version: '*',
+      commands_not_successful: 1, // to be removed
+      devx: true,
+      os: 'test', // need collect
+      performance_enabled: 'true', // to be removed
+      public: 'team',
+      record_logs: true, // to be removed
+      record_mp4: 'true', // to be removed
+      record_screenshots: 'true', // to be removed
+      record_video: 'true', // to be removed
+      video_url: 'test', // remove
+      log_url: 'test' // remove
+    }
+  };
+
+  let sessionId;
+  await Promise.all([
+    api.createResultJob(
+      body
+    ).then(
+      (resp) => {
+        sessionId = resp.id;
+      },
+      (e) => console.error('Create job failed: ', e.stack)
+    )
+  ]);
+
+  return sessionId || 0;
+}
+
+const createJobLegacy = async (api, region, browserName, testName, tags, build) => {
+  try {
+    await remote({
+      user: process.env.SAUCE_USERNAME,
+      key: process.env.SAUCE_ACCESS_KEY,
+      region: region,
+      connectionRetryCount: 0,
+      logLevel: 'silent',
+      capabilities: {
+          browserName: browserName,
+          platformName: '*',
+          browserVersion: '*',
+          'sauce:options': {
+              devX: true,
+              name: testName,
+              framework: 'testcafe',
+              tags: tags,
+              build
+          }
+      }
+    }).catch((err) => err)
+  } catch(e) { }
+
+  let sessionId;
+  try {
+    const { jobs } = await api.listJobs(
+      process.env.SAUCE_USERNAME,
+      { limit: 1, full: true, name: testName }
+    )
+    sessionId = jobs && jobs.length && jobs[0].id
+  } catch (e) {
+    console.warn("Failed to prepare test", e);
+  }
+
+  return sessionId || 0;
+}
+
 exports.sauceReporter = async (browserName, assets, results) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
@@ -106,38 +196,14 @@ exports.sauceReporter = async (browserName, assets, results) => {
     build = build.replace(match, replacement || '')
   }
 
-  try {
-    let browser = await remote({
-      user: process.env.SAUCE_USERNAME,
-      key: process.env.SAUCE_ACCESS_KEY,
-      region: region,
-      connectionRetryCount: 0,
-      logLevel: 'silent',
-      capabilities: {
-          browserName: browserName,
-          platformName: '*',
-          browserVersion: '*',
-          'sauce:options': {
-              devX: true,
-              name: testName,
-              framework: 'testcafe',
-              tags: tags,
-              build
-          }
-      }
-    }).catch((err) => err)
-  } catch(e) { }
-  try {
-    const { jobs } = await api.listJobs(
-      process.env.SAUCE_USERNAME,
-      { limit: 1, full: true, name: testName }
-    )
-    sessionId = jobs && jobs.length && jobs[0].id
-  } catch (e) {
-    console.warn("Failed to prepare test", e);
+  let sessionId;
+  if (process.env.ENABLE_DATA_STORE) {
+    sessionId = await createJobShell(api, testName, browserName, tags)
+  } else {
+    sessionId = await createJobLegacy(api, region, browserName, testName, tags, build)
   }
 
-  if (undefined === sessionId || 0 === sessionId) {
+  if (!sessionId) {
     console.error('Unable to retrieve test entry. Assets won\'t be uploaded.');
     return 'unable to retrieve test';
   }
@@ -153,7 +219,7 @@ exports.sauceReporter = async (browserName, assets, results) => {
   await Promise.all([
     api.uploadJobAssets(
       sessionId,
-      uploadAssets
+      { files: uploadAssets }
     ).then(
       (resp) => {
         if (resp.errors) {
