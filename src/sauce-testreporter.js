@@ -167,21 +167,43 @@ const createJobLegacy = async (api, region, tld, browserName, testName, tags, bu
     }).catch((err) => err)
   } catch(e) { }
 
+  return sessionId || 0;
+}
+
+// TODO Tian: this method is a temporary solution for creating jobs via test-composer.
+// Once the global data store is ready, this method will be deprecated.
+const createJobWorkaround = async (api, browserName, testName, tags, build, passed, startTime, endTime) => {
+  const body = {
+    name: testName,
+    user: process.env.SAUCE_USERNAME,
+    startTime,
+    endTime,
+    framework: 'testcafe',
+    frameworkVersion: '*', // collect
+    status: 'complete',
+    errors: [],
+    passed,
+    tags,
+    build,
+    browserName,
+    browserVersion: '*',
+    platformName: '*' // in docker, no specified platform
+  };
+
   let sessionId;
-  try {
-    const { jobs } = await api.listJobs(
-      process.env.SAUCE_USERNAME,
-      { limit: 1, full: true, name: testName }
-    )
-    sessionId = jobs && jobs.length && jobs[0].id
-  } catch (e) {
-    console.warn("Failed to prepare test", e);
-  }
+  await api.createJob(
+    body
+  ).then(
+    (resp) => {
+      sessionId = resp.ID;
+    },
+    (e) => console.error('Create job failed: ', e.stack)
+  );
 
   return sessionId || 0;
 }
 
-exports.sauceReporter = async (browserName, assets, results) => {
+exports.sauceReporter = async (browserName, assets, results, startTime, endTime) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
@@ -205,7 +227,7 @@ exports.sauceReporter = async (browserName, assets, results) => {
   if (process.env.ENABLE_DATA_STORE) {
     sessionId = await createJobShell(api, testName, browserName, tags)
   } else {
-    sessionId = await createJobLegacy(api, region, tld, browserName, testName, tags, build)
+    sessionId = await createJobWorkaround(api, browserName, testName, tags, build, results === 0, startTime, endTime)
   }
 
   if (!sessionId) {

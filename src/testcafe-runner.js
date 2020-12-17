@@ -2,7 +2,8 @@ const path = require('path')
 const fs = require('fs');
 const yaml = require('js-yaml');
 const {promisify} = require('util');
-const {HOME_DIR} = require('./constants')
+const {HOME_DIR} = require('./constants');
+const { start } = require('repl');
 
 // Promisify callback functions
 const fileExists = promisify(fs.exists)
@@ -58,6 +59,8 @@ function resolveTestMatches(runCfg) {
   const runCfg = await loadRunConfig(runCfgPath)
   const testMatch = resolveTestMatches(runCfg)
 
+  let startTime = new Date().toISOString()
+
   let results = await runner
     .src(testMatch)
     .browsers(testCafeBrowserName)
@@ -79,6 +82,8 @@ function resolveTestMatches(runCfg) {
       debugMode: process.env.DEBUG_MODE || false
     });
 
+  endTime = new Date().toISOString()
+
   try {
     testCafe.close();
   }catch (e) {
@@ -91,7 +96,7 @@ function resolveTestMatches(runCfg) {
       'reports/report.json',
       'reports/video.mp4',
       'reports/console.log',
-    ], results);
+    ], results, startTime, endTime);
   } else {
     console.log('Skipping asset uploads! Remeber to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
   }
