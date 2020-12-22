@@ -8,10 +8,12 @@ const api = new SauceLabs({
   tld
 });
 
-const { remote } = require('webdriverio');
 const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path')
+
+const chromeVersion = '81.0.4044.138';
+const firefoxVersion = '74';
 
 const parser = new xml2js.Parser(
   {"attrkey": "attr"}
@@ -111,7 +113,7 @@ const createJobShell = async (api, testName, browserName, tags) => {
     attributes: {
       container: false,
       browser: browserName,
-      browser_version: '*',
+      browser_version: browserName.toLowerCase() === 'firefox' ? firefoxVersion : chromeVersion ,
       commands_not_successful: 1, // to be removed
       devx: true,
       os: 'test', // need collect
@@ -186,8 +188,8 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
     tags,
     build,
     browserName,
-    browserVersion: '*',
-    platformName: '*' // in docker, no specified platform
+    browserVersion: browserName.toLowerCase() === 'firefox' ? firefoxVersion : chromeVersion,
+    platformName: 'sauce-devx-runner' // in docker, no specified platform
   };
 
   let sessionId;
