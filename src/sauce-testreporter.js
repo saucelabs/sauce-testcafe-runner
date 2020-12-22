@@ -14,6 +14,7 @@ const path = require('path')
 
 const chromeVersion = '81.0.4044.138';
 const firefoxVersion = '74';
+const testcafeVersion = '1.8.5';
 
 const parser = new xml2js.Parser(
   {"attrkey": "attr"}
@@ -175,21 +176,35 @@ const createJobLegacy = async (api, region, tld, browserName, testName, tags, bu
 // TODO Tian: this method is a temporary solution for creating jobs via test-composer.
 // Once the global data store is ready, this method will be deprecated.
 const createJobWorkaround = async (api, browserName, testName, tags, build, passed, startTime, endTime) => {
+  let browserVersion;
+  switch (browserName.toLowerCase()) {
+    case 'firefox':
+      browserVersion = firefoxVersion
+      break
+    case 'chrome':
+      browserVersion = chromeVersion
+      break
+    case 'googlechrome':
+      browserVersion = chromeVersion
+      break
+    default:
+      browserVersion = '*'
+  }
   const body = {
     name: testName,
     user: process.env.SAUCE_USERNAME,
     startTime,
     endTime,
     framework: 'testcafe',
-    frameworkVersion: '*', // collect
+    frameworkVersion: testcafeVersion,
     status: 'complete',
     errors: [],
     passed,
     tags,
     build,
     browserName,
-    browserVersion: browserName.toLowerCase() === 'firefox' ? firefoxVersion : chromeVersion,
-    platformName: 'sauce-devx-runner' // in docker, no specified platform
+    browserVersion,
+    platformName: process.env.SAUCE_IMAGE_NAME
   };
 
   let sessionId;
