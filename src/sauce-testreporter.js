@@ -12,10 +12,6 @@ const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path')
 
-const chromeVersion = '81.0.4044.138';
-const firefoxVersion = '74';
-const testcafeVersion = '1.8.5';
-
 const parser = new xml2js.Parser(
   {"attrkey": "attr"}
 );
@@ -114,7 +110,7 @@ const createJobShell = async (api, testName, browserName, tags) => {
     attributes: {
       container: false,
       browser: browserName,
-      browser_version: browserName.toLowerCase() === 'firefox' ? firefoxVersion : chromeVersion ,
+      browser_version: '*',
       commands_not_successful: 1, // to be removed
       devx: true,
       os: 'test', // need collect
@@ -179,13 +175,10 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
   let browserVersion;
   switch (browserName.toLowerCase()) {
     case 'firefox':
-      browserVersion = firefoxVersion
+      browserVersion = process.env.FF_VER
       break
     case 'chrome':
-      browserVersion = chromeVersion
-      break
-    case 'googlechrome':
-      browserVersion = chromeVersion
+      browserVersion = process.env.CHROME_VER
       break
     default:
       browserVersion = '*'
@@ -196,7 +189,7 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
     startTime,
     endTime,
     framework: 'testcafe',
-    frameworkVersion: testcafeVersion,
+    frameworkVersion: process.env.TESTCAFE_VERSION,
     status: 'complete',
     errors: [],
     passed,

@@ -3,7 +3,6 @@ const fs = require('fs');
 const yaml = require('js-yaml');
 const {promisify} = require('util');
 const {HOME_DIR} = require('./constants');
-const { start } = require('repl');
 
 // Promisify callback functions
 const fileExists = promisify(fs.exists)
@@ -82,7 +81,7 @@ function resolveTestMatches(runCfg) {
       debugMode: process.env.DEBUG_MODE || false
     });
 
-  endTime = new Date().toISOString()
+  let endTime = new Date().toISOString()
 
   try {
     testCafe.close();
