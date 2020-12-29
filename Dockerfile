@@ -30,4 +30,7 @@ RUN mkdir -p tests
 # Workaround for permissions in CI if run with a different user
 RUN chmod 777 -R /home/seluser/
 
+ENV IMAGE_NAME=saucelabs/stt-testcafe-node
+ENV IMAGE_TAG=v0.1.13
+
 CMD ["./entry.sh"]
