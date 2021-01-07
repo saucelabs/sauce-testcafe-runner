@@ -1,9 +1,11 @@
 const SauceLabs = require('saucelabs').default
 const region = process.env.SAUCE_REGION || 'us-west-1'
+const tld = region === 'staging' ? 'net' : 'com'
 const api = new SauceLabs({
   user: process.env.SAUCE_USERNAME,
   key: process.env.SAUCE_ACCESS_KEY,
-  region
+  region,
+  tld
 });
 
 const { remote } = require('webdriverio');
@@ -139,12 +141,15 @@ const createJobShell = async (api, testName, browserName, tags) => {
   return sessionId || 0;
 }
 
-const createJobLegacy = async (api, region, browserName, testName, tags, build) => {
+const createJobLegacy = async (api, region, tld, browserName, testName, tags, build) => {
   try {
+    const hostname = `ondemand.${region}.saucelabs.${tld}`;
     await remote({
       user: process.env.SAUCE_USERNAME,
       key: process.env.SAUCE_ACCESS_KEY,
-      region: region,
+      region,
+      tld,
+      hostname,
       connectionRetryCount: 0,
       logLevel: 'silent',
       capabilities: {
@@ -200,7 +205,7 @@ exports.sauceReporter = async (browserName, assets, results) => {
   if (process.env.ENABLE_DATA_STORE) {
     sessionId = await createJobShell(api, testName, browserName, tags)
   } else {
-    sessionId = await createJobLegacy(api, region, browserName, testName, tags, build)
+    sessionId = await createJobLegacy(api, region, tld, browserName, testName, tags, build)
   }
 
   if (!sessionId) {
@@ -246,7 +251,7 @@ exports.sauceReporter = async (browserName, assets, results) => {
       domain = "saucelabs.com"
       break
     default:
-      domain = `${region}.saucelabs.com`
+      domain = `${region}.saucelabs.${tld}`
   }
 
   console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
