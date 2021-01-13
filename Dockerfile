@@ -31,6 +31,7 @@ RUN mkdir -p tests
 RUN chmod 777 -R /home/seluser/
 
 ENV IMAGE_NAME=saucelabs/stt-testcafe-node
-ENV IMAGE_TAG=v0.1.13
+ARG BUILD_TAG
+ENV IMAGE_TAG=${BUILD_TAG}
 
 CMD ["./entry.sh"]
