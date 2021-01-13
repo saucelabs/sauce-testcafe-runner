@@ -197,7 +197,7 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
     build,
     browserName,
     browserVersion,
-    platformName: process.env.IMAGE_NAME + '/' + process.env.IMAGE_TAG
+    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
   };
 
   let sessionId;

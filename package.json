@@ -13,7 +13,7 @@
     "testcafe"
   ],
   "dependencies": {
-    "saucelabs": "4.6.2",
+    "saucelabs": "4.6.3",
     "testcafe": "1.8.5",
     "webdriverio": "6.1.17",
     "xml2js": "0.4.23",
