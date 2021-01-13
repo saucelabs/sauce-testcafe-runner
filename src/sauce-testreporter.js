@@ -8,7 +8,6 @@ const api = new SauceLabs({
   tld
 });
 
-const { remote } = require('webdriverio');
 const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path')
@@ -167,21 +166,54 @@ const createJobLegacy = async (api, region, tld, browserName, testName, tags, bu
     }).catch((err) => err)
   } catch(e) { }
 
-  let sessionId;
-  try {
-    const { jobs } = await api.listJobs(
-      process.env.SAUCE_USERNAME,
-      { limit: 1, full: true, name: testName }
-    )
-    sessionId = jobs && jobs.length && jobs[0].id
-  } catch (e) {
-    console.warn("Failed to prepare test", e);
+  return sessionId || 0;
+}
+
+// TODO Tian: this method is a temporary solution for creating jobs via test-composer.
+// Once the global data store is ready, this method will be deprecated.
+const createJobWorkaround = async (api, browserName, testName, tags, build, passed, startTime, endTime) => {
+  let browserVersion;
+  switch (browserName.toLowerCase()) {
+    case 'firefox':
+      browserVersion = process.env.FF_VER
+      break
+    case 'chrome':
+      browserVersion = process.env.CHROME_VER
+      break
+    default:
+      browserVersion = '*'
   }
+  const body = {
+    name: testName,
+    user: process.env.SAUCE_USERNAME,
+    startTime,
+    endTime,
+    framework: 'testcafe',
+    frameworkVersion: process.env.TESTCAFE_VERSION,
+    status: 'complete',
+    errors: [],
+    passed,
+    tags,
+    build,
+    browserName,
+    browserVersion,
+    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
+  };
+
+  let sessionId;
+  await api.createJob(
+    body
+  ).then(
+    (resp) => {
+      sessionId = resp.ID;
+    },
+    (e) => console.error('Create job failed: ', e.stack)
+  );
 
   return sessionId || 0;
 }
 
-exports.sauceReporter = async (browserName, assets, results) => {
+exports.sauceReporter = async (browserName, assets, results, startTime, endTime) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
@@ -205,7 +237,7 @@ exports.sauceReporter = async (browserName, assets, results) => {
   if (process.env.ENABLE_DATA_STORE) {
     sessionId = await createJobShell(api, testName, browserName, tags)
   } else {
-    sessionId = await createJobLegacy(api, region, tld, browserName, testName, tags, build)
+    sessionId = await createJobWorkaround(api, browserName, testName, tags, build, results === 0, startTime, endTime)
   }
 
   if (!sessionId) {

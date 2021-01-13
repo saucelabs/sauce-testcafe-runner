@@ -1,4 +1,4 @@
-FROM saucelabs/testrunner-image:v0.1.0
+FROM saucelabs/testrunner-image:v0.1.1
 
 WORKDIR /home/seluser
 
@@ -16,6 +16,8 @@ RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/insta
 
 ENV PATH="/home/seluser/bin:/home/seluser/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
 
+ENV TESTCAFE_VERSION=1.8.5
+
 COPY package.json .
 COPY package-lock.json .
 RUN npm i
@@ -27,5 +29,8 @@ RUN mkdir -p tests
 
 # Workaround for permissions in CI if run with a different user
 RUN chmod 777 -R /home/seluser/
+
+ENV IMAGE_NAME=saucelabs/stt-testcafe-node
+ENV IMAGE_TAG=v0.1.13
 
 CMD ["./entry.sh"]
