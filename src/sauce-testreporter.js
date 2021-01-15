@@ -176,7 +176,7 @@ const createJobLegacy = async (api, region, browserName, testName, tags, build) 
   return sessionId || 0;
 }
 
-exports.sauceReporter = async (browserName, assets, results) => {
+exports.sauceReporter = async ({browserName, assets, assetsPath, results}) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
@@ -211,8 +211,8 @@ exports.sauceReporter = async (browserName, assets, results) => {
   // create sauce asset
   console.log('Preparing assets');
   let [nativeLogJson, logJson] = await exports.createSauceJson(
-    path.join(__dirname, '..', 'reports'),
-    path.join(__dirname, '..', 'reports', 'report.xml')
+    path.join(assetsPath, 'reports'),
+    path.join(assetsPath, 'report.xml')
   )
   let uploadAssets = [...assets, logJson, nativeLogJson];
   // updaload assets

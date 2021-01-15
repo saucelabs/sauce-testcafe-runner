@@ -13,10 +13,11 @@
     "testcafe"
   ],
   "dependencies": {
+    "js-yaml": "3.14.0",
+    "saucectl": "^0.23.2",
     "saucelabs": "4.6.0",
     "testcafe": "1.8.5",
     "webdriverio": "6.1.17",
-    "xml2js": "0.4.23",
-    "js-yaml": "3.14.0"
+    "xml2js": "0.4.23"
   }
 }
