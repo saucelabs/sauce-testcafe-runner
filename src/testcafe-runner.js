@@ -13,7 +13,10 @@ async function run (runCfgPath, suiteName) {
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
     const suite = getSuite(runCfg, suiteName);
 
-    testCafe = await createTestCafe('localhost', 1337, 1338);
+    // Run the tests now
+    let startTime = new Date().toISOString();
+
+    testCafe = await createTestCafe('localhost', 1337, 2337);
     const runner = testCafe.createRunner();
 
     const supportedBrowsers = {
@@ -26,7 +29,6 @@ async function run (runCfgPath, suiteName) {
       throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
     }
 
-    // Run the tests now
     results = await runner
       .src(path.join(projectPath, suite.src))
       .browsers(testCafeBrowserName)
@@ -48,30 +50,34 @@ async function run (runCfgPath, suiteName) {
         debugMode: process.env.DEBUG_MODE || false
       });
 
-      // Retain the assets now
-      if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
-        console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`)
-        await sauceReporter({
-          browserName, 
-          assetsPath,
-          results,
-          assets: [
-            path.join(assetsPath, 'report.xml'),
-            path.join(assetsPath, 'report.json'),
-            path.join(assetsPath, 'video.mp4'),
-            path.join(assetsPath, 'console.log'),
-          ],
-        });
-      } else if (!process.env.SAUCE_VM) {
-        console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
-      }
-      passed = results === 0 ? 0 : 1;
+    let endTime = new Date().toISOString();
+
+    // Retain the assets now
+    if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY && !process.env.SAUCE_VM) {
+      console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`)
+      await sauceReporter({
+        browserName, 
+        assetsPath,
+        results,
+        assets: [
+          path.join(assetsPath, 'report.xml'),
+          path.join(assetsPath, 'report.json'),
+          path.join(assetsPath, 'video.mp4'),
+          path.join(assetsPath, 'console.log'),
+        ],
+      }, results, startTime, endTime);
+    } else if (!process.env.SAUCE_VM) {
+      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
+    }
+    passed = results === 0 ? 0 : 1;
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
     passed = false;
   } finally {
     try {
-      testCafe.close();
+      if (testCafe) {
+        testCafe.close();
+      }
     } catch (e) {
       console.log(e);
       console.warn('Failed to close testcafe :(');

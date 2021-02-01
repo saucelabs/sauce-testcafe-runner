@@ -1,12 +1,13 @@
 const SauceLabs = require('saucelabs').default
 const region = process.env.SAUCE_REGION || 'us-west-1'
+const tld = region === 'staging' ? 'net' : 'com'
 const api = new SauceLabs({
   user: process.env.SAUCE_USERNAME,
   key: process.env.SAUCE_ACCESS_KEY,
-  region
+  region,
+  tld
 });
 
-const { remote } = require('webdriverio');
 const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path')
@@ -139,12 +140,15 @@ const createJobShell = async (api, testName, browserName, tags) => {
   return sessionId || 0;
 }
 
-const createJobLegacy = async (api, region, browserName, testName, tags, build) => {
+const createJobLegacy = async (api, region, tld, browserName, testName, tags, build) => {
   try {
+    const hostname = `ondemand.${region}.saucelabs.${tld}`;
     await remote({
       user: process.env.SAUCE_USERNAME,
       key: process.env.SAUCE_ACCESS_KEY,
-      region: region,
+      region,
+      tld,
+      hostname,
       connectionRetryCount: 0,
       logLevel: 'silent',
       capabilities: {
@@ -162,21 +166,54 @@ const createJobLegacy = async (api, region, browserName, testName, tags, build) 
     }).catch((err) => err)
   } catch(e) { }
 
-  let sessionId;
-  try {
-    const { jobs } = await api.listJobs(
-      process.env.SAUCE_USERNAME,
-      { limit: 1, full: true, name: testName }
-    )
-    sessionId = jobs && jobs.length && jobs[0].id
-  } catch (e) {
-    console.warn("Failed to prepare test", e);
+  return sessionId || 0;
+}
+
+// TODO Tian: this method is a temporary solution for creating jobs via test-composer.
+// Once the global data store is ready, this method will be deprecated.
+const createJobWorkaround = async (api, browserName, testName, tags, build, passed, startTime, endTime) => {
+  let browserVersion;
+  switch (browserName.toLowerCase()) {
+    case 'firefox':
+      browserVersion = process.env.FF_VER
+      break
+    case 'chrome':
+      browserVersion = process.env.CHROME_VER
+      break
+    default:
+      browserVersion = '*'
   }
+  const body = {
+    name: testName,
+    user: process.env.SAUCE_USERNAME,
+    startTime,
+    endTime,
+    framework: 'testcafe',
+    frameworkVersion: process.env.TESTCAFE_VERSION,
+    status: 'complete',
+    errors: [],
+    passed,
+    tags,
+    build,
+    browserName,
+    browserVersion,
+    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
+  };
+
+  let sessionId;
+  await api.createJob(
+    body
+  ).then(
+    (resp) => {
+      sessionId = resp.ID;
+    },
+    (e) => console.error('Create job failed: ', e.stack)
+  );
 
   return sessionId || 0;
 }
 
-exports.sauceReporter = async ({browserName, assets, assetsPath, results}) => {
+exports.sauceReporter = async (browserName, assets, results, startTime, endTime) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
@@ -200,7 +237,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results}) => {
   if (process.env.ENABLE_DATA_STORE) {
     sessionId = await createJobShell(api, testName, browserName, tags)
   } else {
-    sessionId = await createJobLegacy(api, region, browserName, testName, tags, build)
+    sessionId = await createJobWorkaround(api, browserName, testName, tags, build, results === 0, startTime, endTime)
   }
 
   if (!sessionId) {
@@ -246,7 +283,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results}) => {
       domain = "saucelabs.com"
       break
     default:
-      domain = `${region}.saucelabs.com`
+      domain = `${region}.saucelabs.${tld}`
   }
 
   console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);

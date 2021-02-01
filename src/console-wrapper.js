@@ -11,6 +11,9 @@ const { getArgs, loadRunConfig, getAbsolutePath } = require('./utils');
     const runCfg = await loadRunConfig(runCfgAbsolutePath);
     runCfg.path = runCfgPath;
     const assetsPath = path.join(path.dirname(runCfgAbsolutePath), runCfg.projectPath || '.', '__assets__');
+    if (!fs.existsSync(assetsPath)) {
+        fs.mkdirSync(assetsPath);
+    }
     const fd = fs.openSync(path.join(assetsPath, 'console.log'), 'w+', 0o644);
     const ws = stream.Writable({
         write (data, encoding, cb) { fs.write(fd, data, undefined, encoding, cb) },
