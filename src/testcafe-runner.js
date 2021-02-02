@@ -69,7 +69,7 @@ async function run (runCfgPath, suiteName) {
     } else if (!process.env.SAUCE_VM) {
       console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
     }
-    passed = results === 0 ? 0 : 1;
+    passed = results === 0;
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
     passed = false;
@@ -92,7 +92,9 @@ if (require.main === module) {
 
   run(runCfgPath, suiteName)
       // eslint-disable-next-line promise/prefer-await-to-then
-      .then((passed) => process.exit(passed ? 0 : 1))
+      .then((passed) => {
+        process.exit(passed ? 0 : 1);
+      })
       // eslint-disable-next-line promise/prefer-await-to-callbacks
       .catch((err) => {
         console.log(err);
