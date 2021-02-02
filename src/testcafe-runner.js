@@ -87,7 +87,7 @@ async function run (runCfgPath, suiteName) {
 }
 
 if (require.main === module) {
-  console.log(`Sauce Cypress Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
+  console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
   const { runCfgPath, suiteName } = getArgs();
 
   run(runCfgPath, suiteName)

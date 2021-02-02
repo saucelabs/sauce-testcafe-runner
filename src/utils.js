@@ -11,15 +11,6 @@ function getAbsolutePath (pathToDir) {
   return path.join(process.cwd(), pathToDir);
 }
 
-function shouldRecordVideo () {
-  let isVideoRecording = process.env.SAUCE_CYPRESS_VIDEO_RECORDING;
-  if (isVideoRecording === undefined) {
-    return true;
-  }
-  let videoOption = String(isVideoRecording).toLowerCase();
-  return videoOption === 'true' || videoOption === '1';
-}
-
 let runConfig = null;
 
 function loadRunConfig (cfgPath) {
@@ -112,6 +103,6 @@ function getSuite (runConfig, suiteName) {
 }
 
 module.exports = {
-  getAbsolutePath, shouldRecordVideo, loadRunConfig,
+  getAbsolutePath, loadRunConfig,
   installDependencies, getArgs, getEnv, getSuite
 };
