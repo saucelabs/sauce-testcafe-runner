@@ -9,7 +9,8 @@
   "main": "src/console-wrapper.js",
   "scripts": {
     "test": "node src/console-wrapper.js",
-    "lint": "echo 'TODO: ADD ESLINT!!!'"
+    "lint": "echo 'TODO: ADD ESLINT!!!'",
+    "unit-test": "echo 'TODO: ADD UNIT TESTS!!!'"
   },
   "keywords": [
     "testcafe"
