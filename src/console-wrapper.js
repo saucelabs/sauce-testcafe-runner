@@ -5,11 +5,11 @@ const stream = require('stream');
 const child_process = require('child_process');
 const { getArgs, loadRunConfig, getAbsolutePath } = require('./utils');
 
-(async () => {
-    try {
-        const { runCfgPath } = getArgs();
-        const runCfgAbsolutePath = getAbsolutePath(runCfgPath);
-        const runCfg = await loadRunConfig(runCfgAbsolutePath);
+async function testCafeRunner () {
+    const { runCfgPath } = getArgs();
+    const runCfgAbsolutePath = getAbsolutePath(runCfgPath);
+    const runCfg = await loadRunConfig(runCfgAbsolutePath);
+    const p = new Promise((resolve, reject) => {
         runCfg.path = runCfgPath;
         const assetsPath = path.join(path.dirname(runCfgAbsolutePath), runCfg.projectPath || '.', '__assets__');
         if (!fs.existsSync(assetsPath)) {
@@ -31,10 +31,27 @@ const { getArgs, loadRunConfig, getAbsolutePath } = require('./utils');
 
         child.on('exit', (exitCode) => {
             fs.closeSync(fd);
-            process.exit(exitCode);
+            if (exitCode === 0) {
+                resolve();
+            } else {
+                reject(exitCode);
+            }
         });
-    } catch (e) {
-        console.log(`Could not run tests. Reason: ${e.message}`);
+    });
+    return await p;
+}
+
+if (require.main === module) {
+  const { runCfgPath, suiteName } = getArgs();
+
+  consoleWrapper(runCfgPath, suiteName)
+      // eslint-disable-next-line promise/prefer-await-to-then
+      .then((passed) => process.exit(passed ? 0 : 1))
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      .catch((err) => {
+        console.log(err);
         process.exit(1);
-    }
-})();
+      });
+}
+
+module.exports = { testCafeRunner };

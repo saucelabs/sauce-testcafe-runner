@@ -248,8 +248,8 @@ exports.sauceReporter = async (browserName, assets, results, startTime, endTime)
   // create sauce asset
   console.log('Preparing assets');
   let [nativeLogJson, logJson] = await exports.createSauceJson(
-    path.join(assetsPath, 'reports'),
-    path.join(assetsPath, 'report.xml')
+    path.join(assets, 'reports'),
+    path.join(assets, 'report.xml')
   )
   let uploadAssets = [...assets, logJson, nativeLogJson];
   // updaload assets
