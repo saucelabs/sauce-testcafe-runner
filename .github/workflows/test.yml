@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - testcafe-vm # TODO: Take this out upon approval
 
 jobs:
   build:
