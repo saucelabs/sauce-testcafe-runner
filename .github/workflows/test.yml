@@ -45,6 +45,8 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
+      - name: Install FFMPEG so that bundle installs without error
+        run: npm install -g @ffmpeg-installer/ffmpeg
       - 
         name: Bundle Directory
         run: bash ./scripts/bundle.sh
@@ -57,11 +59,11 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
+      - name: Install FFMPEG so that bundle installs without error
+        run: npm install -g @ffmpeg-installer/ffmpeg
       - 
         name: Bundle Directory
         run: bash ./scripts/bundle.sh
-      - name: Install FFMPEG so that bundle installs without error
-        run: npm install -g @ffmpeg-installer/ffmpeg
       - 
         name: List bundle contents
         run: ls -R bundle/
@@ -71,11 +73,11 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
+      - name: Install FFMPEG so that bundle installs without error
+        run: npm install -g @ffmpeg-installer/ffmpeg
       - 
         name: Bundle Directory
         run: bash ./scripts/bundle.sh
-      - name: Install FFMPEG so that bundle installs without error
-        run: npm install -g @ffmpeg-installer/ffmpeg
       - 
         name: List bundle contents
         run: ls -R bundle/
