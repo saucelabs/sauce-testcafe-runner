@@ -65,7 +65,9 @@ async function run (runCfgPath, suiteName) {
           path.join(assetsPath, 'video.mp4'),
           path.join(assetsPath, 'console.log'),
         ],
-      }, results, startTime, endTime);
+        startTime,
+        endTime,
+      });
     } else if (!process.env.SAUCE_VM) {
       console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
     }

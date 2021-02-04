@@ -213,7 +213,7 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
   return sessionId || 0;
 }
 
-exports.sauceReporter = async (browserName, assets, results, startTime, endTime) => {
+exports.sauceReporter = async ({browserName, assets, results, startTime, endTime}) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
