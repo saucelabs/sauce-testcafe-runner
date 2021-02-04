@@ -60,6 +60,22 @@ jobs:
       - 
         name: Bundle Directory
         run: bash ./scripts/bundle.sh
+      - name: Install FFMPEG so that bundle installs without error
+        run: npm install -g @ffmpeg-installer/ffmpeg
+      - 
+        name: List bundle contents
+        run: ls -R bundle/
+  build-macos-bundle-and-test:
+    runs-on: macos-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Bundle Directory
+        run: bash ./scripts/bundle.sh
+      - name: Install FFMPEG so that bundle installs without error
+        run: npm install -g @ffmpeg-installer/ffmpeg
       - 
         name: List bundle contents
         run: ls -R bundle/
