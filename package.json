@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "saucectl": "^0.23.2",
-    "testcafe": "1.8.5",
+    "testcafe": "1.10.1",
     "xml2js": "^0.4.23",
     "glob": "^7.1.6",
     "js-yaml": "^3.14.0",
