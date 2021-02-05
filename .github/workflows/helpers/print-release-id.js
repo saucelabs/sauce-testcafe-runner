@@ -1,3 +1,4 @@
+
 const { get } = require('https');
 
 /**
@@ -5,7 +6,7 @@ const { get } = require('https');
  * @param {string} tag 
  */
 const printReleaseId = (repo, tag) => new Promise(async (resolve) => {
-  get(`https://api.github.com/repos/${repo}/releases/tags/${tag}`, {
+  get(`https://api.github.com/repos/saucelabs/${repo}/releases/tags/${tag}`, {
     headers: {
       'Accept': 'application/vnd.github.v3+json',
       'User-Agent': 'ReleaseId Fetcher',
