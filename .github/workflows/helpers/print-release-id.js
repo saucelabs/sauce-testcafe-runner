@@ -7,7 +7,6 @@ const { get } = require('https');
  */
 const printReleaseId = (tag) => new Promise(async (resolve) => {
   const apiEndpoint = `https://api.github.com/repos/saucelabs/sauce-testcafe-runner/releases/tags/${tag}`;
-  console.log(`Hitting endpoint: '${apiEndpoint}'`)
   get(apiEndpoint, {
     headers: {
       'Accept': 'application/vnd.github.v3+json',
