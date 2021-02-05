@@ -6,7 +6,9 @@ const { get } = require('https');
  * @param {string} tag 
  */
 const printReleaseId = (repo, tag) => new Promise(async (resolve) => {
-  get(`https://api.github.com/repos/saucelabs/${repo}/releases/tags/${tag}`, {
+  const apiEndpoint = `https://api.github.com/repos/saucelabs/${repo}/releases/tags/${tag}`;
+  console.log(`Hitting endpoint: '${apiEndpoint}'`)
+  get(apiEndpoint, {
     headers: {
       'Accept': 'application/vnd.github.v3+json',
       'User-Agent': 'ReleaseId Fetcher',
