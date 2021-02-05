@@ -108,3 +108,11 @@ dist
 
 # TernJS port file
 .tern-port
+
+/**/*/__assets__/
+
+# saucectl configuration folder
+.sauce
+
+bundle/
+saucectl/

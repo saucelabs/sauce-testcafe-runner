@@ -1,0 +1,21 @@
+apiVersion: v1alpha
+metadata:
+  name: Feature XYZ
+  tags:
+  - e2e
+  - release team
+  - other tag
+  build: Release $CI_COMMIT_SHORT_SHA
+testcafe:
+  projectPath: ".."
+  version: "1.8.5"
+suites:
+- name: default
+  browser: chrome
+  src: "tests/*.*"
+fileTransfer: mount
+image:
+  base: saucelabs/stt-testcafe-node
+  version: latest
+sauce:
+  region: us-west-1

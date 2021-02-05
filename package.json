@@ -5,18 +5,47 @@
   "author": "<dev@saucelabs.com>",
   "license": "MIT",
   "private": true,
+  "bin": "./bin/testcafe",
   "main": "src/console-wrapper.js",
   "scripts": {
-    "test": "node src/console-wrapper.js"
+    "test": "node src/console-wrapper.js",
+    "lint": "echo 'TODO: ADD ESLINT!!!'",
+    "unit-test": "echo 'TODO: ADD UNIT TESTS!!!'"
   },
   "keywords": [
     "testcafe"
   ],
   "dependencies": {
-    "saucelabs": "4.6.3",
-    "testcafe": "1.8.5",
-    "webdriverio": "6.1.17",
-    "xml2js": "0.4.23",
-    "js-yaml": "3.14.0"
+    "saucectl": "^0.23.2",
+    "testcafe": "1.10.1",
+    "xml2js": "^0.4.23",
+    "glob": "^7.1.6",
+    "js-yaml": "^3.14.0",
+    "mocha-junit-reporter": "^2.0.0",
+    "saucelabs": "^4.5.0",
+    "typescript": "^3.9.7",
+    "webdriverio": "6.1.22"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.12",
+    "@types/jest": "^26.0.13",
+    "@types/jquery": "^3.5.1",
+    "@types/mocha": "^8.0.3",
+    "@types/node": "^14.10.1",
+    "axios": "^0.20.0",
+    "bluebird": "^3.7.2",
+    "eslint": "^7.9.0",
+    "eslint-config-appium": "^4.5.0",
+    "eslint-plugin-jest": "^24.0.2",
+    "husky": "^4.3.0",
+    "jest": "^26.4.2",
+    "mocha": "^8.1.3",
+    "typescript": "^3.9.7"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "npm run unit-test"
+    }
   }
 }
