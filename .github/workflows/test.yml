@@ -40,20 +40,24 @@ jobs:
           #SKIP_CI: true
           #SAUCE_CTL_BINARY: ./saucectl/saucectl
         #name: Build Saucectl and run E2E tests
-  build-ubuntu-bundle-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      - uses: FedericoCarboni/setup-ffmpeg@v1-beta
-        id: setup-ffmpeg
-      - 
-        name: Bundle Directory
-        run: bash ./scripts/bundle.sh
-      - 
-        name: List bundle contents
-        run: ls -R bundle/
+
+  # The GitHub Actions ubuntu version doesn't work because
+  #   "Could not complete test. Reason 'Your Linux version does not have a graphic subsystem to run chrome with a GUI. You can launch the browser in headless mode. If you use a portable browser version, specify the browser alias before the path instead of the 'path' prefix. For more information, see https://devexpress.github.io/testcafe/documentation/guides/concepts/browsers.html#test-in-headless-mode'"
+  #   Keeping this around in case we ever need to figure out how to support Linux bundles
+  #build-ubuntu-bundle-and-test:
+    #runs-on: ubuntu-latest
+    #steps:
+      #-
+        #name: Checkout
+        #uses: actions/checkout@v2
+      #- uses: FedericoCarboni/setup-ffmpeg@v1-beta
+        #id: setup-ffmpeg
+      #- 
+        #name: Bundle Directory
+        #run: bash ./scripts/bundle.sh
+      #- 
+        #name: List bundle contents
+        #run: ls -R bundle/
   build-windows-bundle-and-test:
     runs-on: windows-latest
     steps:
