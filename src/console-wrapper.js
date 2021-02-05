@@ -1,27 +1,57 @@
 #!/usr/bin/env node
-
-const { HOME_DIR } = require('./constants');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
 const child_process = require('child_process');
+const { getArgs, loadRunConfig, getAbsolutePath } = require('./utils');
 
-(async () => {
-    const fd = fs.openSync(path.join(HOME_DIR, 'reports', 'console.log'), 'w+', 0o644);
-    const ws = stream.Writable({
-        write (data, encoding, cb) { fs.write(fd, data, undefined, encoding, cb) },
+async function testCafeRunner () {
+    const { runCfgPath } = getArgs();
+    const runCfgAbsolutePath = getAbsolutePath(runCfgPath);
+    const runCfg = await loadRunConfig(runCfgAbsolutePath);
+    const p = new Promise((resolve, reject) => {
+        runCfg.path = runCfgPath;
+        const assetsPath = path.join(path.dirname(runCfgAbsolutePath), runCfg.projectPath || '.', '__assets__');
+        if (!fs.existsSync(assetsPath)) {
+            fs.mkdirSync(assetsPath);
+        }
+        const fd = fs.openSync(path.join(assetsPath, 'console.log'), 'w+', 0o644);
+        const ws = stream.Writable({
+            write (data, encoding, cb) { fs.write(fd, data, undefined, encoding, cb) },
+        });
+
+        const [nodeBin] = process.argv;
+        const testcafeRunnerEntry = path.join(__dirname, 'testcafe-runner.js');
+        const child = child_process.spawn(nodeBin, [testcafeRunnerEntry, ...process.argv.slice(2)]);
+
+        child.stdout.pipe(process.stdout);
+        child.stderr.pipe(process.stderr);
+        child.stdout.pipe(ws);
+        child.stderr.pipe(ws);
+
+        child.on('exit', (exitCode) => {
+            fs.closeSync(fd);
+            if (exitCode === 0) {
+                resolve();
+            } else {
+                reject(exitCode);
+            }
+        });
     });
+    return await p;
+}
 
-    const [nodeBin] = process.argv;
-    const child = child_process.spawn(nodeBin, [path.join(HOME_DIR, 'src', 'testcafe-runner.js')]);
+if (require.main === module) {
+  const { runCfgPath, suiteName } = getArgs();
 
-    child.stdout.pipe(process.stdout);
-    child.stderr.pipe(process.stderr);
-    child.stdout.pipe(ws);
-    child.stderr.pipe(ws);
+  testCafeRunner(runCfgPath, suiteName)
+      // eslint-disable-next-line promise/prefer-await-to-then
+      .then((passed) => process.exit(passed ? 0 : 1))
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      .catch((err) => {
+        console.log(err);
+        process.exit(1);
+      });
+}
 
-    child.on('exit', (exitCode) => {
-        fs.closeSync(fd);
-        process.exit(exitCode);
-    });
-})();
+module.exports = { testCafeRunner };

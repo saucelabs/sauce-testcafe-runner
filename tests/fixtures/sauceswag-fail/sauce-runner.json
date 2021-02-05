@@ -1,0 +1,27 @@
+{
+    "apiVersion": "v1alpha",
+    "kind": "testcafe",
+    "sauce": {
+       "metadata": {
+          "name": "TestCafe Swag",
+          "tags": [
+             "e2e",
+             "release team",
+             "kitchen-sink"
+          ],
+          "build": "Release $CI_COMMIT_SHORT_SHA"
+       },
+       "region": "us-west-1"
+    },
+    "testcafe": {
+       "projectPath": "../",
+       "version": "1.8.5"
+    },
+    "suites": [
+       {
+          "name": "default",
+          "browser": "chrome",
+          "src": "tests/*.*"
+       }
+    ]
+ }

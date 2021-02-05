@@ -1,103 +1,107 @@
-const path = require('path')
-const fs = require('fs');
-const yaml = require('js-yaml');
-const {promisify} = require('util');
-const {HOME_DIR} = require('./constants');
+const createTestCafe = require('testcafe');
+const path = require('path');
+const { getArgs, loadRunConfig, getSuite, getAbsolutePath } = require('./utils');
+const { sauceReporter }   = require('./sauce-testreporter');
 
-// Promisify callback functions
-const fileExists = promisify(fs.exists)
-const readFile = promisify(fs.readFile)
-
-// the default test matching behavior for versions <= v0.1.4
-const DefaultRunCfg = {
-  projectPath: `${HOME_DIR}`,
-  match: [
-    `${HOME_DIR}/tests/?(*.)+(spec|test).[jt]s?(x)`,
-    `${HOME_DIR}/tests/**/?(*.)+(spec|test).[jt]s?(x)`
-  ]
-}
-
-async function loadRunConfig(cfgPath) {
-  if (await fileExists(cfgPath)) {
-    return yaml.safeLoad(await readFile(cfgPath, 'utf8'));
-  }
-  console.log(`Run config (${cfgPath}) unavailable. Loading defaults.`)
-
-  return DefaultRunCfg
-}
-
-function resolveTestMatches(runCfg) {
-  return runCfg.match.map(
-      p => {
-        if (path.isAbsolute(p)) {
-          return p
-        }
-        return path.join(runCfg.projectPath, p)
-      }
-  );
-}
-
-(async() => {
-  const createTestCafe = require('testcafe');
-  const testCafe       = await createTestCafe('localhost', 1337, 1338);
-  const runner         = testCafe.createRunner();
-  const { sauceReporter }   = require('./sauce-testreporter');
-
-  const supportedBrowsers = {
-    'chrome': 'chrome:headless',
-    'firefox': 'firefox:headless:marionettePort=9223'
-  }
-  const browserName = process.env.BROWSER_NAME || 'chrome';
-  const testCafeBrowserName = supportedBrowsers[browserName.toLowerCase()];
-  if (!testCafeBrowserName) {
-    console.error(`Unsupported browser: ${browserName}. Sorry.`);
-    process.exit(1);
-  }
-
-  const runCfgPath = path.join(HOME_DIR, 'run.yaml')
-  const runCfg = await loadRunConfig(runCfgPath)
-  const testMatch = resolveTestMatches(runCfg)
-
-  let startTime = new Date().toISOString()
-
-  let results = await runner
-    .src(testMatch)
-    .browsers(testCafeBrowserName)
-    .concurrency(1)
-    .reporter([
-      { name: 'xunit', output: 'reports/report.xml' },
-      { name: 'json', output: 'reports/report.json' },
-      'list'
-    ])
-    .video('reports/', {
-      singleFile: true,
-      failedOnly: false,
-      pathPattern: 'video.mp4'
-    })
-    .run({
-      disablePageCaching: process.env.DISABLE_PAGE_CACHING || true,
-      disableScreenshot: process.env.DISABLE_SCREENSHOT || true,
-      quarantineMode: process.env.QUARANTINE_MODE || false,
-      debugMode: process.env.DEBUG_MODE || false
-    });
-
-  let endTime = new Date().toISOString()
-
+async function run (runCfgPath, suiteName) {
+  let testCafe, results, browserName, passed;
   try {
-    testCafe.close();
-  }catch (e) {
-    console.log(e);
-    console.warn('Failed to close testcafe :(');
+    runCfgPath = getAbsolutePath(runCfgPath);
+    const runCfg = await loadRunConfig(runCfgPath);
+    runCfg.path = runCfgPath;
+    const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
+    const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
+    const suite = getSuite(runCfg, suiteName);
+
+    // Run the tests now
+    let startTime = new Date().toISOString();
+
+    testCafe = await createTestCafe('localhost', 1337, 2337);
+    const runner = testCafe.createRunner();
+
+    const supportedBrowsers = {
+      'chrome': 'chrome:headless',
+      'firefox': 'firefox:headless:marionettePort=9223'
+    }
+    browserName = suite.browser;
+    const testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
+    if (!testCafeBrowserName) {
+      throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
+    }
+
+    results = await runner
+      .src(path.join(projectPath, suite.src))
+      .browsers(testCafeBrowserName)
+      .concurrency(1)
+      .reporter([
+        { name: 'xunit', output: path.join(assetsPath, 'report.xml') },
+        { name: 'json', output: path.join(assetsPath, 'report.json') },
+        'list'
+      ])
+      .video(assetsPath, {
+        singleFile: true,
+        failedOnly: false,
+        pathPattern: 'video.mp4'
+      })
+      .run({
+        disablePageCaching: process.env.DISABLE_PAGE_CACHING || true,
+        disableScreenshot: process.env.DISABLE_SCREENSHOT || true,
+        quarantineMode: process.env.QUARANTINE_MODE || false,
+        debugMode: process.env.DEBUG_MODE || false
+      });
+
+    let endTime = new Date().toISOString();
+
+    // Retain the assets now
+    if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY && !process.env.SAUCE_VM) {
+      console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`)
+      await sauceReporter({
+        browserName, 
+        assetsPath,
+        results,
+        assets: [
+          path.join(assetsPath, 'report.xml'),
+          path.join(assetsPath, 'report.json'),
+          path.join(assetsPath, 'video.mp4'),
+          path.join(assetsPath, 'console.log'),
+        ],
+        startTime,
+        endTime,
+      });
+    } else if (!process.env.SAUCE_VM) {
+      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
+    }
+    passed = results === 0;
+  } catch (e) {
+    console.error(`Could not complete test. Reason '${e.message}'`);
+    passed = false;
+  } finally {
+    try {
+      if (testCafe) {
+        testCafe.close();
+      }
+    } catch (e) {
+      console.log(e);
+      console.warn('Failed to close testcafe :(');
+    }
+    return passed;
   }
-  if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
-    await sauceReporter(browserName, [
-      'reports/report.xml',
-      'reports/report.json',
-      'reports/video.mp4',
-      'reports/console.log',
-    ], results, startTime, endTime);
-  } else {
-    console.log('Skipping asset uploads! Remeber to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
-  }
-  process.exit(results === 0 ? 0 : 1);
-})();
+}
+
+if (require.main === module) {
+  console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
+  const { runCfgPath, suiteName } = getArgs();
+
+  run(runCfgPath, suiteName)
+      // eslint-disable-next-line promise/prefer-await-to-then
+      .then((passed) => {
+        process.exit(passed ? 0 : 1);
+      })
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      .catch((err) => {
+        console.log(err);
+        process.exit(1);
+      });
+}
+
+module.exports = { run };
