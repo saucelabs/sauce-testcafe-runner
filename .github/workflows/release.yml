@@ -59,8 +59,8 @@ jobs:
           GH_REF: ${{ github.ref }}
       - name: Print release id
         run: echo ${{ steps.get_release_id.outputs.release_id }}
-      - name: Install FFMPEG so that bundle installs without error
-        run: npm install -g @ffmpeg-installer/ffmpeg
+      - uses: FedericoCarboni/setup-ffmpeg@v1-beta
+        id: setup-ffmpeg
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
       - name: List bundle contents
@@ -100,8 +100,8 @@ jobs:
           GH_REF: ${{ github.ref }}
       - name: Print release id
         run: echo ${{ steps.get_release_id.outputs.release_id }}
-      - name: Install FFMPEG so that bundle installs without error
-        run: npm install -g @ffmpeg-installer/ffmpeg
+      - uses: FedericoCarboni/setup-ffmpeg@v1-beta
+        id: setup-ffmpeg
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
       - name: List bundle contents
