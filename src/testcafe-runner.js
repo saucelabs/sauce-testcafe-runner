@@ -24,7 +24,10 @@ async function run (runCfgPath, suiteName) {
       'firefox': 'firefox:headless:marionettePort=9223'
     }
     browserName = suite.browser;
-    const testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
+    let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
+    if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
+      testCafeBrowserName = `path:\`${process.env.SAUCE_BROWSER_PATH}\``;
+    }
     if (!testCafeBrowserName) {
       throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
     }
