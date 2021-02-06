@@ -42,11 +42,14 @@ async function testCafeRunner () {
 }
 
 if (require.main === module) {
+  console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
   const { runCfgPath, suiteName } = getArgs();
 
   testCafeRunner(runCfgPath, suiteName)
       // eslint-disable-next-line promise/prefer-await-to-then
-      .then((passed) => process.exit(passed ? 0 : 1))
+      .then(() => {
+          process.exit(0);
+      })
       // eslint-disable-next-line promise/prefer-await-to-callbacks
       .catch((err) => {
         console.log(err);
