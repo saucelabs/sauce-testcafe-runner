@@ -26,7 +26,7 @@ async function run (runCfgPath, suiteName) {
     browserName = suite.browser;
     let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
     if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
-      testCafeBrowserName = `path:\`${process.env.SAUCE_BROWSER_PATH}\``;
+      testCafeBrowserName = `${process.env.BROWSER_NAME}:${process.env.SAUCE_BROWSER_PATH}:userProfile`;
     }
     if (!testCafeBrowserName) {
       throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
