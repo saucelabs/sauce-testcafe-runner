@@ -77,7 +77,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/saucelabs/sauce-testcafe-runner/releases/${{ steps.get_release_id.outputs.release_id }}/assets?name=sauce-testcafe-runner.zip
+          upload_url: https://uploads.github.com/repos/dpgraham/sauce-testcafe-runner/releases/${{ steps.get_release_id.outputs.release_id }}/assets?name=sauce-testcafe-runner.zip
           asset_path: ./sauce-testcafe-win.zip
           asset_name: sauce-testcafe-win.zip
           asset_content_type: application/zip
