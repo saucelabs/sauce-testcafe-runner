@@ -42,7 +42,6 @@ async function testCafeRunner () {
 }
 
 if (require.main === module) {
-  console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
   const { runCfgPath, suiteName } = getArgs();
 
   testCafeRunner(runCfgPath, suiteName)
