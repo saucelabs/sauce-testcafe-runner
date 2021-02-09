@@ -32,7 +32,7 @@ async function run (runCfgPath, suiteName) {
       throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
     }
 
-    results = await runner
+    const runnerInstance = runner
       .src(path.join(projectPath, suite.src))
       .browsers(testCafeBrowserName)
       .concurrency(1)
@@ -40,18 +40,22 @@ async function run (runCfgPath, suiteName) {
         { name: 'xunit', output: path.join(assetsPath, 'report.xml') },
         { name: 'json', output: path.join(assetsPath, 'report.json') },
         'list'
-      ])
-      .video(assetsPath, {
+      ]);
+
+    if (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD) {
+      runnerInstance.video(assetsPath, {
         singleFile: true,
         failedOnly: false,
         pathPattern: 'video.mp4'
-      })
-      .run({
-        disablePageCaching: process.env.DISABLE_PAGE_CACHING || true,
-        disableScreenshot: process.env.DISABLE_SCREENSHOT || true,
-        quarantineMode: process.env.QUARANTINE_MODE || false,
-        debugMode: process.env.DEBUG_MODE || false
       });
+    }
+
+    results = await runnerInstance.run({
+      disablePageCaching: process.env.DISABLE_PAGE_CACHING || true,
+      disableScreenshot: process.env.DISABLE_SCREENSHOT || true,
+      quarantineMode: process.env.QUARANTINE_MODE || false,
+      debugMode: process.env.DEBUG_MODE || false
+    });
 
     let endTime = new Date().toISOString();
 
