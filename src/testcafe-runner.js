@@ -69,7 +69,7 @@ async function run (runCfgPath, suiteName) {
 
     results = await runnerInstance.run({
       disablePageCaching: true,
-      disableScreenshot: process.env.DISABLE_SCREENSHOT || false,
+      disableScreenshots: process.env.DISABLE_SCREENSHOT || false,
       quarantineMode: process.env.QUARANTINE_MODE || false,
       debugMode: process.env.DEBUG_MODE || false
     });
