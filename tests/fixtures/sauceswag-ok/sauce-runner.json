@@ -21,7 +21,10 @@
        {
           "name": "default",
           "browser": "chrome",
-          "src": "tests/*.*"
+          "src": ["tests/*.*"],
+          "screenshots": {
+             "takeOnFails": true
+          }
        }
     ]
  }

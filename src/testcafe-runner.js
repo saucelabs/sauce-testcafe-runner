@@ -32,8 +32,12 @@ async function run (runCfgPath, suiteName) {
       throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
     }
 
+    // Get the 'src' array and translate it to fully qualified URLs that are part of project path
+    let src = Array.isArray(suite.src) ? suite.src : [suite.src];
+    src = src.map((srcPath) => path.join(projectPath, srcPath));
+
     const runnerInstance = runner
-      .src(path.join(projectPath, suite.src))
+      .src(src)
       .browsers(testCafeBrowserName)
       .concurrency(1)
       .reporter([
@@ -42,6 +46,7 @@ async function run (runCfgPath, suiteName) {
         'list'
       ]);
 
+    // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
     if (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD) {
       runnerInstance.video(assetsPath, {
         singleFile: true,
@@ -50,9 +55,21 @@ async function run (runCfgPath, suiteName) {
       });
     }
 
+    // Screenshots
+    if (suite.screenshots) {
+      runnerInstance.screenshots({
+        ...suite.screenshots,
+        path: assetsPath,
+        // Set screenshot pattern as fixture name, test name and screenshot #
+        // This format prevents nested screenshots and shows only the info that
+        // a Sauce session needs
+        pathPattern: '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}',
+      });
+    }
+
     results = await runnerInstance.run({
-      disablePageCaching: process.env.DISABLE_PAGE_CACHING || true,
-      disableScreenshot: process.env.DISABLE_SCREENSHOT || true,
+      disablePageCaching: true,
+      disableScreenshot: process.env.DISABLE_SCREENSHOT || false,
       quarantineMode: process.env.QUARANTINE_MODE || false,
       debugMode: process.env.DEBUG_MODE || false
     });
