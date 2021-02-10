@@ -23,7 +23,7 @@ async function run (runCfgPath, suiteName) {
       'chrome': 'chrome:headless',
       'firefox': 'firefox:headless:marionettePort=9223'
     }
-    browserName = suite.browser;
+    browserName = suite.browserName;
     let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
     if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
       testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
@@ -46,8 +46,19 @@ async function run (runCfgPath, suiteName) {
         'list'
       ]);
 
+    if (suite.tsConfigPath) {
+      runnerInstance.tsConfigPath(path.join(projectPath, suite.tsConfigPath));
+    }
+
+    if (suite.clientScripts) {
+      let clientScriptsPaths = Array.isArray(suite.clientScripts) ? suite.clientScripts : [suite.clientScripts];
+      clientScriptsPaths = clientScriptsPaths.map((clientScriptPath) => path.join(projectPath, clientScriptPath));
+      runnerInstance.clientScriptPath(clientScriptsPaths);
+    }
+
     // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
-    if (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD) {
+    const shouldRecordVideo = !suite.disableVideo && (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD);
+    if (shouldRecordVideo) {
       runnerInstance.video(assetsPath, {
         singleFile: true,
         failedOnly: false,
@@ -68,10 +79,20 @@ async function run (runCfgPath, suiteName) {
     }
 
     results = await runnerInstance.run({
-      disablePageCaching: true,
-      disableScreenshots: process.env.DISABLE_SCREENSHOT || false,
-      quarantineMode: process.env.QUARANTINE_MODE || false,
-      debugMode: process.env.DEBUG_MODE || false
+      skipJsErrors: suite.skipJsErrors,
+      quarantineMode: suite.quarantineMode,
+      skipUncaughtErrors: suite.skipUncaughtErrors,
+      selectorTimeout: suite.selectorTimeout,
+      assertionTimeout: suite.assertionTimeout,
+      pageLoadTimeout: suite.pageLoadTimeout,
+      speed: suite.speed,
+      stopOnFirstFail: suite.stopOnFirstFail,
+      disablePageCaching: suite.disablePageCaching,
+      disableScreenshots: suite.disableScreenshots,
+
+      // Parameters that aren't supported in cloud or docker:
+      debugMode: false,
+      debugOnFail: false,
     });
 
     let endTime = new Date().toISOString();

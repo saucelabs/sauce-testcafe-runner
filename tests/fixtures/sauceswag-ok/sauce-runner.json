@@ -24,7 +24,8 @@
           "src": ["tests/*.*"],
           "screenshots": {
              "takeOnFails": true
-          }
+          },
+          "selectorTimeout": 5000
        }
     ]
  }
