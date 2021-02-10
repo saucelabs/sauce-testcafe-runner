@@ -2,8 +2,15 @@
     "extends": [
         "eslint-config-appium"
     ],
+    "plugins": ["jest"],
     "rules": {
         "no-console": "off",
-        "promise/no-native": "off"
+        "promise/no-native": "off",
+        "promise/prefer-await-to-callbacks": "off",
+        "promise/prefer-await-to-then": "off",
+        "promise/catch-or-return": "off"
+    },
+    "env": {
+        "jest/globals": true
     }
 }
