@@ -20,7 +20,7 @@
     "suites": [
        {
           "name": "default",
-          "browser": "chrome",
+          "browserName": "chrome",
           "src": "tests/*.*",
           "screenshots": {
              "takeOnFails": true
