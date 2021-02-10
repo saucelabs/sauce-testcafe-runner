@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe';
 
-fixture `Getting Started Sauce demo`
+fixture `Getting Started Sauce demo typescript`
   .page `https://www.saucedemo.com/`;
 
 
@@ -11,6 +11,8 @@ const Users = {
 }
 
 class Login {
+  usernameEl: Selector;
+  passwordEl: Selector;
   constructor () {
     this.usernameEl = Selector("#user-name")
     this.passwordEl = Selector("#password")
