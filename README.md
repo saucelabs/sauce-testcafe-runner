@@ -19,7 +19,9 @@ You can pull the latest version of this image via:
 $ docker pull saucelabs/stt-testcafe-node:latest
 ```
 
-## Run
+## Usage
+
+## Docker
 
 In order to test your changes, just build the image and run a test with an example file:
 
@@ -35,3 +37,17 @@ $ docker exec testrunner saucectl run /home/seluser/tests
 # stop container
 $ docker stop testrunner
 ```
+## Command line
+
+`node . --suiteName default --runCfgPath ./tests/fixtures/sauceswag-ok/sauce-runner.json`
+
+Example:
+`node . --suiteName default --runCfgPath ./tests/fixtures/sauceswag-ok/sauce-runner.json`
+
+* To run using a different browser provider. Set `SAUCE_BROWSER_PATH="<testcafe browser string>"`
+  * iOS Simulator example (requires "idb" and "idb_companion" to be installed and on the path)
+        ```
+        export SAUCE_BROWSER_PATH="ios:iPhone 11:iOS 14.3"`
+        node . --suiteName default --runCfgPath ./tests/fixtures/sauceswag-ok/sauce-runner.json
+        ```
+  * TODO: Android Emulator

@@ -116,3 +116,5 @@ dist
 
 bundle/
 saucectl/
+
+**/*/.DS_Store
