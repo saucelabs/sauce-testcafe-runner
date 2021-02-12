@@ -111,8 +111,5 @@ dist
 
 /**/*/__assets__/
 
-# saucectl configuration folder
-.sauce
-
 bundle/
 saucectl/
