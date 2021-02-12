@@ -31,6 +31,7 @@ const baseSuite = {
 describe('.run', function () {
   let createRunner, runner, backupEnv;
   let date = 0;
+  let runReturnValue;
   beforeEach(function () {
     jest.spyOn(Date.prototype, 'toISOString').mockImplementation(() => '' + date++);
     backupEnv = process.env;
@@ -49,7 +50,7 @@ describe('.run', function () {
         runner.clientScriptPath = jest.fn(function () { return this; });
         runner.video = jest.fn(function () { return this; });
         runner.screenshots = jest.fn(function () { return this; });
-        runner.run = jest.fn(() => 0);
+        runner.run = jest.fn(() => runReturnValue || 0);
         return runner;
       });
       return { createRunner };
@@ -165,6 +166,22 @@ describe('.run', function () {
     process.env = {
       SAUCE_VM: '',
     };
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
+    expect(passed).toBe(false);
+  });
+  it('fails if run returns non-zero', async function () {
+    utils.loadRunConfig.mockImplementation(() => ({
+      ...baseRunCfg,
+      suites: [
+        {
+          ...baseSuite,
+        }
+      ]
+    }));
+    process.env = {
+      SAUCE_VM: 'truth',
+    };
+    runReturnValue = 1;
     const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
     expect(passed).toBe(false);
   });
