@@ -1,8 +1,9 @@
 {
     "extends": [
-        "eslint-config-appium"
+        "eslint-config-appium",
+        "plugin:testcafe/recommended"
     ],
-    "plugins": ["jest"],
+    "plugins": ["jest", "testcafe"],
     "rules": {
         "no-console": "off",
         "promise/no-native": "off",

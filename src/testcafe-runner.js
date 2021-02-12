@@ -23,7 +23,7 @@ async function run (runCfgPath, suiteName) {
       'chrome': 'chrome:headless',
       'firefox': 'firefox:headless:marionettePort=9223'
     };
-    browserName = suite.browser;
+    browserName = suite.browserName;
     let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
     if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
       testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
@@ -32,8 +32,12 @@ async function run (runCfgPath, suiteName) {
       throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
     }
 
+    // Get the 'src' array and translate it to fully qualified URLs that are part of project path
+    let src = Array.isArray(suite.src) ? suite.src : [suite.src];
+    src = src.map((srcPath) => path.join(projectPath, srcPath));
+
     const runnerInstance = runner
-      .src(path.join(projectPath, suite.src))
+      .src(src)
       .browsers(testCafeBrowserName)
       .concurrency(1)
       .reporter([
@@ -42,7 +46,19 @@ async function run (runCfgPath, suiteName) {
         'list'
       ]);
 
-    if (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD) {
+    if (suite.tsConfigPath) {
+      runnerInstance.tsConfigPath(path.join(projectPath, suite.tsConfigPath));
+    }
+
+    if (suite.clientScripts) {
+      let clientScriptsPaths = Array.isArray(suite.clientScripts) ? suite.clientScripts : [suite.clientScripts];
+      clientScriptsPaths = clientScriptsPaths.map((clientScriptPath) => path.join(projectPath, clientScriptPath));
+      runnerInstance.clientScriptPath(clientScriptsPaths);
+    }
+
+    // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
+    const shouldRecordVideo = !suite.disableVideo && (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD);
+    if (shouldRecordVideo) {
       runnerInstance.video(assetsPath, {
         singleFile: true,
         failedOnly: false,
@@ -50,11 +66,33 @@ async function run (runCfgPath, suiteName) {
       });
     }
 
+    // Screenshots
+    if (suite.screenshots) {
+      runnerInstance.screenshots({
+        ...suite.screenshots,
+        path: assetsPath,
+        // Set screenshot pattern as fixture name, test name and screenshot #
+        // This format prevents nested screenshots and shows only the info that
+        // a Sauce session needs
+        pathPattern: '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}',
+      });
+    }
+
     results = await runnerInstance.run({
-      disablePageCaching: process.env.DISABLE_PAGE_CACHING || true,
-      disableScreenshot: process.env.DISABLE_SCREENSHOT || true,
-      quarantineMode: process.env.QUARANTINE_MODE || false,
-      debugMode: process.env.DEBUG_MODE || false
+      skipJsErrors: suite.skipJsErrors,
+      quarantineMode: suite.quarantineMode,
+      skipUncaughtErrors: suite.skipUncaughtErrors,
+      selectorTimeout: suite.selectorTimeout,
+      assertionTimeout: suite.assertionTimeout,
+      pageLoadTimeout: suite.pageLoadTimeout,
+      speed: suite.speed,
+      stopOnFirstFail: suite.stopOnFirstFail,
+      disablePageCaching: suite.disablePageCaching,
+      disableScreenshots: suite.disableScreenshots,
+
+      // Parameters that aren't supported in cloud or docker:
+      debugMode: false,
+      debugOnFail: false,
     });
 
     let endTime = new Date().toISOString();
