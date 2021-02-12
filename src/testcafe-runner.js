@@ -1,7 +1,7 @@
 const createTestCafe = require('testcafe');
 const path = require('path');
 const { getArgs, loadRunConfig, getSuite, getAbsolutePath } = require('./utils');
-const { sauceReporter }   = require('./sauce-testreporter');
+const { sauceReporter } = require('./sauce-testreporter');
 
 async function run (runCfgPath, suiteName) {
   let testCafe, results, browserName, passed;
@@ -22,7 +22,7 @@ async function run (runCfgPath, suiteName) {
     const supportedBrowsers = {
       'chrome': 'chrome:headless',
       'firefox': 'firefox:headless:marionettePort=9223'
-    }
+    };
     browserName = suite.browserName;
     let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
     if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
@@ -99,9 +99,9 @@ async function run (runCfgPath, suiteName) {
 
     // Retain the assets now
     if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY && !process.env.SAUCE_VM) {
-      console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`)
+      console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
       await sauceReporter({
-        browserName, 
+        browserName,
         assetsPath,
         results,
         assets: [
@@ -114,7 +114,7 @@ async function run (runCfgPath, suiteName) {
         endTime,
       });
     } else if (!process.env.SAUCE_VM) {
-      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY')
+      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
     }
     passed = results === 0;
   } catch (e) {
@@ -129,8 +129,8 @@ async function run (runCfgPath, suiteName) {
       console.log(e);
       console.warn('Failed to close testcafe :(');
     }
-    return passed;
   }
+  return passed;
 }
 
 if (require.main === module) {
