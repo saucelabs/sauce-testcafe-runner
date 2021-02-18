@@ -34,4 +34,7 @@ ENV IMAGE_NAME=saucelabs/stt-testcafe-node
 ARG BUILD_TAG
 ENV IMAGE_TAG=${BUILD_TAG}
 
+# Let saucectl know where to read job details url
+LABEL com.saucelabs.job-info=/tmp/output.json
+
 CMD ["./entry.sh"]

@@ -256,5 +256,12 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
       domain = `${region}.saucelabs.${tld}`;
   }
 
-  console.log(`\nOpen job details page: https://app.${domain}/tests/${sessionId}\n`);
+  const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
+  console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
+
+  // Store file containing job-details url.
+  // Path is similar to com.saucelabs.job-info LABEL in Dockerfile.
+  fs.writeFileSync('/tmp/output.json', JSON.stringify({
+    jobDetailsUrl
+  }));
 };
