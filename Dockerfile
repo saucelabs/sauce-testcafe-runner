@@ -20,7 +20,7 @@ ENV TESTCAFE_VERSION=1.8.5
 
 COPY package.json .
 COPY package-lock.json .
-RUN npm i
+RUN npm ci --production
 
 COPY --chown=seluser:seluser . .
 
