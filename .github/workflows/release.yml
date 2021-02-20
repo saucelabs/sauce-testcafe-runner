@@ -83,8 +83,7 @@ jobs:
     runs-on: windows-latest
     needs: [create-release-draft]
     steps:
-      -
-        name: Find draft tag
+      - name: Find draft tag
         id: prep
         run: |
           $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = 'token ${{ secrets.GITHUB_TOKEN }}'}
@@ -104,26 +103,20 @@ jobs:
           }
           Write-Output "::set-output name=version::$tagName"
           Write-Output "::set-output name=release_id::$releaseId"
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: ${{ steps.prep.output.version }}
-      -
-        name: Use Node.js v14.x
+      - name: Use Node.js v14.x
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
-      -
-        run: npm ci --production
-      -
-        name: Bundle Directory
+      - run: npm ci --production
+      - name: Bundle Directory
         run: bash ./scripts/bundle.sh
-      -
-        name: List bundle contents
+      - name: List bundle contents
         run: ls -R bundle/
-      -
-        name: Archive bundle
+      - name: Archive bundle
         uses: azure/powershell@v1
         with:
           inlineScript: |
@@ -144,8 +137,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [create-release-draft]
     steps:
-      -
-        name: Find Draft tag
+      - name: Find Draft tag
         id: prep
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .tag_name')
@@ -156,24 +148,19 @@ jobs:
           fi
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=release_id::${RELEASE_ID}
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: ${{ steps.prep.output.version }}
-      -
-        name: Use Node.js v14.x
+      - name: Use Node.js v12.x
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
-      -
-        name: Print release id
+          node-version: 12.x
+      - name: Print release id
         run: echo ${{ steps.prep.outputs.release_id }}
-      -
-        name: Archive template
+      - name: Archive template
         run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
-      -
-        name: Upload Template Asset
+      - name: Upload Template Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
@@ -188,8 +175,7 @@ jobs:
     runs-on: macos-latest
     needs: [create-release-draft]
     steps:
-      -
-        name: Find Draft tag
+      - name: Find Draft tag
         id: prep
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0] | select(.draft == true) | .tag_name')
