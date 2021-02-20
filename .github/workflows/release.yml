@@ -188,6 +188,8 @@ jobs:
           echo ::set-output name=release_id::${RELEASE_ID}
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.prep.output.version }}
       - name: Use Node.js v12.x
         uses: actions/setup-node@v1
         with:
