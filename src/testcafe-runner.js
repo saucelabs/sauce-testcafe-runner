@@ -97,26 +97,29 @@ async function run (runCfgPath, suiteName) {
 
     let endTime = new Date().toISOString();
 
-    // Retain the assets now
-    if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY && !process.env.SAUCE_VM) {
-      console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
-      await sauceReporter({
-        browserName,
-        assetsPath,
-        results,
-        assets: [
-          path.join(assetsPath, 'report.xml'),
-          path.join(assetsPath, 'report.json'),
-          path.join(assetsPath, 'video.mp4'),
-          path.join(assetsPath, 'console.log'),
-        ],
-        startTime,
-        endTime,
-      });
-    } else if (!process.env.SAUCE_VM) {
-      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
+    if (!process.env.SAUCE_VM) {
+      return;
     }
-    passed = results === 0;
+    if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
+      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
+      return;
+    }
+
+    console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
+    const reported = await sauceReporter({
+      browserName,
+      assetsPath,
+      results,
+      assets: [
+        path.join(assetsPath, 'report.xml'),
+        path.join(assetsPath, 'report.json'),
+        path.join(assetsPath, 'video.mp4'),
+        path.join(assetsPath, 'console.log'),
+      ],
+      startTime,
+      endTime,
+    });
+    passed = results === 0 && reported;
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
     passed = false;

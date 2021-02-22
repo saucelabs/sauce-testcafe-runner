@@ -211,7 +211,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
 
   if (!sessionId) {
     console.error('Unable to retrieve test entry. Assets won\'t be uploaded.');
-    return 'unable to retrieve test';
+    return false;
   }
 
   // create sauce asset
@@ -264,4 +264,5 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
   fs.writeFileSync('/tmp/output.json', JSON.stringify({
     jobDetailsUrl
   }));
+  return true;
 };
