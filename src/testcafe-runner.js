@@ -29,7 +29,8 @@ async function run (runCfgPath, suiteName) {
       testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
     }
     if (!testCafeBrowserName) {
-      throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
+      console.log(`Unsupported browser: ${testCafeBrowserName}.`);
+      return false;
     }
 
     // Get the 'src' array and translate it to fully qualified URLs that are part of project path
@@ -96,13 +97,14 @@ async function run (runCfgPath, suiteName) {
     });
 
     let endTime = new Date().toISOString();
+    passed = results === 0;
 
     if (process.env.SAUCE_VM) {
-      return;
+      return passed;
     }
     if (!process.env.SAUCE_USERNAME && !process.env.SAUCE_ACCESS_KEY) {
       console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
-      return;
+      return passed;
     }
 
     console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
@@ -122,10 +124,9 @@ async function run (runCfgPath, suiteName) {
     passed = results === 0 && reported;
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
-    passed = false;
   } finally {
     try {
-      if (testCafe) {
+      if (testCafe && testCafe.close) {
         testCafe.close();
       }
     } catch (e) {
