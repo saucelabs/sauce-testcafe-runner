@@ -33,13 +33,14 @@ jobs:
       - run: pushd saucectl && make build && popd
         name: Build Saucectl and run E2E tests
 
-      # Run e2e tests
+      # Run tests
       # TODO: Run a saucectl test on testcafe local here
-      #- run: saucectl run
-        #env:
-          #SKIP_CI: true
-          #SAUCE_CTL_BINARY: ./saucectl/saucectl
-        #name: Build Saucectl and run E2E tests
+      - name: Build Saucectl and run tests
+        run: ./tests/run.sh
+        env:
+          SAUCE_CTL_BINARY: ./saucectl/saucectl
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
   # The GitHub Actions ubuntu version doesn't work because
   #   "Could not complete test. Reason 'Your Linux version does not have a graphic subsystem to run chrome with a GUI. You can launch the browser in headless mode. If you use a portable browser version, specify the browser alias before the path instead of the 'path' prefix. For more information, see https://devexpress.github.io/testcafe/documentation/guides/concepts/browsers.html#test-in-headless-mode'"

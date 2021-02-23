@@ -1,31 +1,35 @@
 {
-    "apiVersion": "v1alpha",
-    "kind": "testcafe",
-    "sauce": {
-       "metadata": {
-          "name": "TestCafe Swag",
-          "tags": [
-             "e2e",
-             "release team",
-             "kitchen-sink"
-          ],
-          "build": "Release $CI_COMMIT_SHORT_SHA"
-       },
-       "region": "us-west-1"
+  "apiVersion": "v1alpha",
+  "docker": {
+    "fileTransfer": "copy",
+    "image": "saucelabs/stt-testcafe-node:local"
+  },
+  "kind": "testcafe",
+  "sauce": {
+    "concurrency": 1,
+    "metadata": {
+      "build": "Release $CI_COMMIT_SHORT_SHA",
+      "name": "Testing Testcafe Support",
+      "tags": [
+        "e2e",
+        "release team",
+        "other tag"
+      ]
     },
-    "testcafe": {
-       "projectPath": "../",
-       "version": "1.8.5"
-    },
-    "suites": [
-       {
-          "name": "default",
-          "browserName": "chrome",
-          "src": ["tests/*.*"],
-          "screenshots": {
-             "takeOnFails": true
-          },
-          "selectorTimeout": 5000
-       }
-    ]
- }
+    "region": "us-west-1"
+  },
+  "suites": [
+    {
+      "browserName": "chrome",
+      "name": "saucy test",
+      "speed": 1,
+      "src": [
+        "*/*.test.js"
+      ]
+    }
+  ],
+  "testcafe": {
+    "projectPath": "tests/",
+    "version": "1.10.1"
+  }
+}
