@@ -1,6 +1,6 @@
 {
   "name": "sauce-testcafe-runner",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "Sauce Labs Testcafe runner",
   "author": "<dev@saucelabs.com>",
   "license": "MIT",
