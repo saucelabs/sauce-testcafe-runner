@@ -108,7 +108,7 @@ async function run (runCfgPath, suiteName) {
     }
 
     console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
-    const reported = await sauceReporter({
+    await sauceReporter({
       browserName,
       assetsPath,
       results,
@@ -121,7 +121,8 @@ async function run (runCfgPath, suiteName) {
       startTime,
       endTime,
     });
-    passed = results === 0 && reported;
+
+    passed = results === 0;
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
   } finally {

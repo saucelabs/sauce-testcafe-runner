@@ -11,6 +11,7 @@ const api = new SauceLabs({
 const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path');
+const { updateExportedValueToSaucectl } = require('./utils');
 
 const parser = new xml2js.Parser(
   {'attrkey': 'attr'}
@@ -211,6 +212,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
 
   if (!sessionId) {
     console.error('Unable to retrieve test entry. Assets won\'t be uploaded.');
+    await updateExportedValueToSaucectl({ reportingSucceeded: false });
     return false;
   }
 
@@ -235,14 +237,20 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
           }
         }
       },
-      (e) => console.log('upload failed:', e.stack)
+      async (e) => {
+        console.log('upload failed:', e.stack);
+        await updateExportedValueToSaucectl({ reportingSucceeded: false });
+      }
     ),
     api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
       name: testName,
       passed: results === 0
     }).then(
       () => {},
-      (e) => console.log('Failed to update job status', e)
+      async (e) => {
+        console.log('Failed to update job status', e);
+        await updateExportedValueToSaucectl({ reportingSucceeded: false });
+      }
     )
   ]);
 
@@ -259,10 +267,6 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
   const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
   console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
 
-  // Store file containing job-details url.
-  // Path is similar to com.saucelabs.job-info LABEL in Dockerfile.
-  fs.writeFileSync('/tmp/output.json', JSON.stringify({
-    jobDetailsUrl
-  }));
+  await updateExportedValueToSaucectl({ jobDetailsUrl, reportingSucceeded: true });
   return true;
 };

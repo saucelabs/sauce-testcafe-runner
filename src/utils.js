@@ -3,6 +3,10 @@ const fs = require('fs');
 const _ = require('lodash');
 const childProcess = require('child_process');
 const yargs = require('yargs/yargs');
+const { promisify } = require('util');
+
+const writeFile = promisify(fs.writeFile);
+const readFile = promisify(fs.readFile);
 
 function getAbsolutePath (pathToDir) {
   if (path.isAbsolute(pathToDir)) {
@@ -102,7 +106,22 @@ function getSuite (runConfig, suiteName) {
   return runConfig.suites.find((testSuite) => testSuite.name === suiteName);
 }
 
+// Store file containing job-details url.
+// Path is similar to com.saucelabs.job-info LABEL in Dockerfile.
+const OUTPUT_FILE_PATH = '/tmp/output.json';
+
+async function exportValueToSaucectl (payload) {
+  await writeFile(OUTPUT_FILE_PATH, JSON.stringify(payload));
+}
+
+async function updateExportedValueToSaucectl (data) {
+  let fileData = await readFile(OUTPUT_FILE_PATH) || {};
+  fileData = { ...fileData, ...data };
+  await exportValueToSaucectl(fileData);
+}
+
 module.exports = {
   getAbsolutePath, loadRunConfig,
-  installDependencies, getArgs, getEnv, getSuite
+  installDependencies, getArgs, getEnv, getSuite,
+  exportValueToSaucectl, updateExportedValueToSaucectl,
 };
