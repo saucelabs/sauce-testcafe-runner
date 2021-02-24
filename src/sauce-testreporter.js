@@ -212,7 +212,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
 
   if (!sessionId) {
     console.error('Unable to retrieve test entry. Assets won\'t be uploaded.');
-    await updateExportedValueToSaucectl({ reportingSucceeded: false });
+    updateExportedValueToSaucectl({ reportingSucceeded: false });
     return false;
   }
 
