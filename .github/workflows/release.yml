@@ -99,74 +99,74 @@ jobs:
       #     build-args: |
       #       BUILD_TAG=${{ steps.prep.outputs.version }}
 
-  # release-windows-bundle:
-  #   runs-on: windows-latest
-  #   needs: [create-release-draft]
-  #   steps:
-  #     - name: Find matching draft tag
-  #       id: prep
-  #       run: |
-  #         $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = "token ${{ github.token }}"}
-  #         $jsonObj = ConvertFrom-Json $([String]::new($res.Content))
+  release-windows-bundle:
+    runs-on: windows-latest
+    needs: [create-release-draft]
+    steps:
+      - name: Find matching draft tag
+        id: prep
+        run: |
+          $res = Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/releases" -Headers @{'Authorization' = "token ${{ github.token }}"}
+          $jsonObj = ConvertFrom-Json $([String]::new($res.Content))
 
-  #         $selectedRelease = $null
-  #         Foreach ($release in $jsonObj)
-  #         {
-  #             if ( ! $release.body -contains "- jobId: ${{ github.run_id }}}\\n") {
-  #                 continue
-  #             }
-  #             if ( ! $release.draft ) {
-  #                 continue
-  #             }
-  #             $selectedRelease = $release
-  #             break
-  #         }
+          $selectedRelease = $null
+          Foreach ($release in $jsonObj)
+          {
+              if ( ! $release.body -contains "- jobId: ${{ github.run_id }}}\\n") {
+                  continue
+              }
+              if ( ! $release.draft ) {
+                  continue
+              }
+              $selectedRelease = $release
+              break
+          }
 
-  #         if ( $null -eq $selectedRelease ) {
-  #             exit 1
-  #         }
+          if ( $null -eq $selectedRelease ) {
+              exit 1
+          }
 
-  #         $tagName = $selectedRelease.tag_name
-  #         $releaseId = $selectedRelease.id
-  #         Write-Output "::set-output name=version::$tagName"
-  #         Write-Output "::set-output name=release_id::$releaseId"
+          $tagName = $selectedRelease.tag_name
+          $releaseId = $selectedRelease.id
+          Write-Output "::set-output name=version::$tagName"
+          Write-Output "::set-output name=release_id::$releaseId"
 
-  #     - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
+      - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
-  #     - name: fetch code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         ref: ${{ steps.prep.outputs.version }}
+      - name: fetch code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.prep.outputs.version }}
 
-  #     - name: Use Node.js v14.x
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 14.x
+      - name: Use Node.js v14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
 
-  #     - run: npm ci --production
+      - run: npm ci --production
 
-  #     - name: Bundle Directory
-  #       run: bash ./scripts/bundle.sh
+      - name: Bundle Directory
+        run: bash ./scripts/bundle.sh
 
-  #     - name: List bundle contents
-  #       run: ls -R bundle/
+      - name: List bundle contents
+        run: ls -R bundle/
 
-  #     - name: Archive bundle
-  #       uses: azure/powershell@v1
-  #       with:
-  #         inlineScript: |
-  #           Compress-Archive bundle/ sauce-testcafe-win.zip
-  #         azPSVersion: '3.1.0'
-  #     - name: Upload Release Asset
-  #       id: upload-release-asset
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-runner.zip
-  #         asset_path: ./sauce-testcafe-win.zip
-  #         asset_name: sauce-testcafe-win.zip
-  #         asset_content_type: application/zip
+      - name: Archive bundle
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            Compress-Archive bundle/ sauce-testcafe-win.zip
+          azPSVersion: '3.1.0'
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-runner.zip
+          asset_path: ./sauce-testcafe-win.zip
+          asset_name: sauce-testcafe-win.zip
+          asset_content_type: application/zip
 
   release-template-bundle:
     runs-on: ubuntu-latest
@@ -215,67 +215,67 @@ jobs:
           asset_name: saucetpl.tar.gz
           asset_content_type: application/tar+gzip
 
-  # release-macos-bundle:
-  #   runs-on: macos-latest
-  #   needs: [create-release-draft]
-  #   steps:
-  #     - name: Find matching draft tag
-  #       id: prep
-  #       run: |
-  #         VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
-  #                     https://api.github.com/repos/${{ github.repository }}/releases | \
-  #                     jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
-  #         RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
-  #                     https://api.github.com/repos/${{ github.repository }}/releases | \
-  #                     jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .id")
+  release-macos-bundle:
+    runs-on: macos-latest
+    needs: [create-release-draft]
+    steps:
+      - name: Find matching draft tag
+        id: prep
+        run: |
+          VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .id")
 
-  #         if [ "${VERSION}" = "" ];then
-  #             echo "No draft version found"
-  #             exit 1
-  #         fi
-  #         echo ::set-output name=version::${VERSION}
-  #         echo ::set-output name=release_id::${RELEASE_ID}
+          if [ "${VERSION}" = "" ];then
+              echo "No draft version found"
+              exit 1
+          fi
+          echo ::set-output name=version::${VERSION}
+          echo ::set-output name=release_id::${RELEASE_ID}
 
-  #     - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
+      - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
-  #     - name: fetch code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         ref: ${{ steps.prep.output.version }}
+      - name: fetch code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.prep.output.version }}
 
-  #     - name: Use Node.js v12.x
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 12.x
+      - name: Use Node.js v12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
 
-  #     - run: npm install
+      - run: npm install
 
-  #     - uses: FedericoCarboni/setup-ffmpeg@v1-beta
-  #       id: setup-ffmpeg
+      - uses: FedericoCarboni/setup-ffmpeg@v1-beta
+        id: setup-ffmpeg
 
-  #     - name: Bundle Directory
-  #       run: bash ./scripts/bundle.sh
+      - name: Bundle Directory
+        run: bash ./scripts/bundle.sh
 
-  #     - name: List bundle contents
-  #       run: ls -R bundle/
+      - name: List bundle contents
+        run: ls -R bundle/
 
-  #     - name: Archive bundle
-  #       run: zip -r sauce-testcafe-macos.zip bundle/
+      - name: Archive bundle
+        run: zip -r sauce-testcafe-macos.zip bundle/
 
-  #     - name: Upload Release Asset
-  #       id: upload-release-asset
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-macos.zip
-  #         asset_path: ./sauce-testcafe-macos.zip
-  #         asset_name: sauce-testcafe-macos.zip
-  #         asset_content_type: application/zip
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-macos.zip
+          asset_path: ./sauce-testcafe-macos.zip
+          asset_name: sauce-testcafe-macos.zip
+          asset_content_type: application/zip
 
   publish-release:
     runs-on: ubuntu-latest
-    needs: [release-docker,  release-template-bundle] #, release-windows-bundle, release-macos-bundle]
+    needs: [release-docker,  release-template-bundle, release-windows-bundle, release-macos-bundle]
     steps:
       - name: Find matching draft tag
         id: prep
