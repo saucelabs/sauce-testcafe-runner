@@ -155,7 +155,7 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            Compress-Archive bundle/ sauce-testcafe-win.zip
+            Compress-Archive bundle/ sauce-testcafe-runner.zip
           azPSVersion: '3.1.0'
       - name: Upload Release Asset
         id: upload-release-asset
@@ -164,8 +164,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-runner.zip
-          asset_path: ./sauce-testcafe-win.zip
-          asset_name: sauce-testcafe-win.zip
+          asset_path: ./sauce-testcafe-runner.zip
+          asset_name: sauce-testcafe-runner.zip
           asset_content_type: application/zip
 
   release-template-bundle:
