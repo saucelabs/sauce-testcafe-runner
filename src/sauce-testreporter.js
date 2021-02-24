@@ -237,9 +237,9 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
           }
         }
       },
-      async (e) => {
+      (e) => {
         console.log('upload failed:', e.stack);
-        await updateExportedValueToSaucectl({ reportingSucceeded: false });
+        updateExportedValueToSaucectl({ reportingSucceeded: false });
       }
     ),
     api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
@@ -247,9 +247,9 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
       passed: results === 0
     }).then(
       () => {},
-      async (e) => {
+      (e) => {
         console.log('Failed to update job status', e);
-        await updateExportedValueToSaucectl({ reportingSucceeded: false });
+        updateExportedValueToSaucectl({ reportingSucceeded: false });
       }
     )
   ]);
@@ -267,6 +267,6 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
   const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
   console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
 
-  await updateExportedValueToSaucectl({ jobDetailsUrl, reportingSucceeded: true });
+  updateExportedValueToSaucectl({ jobDetailsUrl, reportingSucceeded: true });
   return true;
 };
