@@ -1,10 +1,9 @@
 {
     "hooks": {
-        "after:bump": "./scripts/update-saucectl-template.sh"
+        "after:bump": "./.github/helpers/update-saucectl-template.sh"
     },
     "git": {
         "commitMessage": "Release v${version}",
-        "requireBranch": "master",
         "tag": true,
         "tagName": "v${version}"
     },
@@ -15,6 +14,6 @@
         "release": true,
         "draft": true,
         "releaseName": "v${version}",
-        "releaseNotes": "./scripts/generate-release-notes.sh ${latestVersion} ${version}"
+        "releaseNotes": "./.github/helpers/generate-release-notes.sh ${latestVersion} ${version}"
     }
 }
