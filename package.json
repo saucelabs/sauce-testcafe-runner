@@ -10,12 +10,7 @@
   "scripts": {
     "test": "node src/console-wrapper.js",
     "lint": "eslint tests/ src/",
-    "unit-test": "jest --env node",
-    "release": "release-it --github.release",
-    "release:ci": "npm run release -- --ci --npm.skipChecks --no-git.requireCleanWorkingDir",
-    "release:patch": "npm run release -- patch",
-    "release:minor": "npm run release -- minor",
-    "release:major": "npm run release -- major"
+    "unit-test": "jest --env node"
   },
   "keywords": [
     "testcafe"
