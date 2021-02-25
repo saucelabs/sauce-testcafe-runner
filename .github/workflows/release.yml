@@ -161,7 +161,7 @@ jobs:
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-runner.zip
           asset_path: ./sauce-testcafe-runner.zip
@@ -208,7 +208,7 @@ jobs:
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=saucetpl.tar.gz
           asset_path: ./saucetpl.tar.gz
@@ -251,6 +251,8 @@ jobs:
 
       - uses: FedericoCarboni/setup-ffmpeg@v1-beta
         id: setup-ffmpeg
+        with:
+          token: ${{ github.token }}
 
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
@@ -265,7 +267,7 @@ jobs:
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-macos.zip
           asset_path: ./sauce-testcafe-macos.zip
