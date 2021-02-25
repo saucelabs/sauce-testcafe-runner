@@ -1,18 +1,31 @@
 apiVersion: v1alpha
-metadata:
-  name: Feature XYZ
-  tags:
-    - e2e
-    - release team
-    - other tag
-  build: Release $CI_COMMIT_SHORT_SHA
-files:
-  - tests/example.test.js
-suites:
-  - name: "saucy test"
-    match: ".*.(spec|test).[jt]s$"
-image:
-  base: saucelabs/stt-testcafe-node
-  version: ##VERSION##
+kind: testcafe
 sauce:
   region: us-west-1
+  concurrency: 1
+  metadata:
+    name: Testing Testcafe Support
+    tags:
+      - e2e
+      - release team
+      - other tag
+    build: Release $CI_COMMIT_SHORT_SHA
+suites:
+  - name: "saucy test"
+    browserName: "chrome"
+    src:
+      - "*/*.test.js"
+    screenshots:
+      takeOnFails: true
+      fullPage: true
+    platformName: "Windows 10"
+    env:
+      hello: world
+    speed: 1
+
+docker:
+  fileTransfer: mount
+
+testcafe:
+  projectPath: tests/e2e/testcafe
+  version: 1.10.1
