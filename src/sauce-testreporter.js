@@ -11,7 +11,7 @@ const api = new SauceLabs({
 const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path');
-const { updateExportedValueToSaucectl } = require('./utils');
+const { updateExportedValueToSaucectl } = require('./saucectl-exporter');
 
 const parser = new xml2js.Parser(
   {'attrkey': 'attr'}
