@@ -117,8 +117,8 @@ function updateExportedValueToSaucectl (data) {
     if (st.isFile()) {
       fileData = JSON.parse(fs.readFileSync(OUTPUT_FILE_PATH)) || {};
     }
-    fileData = { ...fileData, ...data };
   } catch (e) {}
+  fileData = { ...fileData, ...data };
   exportValueToSaucectl(fileData);
 }
 
