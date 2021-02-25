@@ -111,12 +111,14 @@ function exportValueToSaucectl (payload) {
 }
 
 function updateExportedValueToSaucectl (data) {
-  const st = fs.statSync(OUTPUT_FILE_PATH);
   let fileData = {};
-  if (st && st.isFile()) {
-    fileData = JSON.parse(fs.readFileSync(OUTPUT_FILE_PATH)) || {};
-  }
-  fileData = { ...fileData, ...data };
+  try {
+    const st = fs.statSync(OUTPUT_FILE_PATH);
+    if (st.isFile()) {
+      fileData = JSON.parse(fs.readFileSync(OUTPUT_FILE_PATH)) || {};
+    }
+    fileData = { ...fileData, ...data };
+  } catch (e) {}
   exportValueToSaucectl(fileData);
 }
 
