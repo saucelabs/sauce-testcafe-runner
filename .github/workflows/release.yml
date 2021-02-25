@@ -249,7 +249,7 @@ jobs:
 
       - run: npm install
 
-      - uses: FedericoCarboni/setup-ffmpeg@v1-beta
+      - uses: FedericoCarboni/setup-ffmpeg@v1
         id: setup-ffmpeg
         with:
           token: ${{ github.token }}
