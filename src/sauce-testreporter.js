@@ -11,7 +11,10 @@ const api = new SauceLabs({
 const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path');
-const { updateExportedValueToSaucectl } = require('./saucectl-exporter');
+const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
+
+// Path has to match the value of the Dockerfile label com.saucelabs.job-info !
+const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
 const parser = new xml2js.Parser(
   {'attrkey': 'attr'}
@@ -212,7 +215,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
 
   if (!sessionId) {
     console.error('Unable to retrieve test entry. Assets won\'t be uploaded.');
-    updateExportedValueToSaucectl({ reportingSucceeded: false });
+    updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
     return false;
   }
 
@@ -239,7 +242,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
       },
       (e) => {
         console.log('upload failed:', e.stack);
-        updateExportedValueToSaucectl({ reportingSucceeded: false });
+        updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
       }
     ),
     api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
@@ -249,7 +252,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
       () => {},
       (e) => {
         console.log('Failed to update job status', e);
-        updateExportedValueToSaucectl({ reportingSucceeded: false });
+        updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
       }
     )
   ]);
@@ -267,6 +270,6 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
   const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
   console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
 
-  updateExportedValueToSaucectl({ jobDetailsUrl, reportingSucceeded: true });
+  updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl, reportingSucceeded: true });
   return true;
 };
