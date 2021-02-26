@@ -18,7 +18,7 @@ suites:
     screenshots:
       takeOnFails: true
       fullPage: true
-    platformName: "windows 10"
+    platformName: "Windows 10"
     env:
       hello: world
     speed: 1
@@ -28,4 +28,4 @@ docker:
 
 testcafe:
   projectPath: tests/
-  version: 1.11.0
+  version: 1.10.1
