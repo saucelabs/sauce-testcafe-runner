@@ -28,4 +28,4 @@ docker:
 
 testcafe:
   projectPath: tests/
-  version: 1.11.0
+  version: ##VERSION##
