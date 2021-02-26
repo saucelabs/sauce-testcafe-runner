@@ -24,7 +24,7 @@ suites:
     speed: 1
 
 docker:
-  fileTransfer: copy
+  fileTransfer: mount
 
 testcafe:
   projectPath: tests/
