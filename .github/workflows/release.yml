@@ -23,6 +23,7 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo ::set-output name=version::${VERSION}
+          npm version --no-git-tag-version ${VERSION}
       -
         name: Login to DockerHub
         uses: docker/login-action@v1
@@ -50,7 +51,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npm install
+      - run: npm ci --production
+      - name: Prepare
+        id: prep
+        run: |
+          $ref_prefix="refs/tags/"
+          $ref=$env:GITHUB_REF
+          $tag=$ref.Substring($ref_prefix.Length)
+          npm version --no-git-tag-version $tag
       - name: Get release ID
         id: get_release_id
         run: |
@@ -59,8 +67,10 @@ jobs:
           GH_REF: ${{ github.ref }}
       - name: Print release id
         run: echo ${{ steps.get_release_id.outputs.release_id }}
-      - uses: FedericoCarboni/setup-ffmpeg@v1-beta
+      - uses: FedericoCarboni/setup-ffmpeg@v1
         id: setup-ffmpeg
+        with:
+          token: ${{ github.token }}
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
       - name: List bundle contents
