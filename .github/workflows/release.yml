@@ -201,6 +201,11 @@ jobs:
         with:
           node-version: 14.x
 
+      - run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
+          TESTCAFE_VERSION=`< package-lock.json  jq -r '.dependencies["testcafe"].version'`
+          sed -i "s/##VERSION##/${TESTCAFE_VERSION}/g" .saucetpl/.sauce/config.yml
+
       - name: Archive template
         run: cd .saucetpl && tar -czf ../saucetpl.tar.gz .
 
