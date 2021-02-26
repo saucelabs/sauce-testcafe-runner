@@ -69,13 +69,16 @@ jobs:
           fi
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=release_id::${RELEASE_ID}
-          npm version --no-git-tag-version ${VERSION}
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
       - uses: actions/checkout@v2
         with:
           ref: ${{ steps.prep.output.version }}
+
+      - name: Update Release version
+        run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
       -
         name: Set up Docker Buildx
@@ -130,7 +133,6 @@ jobs:
           $releaseId = $selectedRelease.id
           Write-Output "::set-output name=version::$tagName"
           Write-Output "::set-output name=release_id::$releaseId"
-          npm version --no-git-tag-version $tagName
 
       - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
@@ -142,6 +144,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
+
+      - name: Update Release version
+        run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
       - run: npm ci --production
 
@@ -188,7 +194,6 @@ jobs:
           fi
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=release_id::${RELEASE_ID}
-          npm version --no-git-tag-version ${VERSION}
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
@@ -201,10 +206,9 @@ jobs:
         with:
           node-version: 12.x
 
-      - run: |
+      - name: Update Release version
+        run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
-          TESTCAFE_VERSION=`< package-lock.json  jq -r '.dependencies["testcafe"].version'`
-          sed -i "s/##VERSION##/${TESTCAFE_VERSION}/g" .saucetpl/.sauce/config.yml
 
       - run: npm ci --production
 
@@ -253,7 +257,6 @@ jobs:
           fi
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=release_id::${RELEASE_ID}
-          npm version --no-git-tag-version ${VERSION}
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
@@ -268,6 +271,7 @@ jobs:
 
       - name: Update Release version
         run: |
+          npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
           TESTCAFE_VERSION=`< package-lock.json  jq -r '.dependencies["testcafe"].version'`
           sed -i "s/##VERSION##/${TESTCAFE_VERSION}/g" .saucetpl/.sauce/config.yml
 
