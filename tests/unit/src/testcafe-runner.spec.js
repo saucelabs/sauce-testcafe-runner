@@ -35,6 +35,7 @@ describe('.run', function () {
   beforeEach(function () {
     jest.spyOn(Date.prototype, 'toISOString').mockImplementation(() => '' + date++);
     backupEnv = process.env;
+    sauceReporter.mockImplementation(() => true);
     utils.getAbsolutePath.mockImplementation((path) => path);
     utils.getSuite.mockImplementation((runCfg, suiteName) => (
       runCfg.suites.find((testSuite) => testSuite.name === suiteName)
