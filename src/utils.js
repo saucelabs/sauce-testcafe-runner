@@ -102,7 +102,8 @@ function getSuite (runConfig, suiteName) {
   return runConfig.suites.find((testSuite) => testSuite.name === suiteName);
 }
 
+
 module.exports = {
   getAbsolutePath, loadRunConfig,
-  installDependencies, getArgs, getEnv, getSuite
+  installDependencies, getArgs, getEnv, getSuite,
 };
