@@ -3,12 +3,13 @@
         "after:bump": "./.github/helpers/update-saucectl-template.sh"
     },
     "git": {
-        "commitMessage": "Release v${version}",
+        "commit": false,
         "tag": true,
         "tagName": "v${version}"
     },
     "npm": {
-        "publish": false
+        "publish": false,
+        "ignoreVersion": true
     },
     "github": {
         "release": true,
