@@ -309,7 +309,7 @@ jobs:
             jq -r "[.[] | select(.draft == true) | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
           echo Version:
           echo $VERSION
-          npx saucectl run --test-env sauce --ccy 5 --region us-west-1 --runner-version ${VERSION}
+          npx saucectl run --test-env sauce --ccy 5 --region us-west-1 --runner-version "github-release: ${VERSION}"
 
   publish-release:
     runs-on: ubuntu-latest
