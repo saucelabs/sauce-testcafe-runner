@@ -300,7 +300,7 @@ jobs:
       - uses: actions/checkout@master
       - name: Install Deps
         run: npm ci
-      - name: SauceCtl Kitchen Sink
+      - name: saucectl test
         working-directory: ./tests/fixtures/devxpress-test
         # TODO: Add runner_version as a parameter so that it can pull from github releases
         run: |
