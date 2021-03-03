@@ -20,9 +20,9 @@ jobs:
           push: false
           context: .
           file: ./Dockerfile
-          tags: saucelabs/stt-testcafe-node:latest
+          tags: saucelabs/stt-testcafe-node:local
           build-args: |
-            BUILD_TAG=latest
+            BUILD_TAG=local
       
       # Checkout the latest saucectl
       - uses: actions/checkout@v2
