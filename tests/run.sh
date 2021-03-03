@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 SAUCECTL=$(realpath ${SAUCE_CTL_BINARY})
+# build image
+echo "Build docker images"
+docker build -t saucelabs/stt-testcafe-node:local . > /dev/null 2>&1
 
 # suite=result
 tests=(devxpress-test=success sauceswag-ok=success sauceswag-fail=failure)
