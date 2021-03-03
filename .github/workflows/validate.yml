@@ -12,7 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: golang:1.16-alpine
+    container:
+      image: golang:1.16-alpine
     strategy:
       matrix:
         node-version: [12.x, 14.x]
