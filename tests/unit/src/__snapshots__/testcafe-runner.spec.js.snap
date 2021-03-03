@@ -100,6 +100,9 @@ Array [
       "assetsPath": "/fake/path/to/__assets__",
       "browserName": "chrome",
       "endTime": "1",
+      "metrics": Array [
+        undefined,
+      ],
       "results": 0,
       "startTime": "0",
     },
