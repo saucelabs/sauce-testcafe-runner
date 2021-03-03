@@ -29,9 +29,12 @@ jobs:
         with:
           repository: saucelabs/saucectl
           path: saucectl
+      
+      - name: Install Dependencies
+        run: apk add --no-cache git gcc g++ curl
 
       # Build saucectl
-      - name: Build project
+      - name: Build SauceCtl
         run: |
           cd saucectl
           go install ./...
