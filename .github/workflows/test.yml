@@ -9,14 +9,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: golang:1.16-alpine
     steps:
       -
         name: Checkout
         uses: actions/checkout@v2
-      
-      - name: Install Dependencies
-        run: apk add --no-cache git gcc g++ curl bash docker
 
       # Checkout the latest saucectl
       - uses: actions/checkout@v2
@@ -25,20 +21,15 @@ jobs:
           path: saucectl
 
       # Build saucectl
-      - name: Build SauceCtl
-        run: |
-          cd saucectl
-          go install ./...
-          CGO_ENABLED=0 go build cmd/saucectl/saucectl.go
-          GOOS=windows GOARCH=amd64 go build cmd/saucectl/saucectl.go
-          cd ..
+      - name: Install Dependencies
+        run: npm ci
 
       # Run tests
       # TODO: Run a saucectl test on testcafe local here
       - name: Run tests
         run: ./tests/run.sh
         env:
-          SAUCE_CTL_BINARY: ./saucectl/saucectl
+          SAUCE_CTL_BINARY: ./node_modules/.bin/saucectl
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
