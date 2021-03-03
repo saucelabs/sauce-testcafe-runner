@@ -31,7 +31,7 @@ jobs:
           path: saucectl
 
       # Build saucectl
-      - run: pushd saucectl && make build && popd
+      - run: cd saucectl && make build && cd ..
         name: Build Saucectl and run E2E tests
 
       # Run tests
