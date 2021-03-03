@@ -40,6 +40,7 @@ jobs:
           go install ./...
           CGO_ENABLED=0 go build cmd/saucectl/saucectl.go
           GOOS=windows GOARCH=amd64 go build cmd/saucectl/saucectl.go
+          cd ..
 
       # Run tests
       # TODO: Run a saucectl test on testcafe local here
