@@ -1,4 +1,4 @@
-name: Docker Build
+name: Test
 
 on:
   pull_request:
@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: golang:1.16-alpine
     steps:
       -
         name: Checkout
