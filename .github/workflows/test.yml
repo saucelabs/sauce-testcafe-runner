@@ -31,7 +31,7 @@ jobs:
           path: saucectl
       
       - name: Install Dependencies
-        run: apk add --no-cache git gcc g++ curl bash
+        run: apk add --no-cache git gcc g++ curl bash docker
 
       # Build saucectl
       - name: Build SauceCtl
