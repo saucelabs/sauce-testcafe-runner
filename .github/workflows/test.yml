@@ -31,12 +31,15 @@ jobs:
           path: saucectl
 
       # Build saucectl
-      - run: cd saucectl && make build && cd ..
-        name: Build Saucectl and run E2E tests
+      - name: Build project
+        run: |
+          go install ./...
+          CGO_ENABLED=0 go build cmd/saucectl/saucectl.go
+          GOOS=windows GOARCH=amd64 go build cmd/saucectl/saucectl.go
 
       # Run tests
       # TODO: Run a saucectl test on testcafe local here
-      - name: Build Saucectl and run tests
+      - name: Run tests
         run: ./tests/run.sh
         env:
           SAUCE_CTL_BINARY: ./saucectl/saucectl
