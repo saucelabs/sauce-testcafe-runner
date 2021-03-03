@@ -33,6 +33,7 @@ jobs:
       # Build saucectl
       - name: Build project
         run: |
+          cd saucectl
           go install ./...
           CGO_ENABLED=0 go build cmd/saucectl/saucectl.go
           GOOS=windows GOARCH=amd64 go build cmd/saucectl/saucectl.go
