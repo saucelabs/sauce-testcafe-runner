@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 SAUCECTL=$(realpath ${SAUCE_CTL_BINARY})
 # build image
