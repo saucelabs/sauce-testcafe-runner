@@ -1,6 +1,6 @@
 const createTestCafe = require('testcafe');
 const path = require('path');
-const { getArgs, loadRunConfig, getSuite, getAbsolutePath } = require('./utils');
+const { getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv } = require('sauce-testrunner-utils');
 const { sauceReporter } = require('./sauce-testreporter');
 
 async function prepareConfiguration (runCfgPath, suiteName) {
@@ -12,14 +12,20 @@ async function prepareConfiguration (runCfgPath, suiteName) {
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
     const suite = getSuite(runCfg, suiteName);
 
-    return { runCfg, projectPath, assetsPath, suite };
+    // Install NPM dependencies
+    let metrics = [];
+    let npmMetrics = await prepareNpmEnv(runCfg);
+    metrics.push(npmMetrics);
+
+    return { runCfg, projectPath, assetsPath, suite, metrics };
   } catch (e) {
     console.error(`failed to prepare testcafe. Reason: ${e.message}`);
   }
 }
 
-async function runTestCafe ({ projectPath, assetsPath, suite }) {
+async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
   let testCafe;
+  metrics = metrics || [];
 
   try {
     // Run the tests now
@@ -106,7 +112,7 @@ async function runTestCafe ({ projectPath, assetsPath, suite }) {
 
     const endTime = new Date().toISOString();
 
-    return { browserName, results, startTime, endTime };
+    return { browserName, results, startTime, endTime, metrics };
 
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
@@ -122,13 +128,14 @@ async function runTestCafe ({ projectPath, assetsPath, suite }) {
   }
 }
 
-async function runReporter ({ results, assetsPath, browserName, startTime, endTime }) {
+async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime }) {
   console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
   try {
     await sauceReporter({
       browserName,
       assetsPath,
       results,
+      metrics,
       assets: [
         path.join(assetsPath, 'report.xml'),
         path.join(assetsPath, 'report.json'),
