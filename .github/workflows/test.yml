@@ -10,9 +10,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
+
+      - uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: saucelabs/stt-testcafe-node
+          tag_with_ref: true
+          cache_froms: saucelabs/stt-testcafe-node:latest
+          push: false
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16.0'
 
       # Checkout the latest saucectl
       - uses: actions/checkout@v2
