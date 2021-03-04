@@ -1,8 +1,8 @@
 jest.mock('testcafe');
-jest.mock('../../../src/utils');
+jest.mock('sauce-testrunner-utils');
 jest.mock('../../../src/sauce-testreporter');
 const { run } = require('../../../src/testcafe-runner');
-const utils = require('../../../src/utils');
+const utils = require('sauce-testrunner-utils');
 const { sauceReporter } = require('../../../src/sauce-testreporter');
 const testcafe = require('testcafe');
 
