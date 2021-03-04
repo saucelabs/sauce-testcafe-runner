@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: golang:1.16-alpine
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -22,19 +21,13 @@ jobs:
           tag_with_ref: true
           cache_froms: saucelabs/stt-testcafe-node:latest
           push: false
-
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.16.0'
+          tags: saucelabs/stt-testcafe-node:local
 
       # Checkout the latest saucectl
       - uses: actions/checkout@v2
         with:
           repository: saucelabs/saucectl
           path: saucectl
-      
-      - name: Install Dependencies
-        run: apk add --no-cache git gcc g++ curl bash
 
       - name: Install Dependencies
         run: npm ci
