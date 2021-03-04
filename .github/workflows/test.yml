@@ -23,12 +23,6 @@ jobs:
           push: false
           tags: local
 
-      # Checkout the latest saucectl
-      - uses: actions/checkout@v2
-        with:
-          repository: saucelabs/saucectl
-          path: saucectl
-
       - name: Install Dependencies
         run: npm ci
 
