@@ -16,7 +16,7 @@ RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/insta
 
 ENV PATH="/home/seluser/bin:/home/seluser/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
 
-ENV TESTCAFE_VERSION=1.8.5
+ENV TESTCAFE_VERSION=1.11.0
 
 COPY package.json .
 COPY package-lock.json .

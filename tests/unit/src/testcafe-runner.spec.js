@@ -9,7 +9,7 @@ const testcafe = require('testcafe');
 const baseRunCfg = {
   testcafe: {
     projectPath: '../',
-    version: '1.8.5'
+    version: '1.11.0'
   },
 };
 const baseSuite = {
