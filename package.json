@@ -20,7 +20,6 @@
     "js-yaml": "^3.14.0",
     "mocha-junit-reporter": "^2.0.0",
     "sauce-testrunner-utils": "^0.3.0",
-    "saucectl": "^0.23.2",
     "saucelabs": "^4.6.5",
     "testcafe": "1.11.0",
     "typescript": "^3.9.7",
