@@ -21,7 +21,7 @@ jobs:
           tag_with_ref: true
           cache_froms: saucelabs/stt-testcafe-node:latest
           push: false
-          tags: saucelabs/stt-testcafe-node:local
+          tags: local
 
       # Checkout the latest saucectl
       - uses: actions/checkout@v2
