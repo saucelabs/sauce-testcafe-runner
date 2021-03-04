@@ -21,10 +21,7 @@ jobs:
           tag_with_ref: true
           cache_froms: saucelabs/stt-testcafe-node:latest
           push: false
-
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.16.0'
+          tags: local
 
       # Checkout the latest saucectl
       - uses: actions/checkout@v2
@@ -32,7 +29,6 @@ jobs:
           repository: saucelabs/saucectl
           path: saucectl
 
-      # Build saucectl
       - name: Install Dependencies
         run: npm ci
 
