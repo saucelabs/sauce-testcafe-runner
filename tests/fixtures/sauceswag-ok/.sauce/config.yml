@@ -19,7 +19,6 @@ suites:
 docker:
   image: "saucelabs/stt-testcafe-node:local"
   fileTransfer: copy
-
+rootDir: ./
 testcafe:
-  projectPath: tests/
   version: 1.10.1

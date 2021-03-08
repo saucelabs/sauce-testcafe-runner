@@ -114,3 +114,5 @@ dist
 bundle/
 saucectl/
 screenshots/
+
+.DS_Store/
