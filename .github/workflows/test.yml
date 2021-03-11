@@ -97,13 +97,17 @@ jobs:
         with:
           skip-run: true
 
+      - name: Install yq
+        run: sudo snap install yq
+
       # Run test in template
       - run: |
+          docker build -t saucelabs/stt-testcafe-node:local . > /dev/null 2>&1
           cd .saucetpl
-          sed -i -e 's/##VERSION##/latest/g' .sauce/config.yml
-          saucectl run --test-env sauce
+          yq e -i '.docker.image = "saucelabs/stt-playwright-node:local"' .sauce/config.yml
+          yq e -i '.playwright.version = "latest"' .sauce/config.yml
+          saucectl run
         env:
-          SKIP_CI: true
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         name: Run template tests
