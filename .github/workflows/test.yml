@@ -106,6 +106,7 @@ jobs:
           docker build -t saucelabs/stt-testcafe-node:local . > /dev/null 2>&1
           cd .saucetpl
           yq e -i '.docker.image = "saucelabs/stt-testcafe-node:local"' .sauce/config.yml
+          yq e -i '.docker.fileTransfer = "copy"' .sauce/config.yml
           yq e -i '.playwright.version = "latest"' .sauce/config.yml
           saucectl run
         env:
