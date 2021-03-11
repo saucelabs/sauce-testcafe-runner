@@ -120,7 +120,7 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
   } finally {
     try {
       if (testCafe && testCafe.close) {
-        testCafe.close();
+        await testCafe.close();
       }
     } catch (e) {
       console.warn(`Failed to close testcafe :(. Reason: ${e.message}`);
