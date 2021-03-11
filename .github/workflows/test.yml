@@ -80,3 +80,30 @@ jobs:
 #      - 
 #        name: List bundle contents
 #        run: ls -R bundle/
+
+  test_template:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.16.0'
+
+      # Install saucectl
+      - uses: saucelabs/saucectl-run-action@v1
+        with:
+          skip-run: true
+
+      # Run test in template
+      - run: |
+          cd .saucetpl
+          sed -i -e 's/##VERSION##/latest/g' .sauce/config.yml
+          saucectl run --test-env sauce
+        env:
+          SKIP_CI: true
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        name: Run template tests
