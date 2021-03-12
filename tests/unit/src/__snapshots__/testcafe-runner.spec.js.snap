@@ -103,6 +103,7 @@ Array [
       "metrics": Array [
         undefined,
       ],
+      "region": "staging",
       "results": 0,
       "startTime": "0",
     },

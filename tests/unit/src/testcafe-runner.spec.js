@@ -69,6 +69,9 @@ describe('.run', function () {
     };
     utils.loadRunConfig.mockImplementation(() => ({
       ...baseRunCfg,
+      sauce: {
+        region: 'staging'
+      },
       suites: [
         {
           ...baseSuite,
