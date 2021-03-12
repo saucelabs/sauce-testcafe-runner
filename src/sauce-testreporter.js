@@ -1,18 +1,9 @@
 const _ = require('lodash');
-const SauceLabs = require('saucelabs').default;
-const region = process.env.SAUCE_REGION || 'us-west-1';
-const tld = region === 'staging' ? 'net' : 'com';
-const api = new SauceLabs({
-  user: process.env.SAUCE_USERNAME,
-  key: process.env.SAUCE_ACCESS_KEY,
-  region,
-  tld
-});
-
 const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
+const SauceLabs = require('saucelabs').default;
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
@@ -187,7 +178,7 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
   return sessionId || 0;
 };
 
-exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime, metrics}) => {
+exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime, metrics, region}) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
@@ -207,11 +198,19 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
     build = build.replace(match, replacement || '');
   }
 
+  const tld = region === 'staging' ? 'net' : 'com';
+  const api = new SauceLabs({
+    user: process.env.SAUCE_USERNAME,
+    key: process.env.SAUCE_ACCESS_KEY,
+    region,
+    tld
+  });
+
   let sessionId;
   if (process.env.ENABLE_DATA_STORE) {
     sessionId = await createJobShell(api, testName, browserName, tags);
   } else {
-    sessionId = await createJobWorkaround(api, browserName, testName, tags, build, results === 0, startTime, endTime);
+    sessionId = await createJobWorkaround(api, browserName, testName, tags, build, results === 0, startTime, endTime, region);
   }
 
   if (!sessionId) {

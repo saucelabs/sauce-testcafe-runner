@@ -128,7 +128,7 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
   }
 }
 
-async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime }) {
+async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime, region }) {
   console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
   try {
     await sauceReporter({
@@ -144,6 +144,7 @@ async function runReporter ({ results, metrics, assetsPath, browserName, startTi
       ],
       startTime,
       endTime,
+      region
     });
   } catch (e) {
     console.error(`Reporting to Sauce Labs failed. Reason '${e.message}'`);
@@ -171,7 +172,8 @@ async function run (runCfgPath, suiteName) {
     return passed;
   }
 
-  await runReporter({ assetsPath: cfg.assetsPath, ...testCafeResults });
+  const region = cfg.runCfg.sauce.region || 'us-west-1';
+  await runReporter({ assetsPath: cfg.assetsPath, region, ...testCafeResults });
   return passed;
 }
 
