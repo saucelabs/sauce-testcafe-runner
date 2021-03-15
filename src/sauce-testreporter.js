@@ -11,6 +11,10 @@ const api = new SauceLabs({
 const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path');
+const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
+
+// Path has to match the value of the Dockerfile label com.saucelabs.job-info !
+const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
 const parser = new xml2js.Parser(
   {'attrkey': 'attr'}
@@ -211,7 +215,8 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
 
   if (!sessionId) {
     console.error('Unable to retrieve test entry. Assets won\'t be uploaded.');
-    return 'unable to retrieve test';
+    updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
+    return false;
   }
 
   // create sauce asset
@@ -235,14 +240,20 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
           }
         }
       },
-      (e) => console.log('upload failed:', e.stack)
+      (e) => {
+        console.log('upload failed:', e.stack);
+        updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
+      }
     ),
     api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
       name: testName,
       passed: results === 0
     }).then(
       () => {},
-      (e) => console.log('Failed to update job status', e)
+      (e) => {
+        console.log('Failed to update job status', e);
+        updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
+      }
     )
   ]);
 
@@ -259,9 +270,6 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
   const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
   console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
 
-  // Store file containing job-details url.
-  // Path is similar to com.saucelabs.job-info LABEL in Dockerfile.
-  fs.writeFileSync('/tmp/output.json', JSON.stringify({
-    jobDetailsUrl
-  }));
+  updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl, reportingSucceeded: true });
+  return true;
 };

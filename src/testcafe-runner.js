@@ -3,8 +3,7 @@ const path = require('path');
 const { getArgs, loadRunConfig, getSuite, getAbsolutePath } = require('./utils');
 const { sauceReporter } = require('./sauce-testreporter');
 
-async function run (runCfgPath, suiteName) {
-  let testCafe, results, browserName, passed;
+async function prepareConfiguration (runCfgPath, suiteName) {
   try {
     runCfgPath = getAbsolutePath(runCfgPath);
     const runCfg = await loadRunConfig(runCfgPath);
@@ -13,8 +12,18 @@ async function run (runCfgPath, suiteName) {
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
     const suite = getSuite(runCfg, suiteName);
 
+    return { runCfg, projectPath, assetsPath, suite };
+  } catch (e) {
+    console.error(`failed to prepare testcafe. Reason: ${e.message}`);
+  }
+}
+
+async function runTestCafe ({ projectPath, assetsPath, suite }) {
+  let testCafe;
+
+  try {
     // Run the tests now
-    let startTime = new Date().toISOString();
+    const startTime = new Date().toISOString();
 
     testCafe = await createTestCafe('localhost', 1337, 2337);
     const runner = testCafe.createRunner();
@@ -23,7 +32,7 @@ async function run (runCfgPath, suiteName) {
       'chrome': 'chrome:headless',
       'firefox': 'firefox:headless:marionettePort=9223'
     };
-    browserName = suite.browserName;
+    const browserName = suite.browserName;
     let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
     if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
       testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
@@ -78,7 +87,7 @@ async function run (runCfgPath, suiteName) {
       });
     }
 
-    results = await runnerInstance.run({
+    const results = await runnerInstance.run({
       skipJsErrors: suite.skipJsErrors,
       quarantineMode: suite.quarantineMode,
       skipUncaughtErrors: suite.skipUncaughtErrors,
@@ -95,41 +104,67 @@ async function run (runCfgPath, suiteName) {
       debugOnFail: false,
     });
 
-    let endTime = new Date().toISOString();
+    const endTime = new Date().toISOString();
 
-    // Retain the assets now
-    if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY && !process.env.SAUCE_VM) {
-      console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
-      await sauceReporter({
-        browserName,
-        assetsPath,
-        results,
-        assets: [
-          path.join(assetsPath, 'report.xml'),
-          path.join(assetsPath, 'report.json'),
-          path.join(assetsPath, 'video.mp4'),
-          path.join(assetsPath, 'console.log'),
-        ],
-        startTime,
-        endTime,
-      });
-    } else if (!process.env.SAUCE_VM) {
-      console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
-    }
-    passed = results === 0;
+    return { browserName, results, startTime, endTime };
+
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
-    passed = false;
+    return ;
   } finally {
     try {
-      if (testCafe) {
+      if (testCafe && testCafe.close) {
         testCafe.close();
       }
     } catch (e) {
-      console.log(e);
-      console.warn('Failed to close testcafe :(');
+      console.warn(`Failed to close testcafe :(. Reason: ${e.message}`);
     }
   }
+}
+
+async function runReporter ({ results, assetsPath, browserName, startTime, endTime }) {
+  console.log(`Reporting assets in '${assetsPath}' to Sauce Labs`);
+  try {
+    await sauceReporter({
+      browserName,
+      assetsPath,
+      results,
+      assets: [
+        path.join(assetsPath, 'report.xml'),
+        path.join(assetsPath, 'report.json'),
+        path.join(assetsPath, 'video.mp4'),
+        path.join(assetsPath, 'console.log'),
+      ],
+      startTime,
+      endTime,
+    });
+  } catch (e) {
+    console.error(`Reporting to Sauce Labs failed. Reason '${e.message}'`);
+  }
+}
+
+async function run (runCfgPath, suiteName) {
+  const cfg = await prepareConfiguration(runCfgPath, suiteName);
+  if (!cfg) {
+    return false;
+  }
+
+  const testCafeResults = await runTestCafe(cfg);
+  if (!testCafeResults) {
+    return false;
+  }
+
+  const { results } = testCafeResults;
+  const passed = results === 0;
+  if (process.env.SAUCE_VM) {
+    return passed;
+  }
+  if (!process.env.SAUCE_USERNAME && !process.env.SAUCE_ACCESS_KEY) {
+    console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
+    return passed;
+  }
+
+  await runReporter({ assetsPath: cfg.assetsPath, ...testCafeResults });
   return passed;
 }
 
