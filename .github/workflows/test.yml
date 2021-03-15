@@ -24,22 +24,24 @@ jobs:
           cache_froms: saucelabs/stt-testcafe-node:latest
           push: false
       
-      # Checkout the latest saucectl
-      - uses: actions/checkout@v2
+      # Install saucectl
+      - uses: saucelabs/saucectl-run-action@v1
         with:
-          repository: saucelabs/saucectl
-          path: saucectl
+          skip-run: true
 
-      # Build saucectl
-      - run: pushd saucectl && make build && popd
-        name: Build Saucectl and run E2E tests
+      - name: get saucectl path
+        id: saucectl_path
+        run: |
+          SAUCECTL_PATH=$(which saucectl)
+          echo "SAUCECTL_PATH=${SAUCECTL_PATH}"
+          echo ::set-output name=saucectl_path::${SAUCECTL_PATH}
 
       # Run tests
       # TODO: Run a saucectl test on testcafe local here
       - name: Build Saucectl and run tests
         run: ./tests/run.sh
         env:
-          SAUCE_CTL_BINARY: ./saucectl/saucectl
+          SAUCE_CTL_BINARY: ${{ steps.saucectl_path.outputs.saucectl_path }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
