@@ -32,6 +32,9 @@ jobs:
           fi
           echo ::set-output name=tag_name::${TAG_NAME}
 
+      - run: |
+          echo "[${{ steps.check.outputs.tag_name }}]"
+
       - uses: actions/checkout@v2
         if: ${{ steps.check.outputs.tag_name == '' }}
         with:
@@ -45,11 +48,13 @@ jobs:
           node-version: 14.x
 
       - name: Setup Git
+        if: ${{ steps.check.outputs.tag_name == '' }}
         run: |
           git config --global user.name "devx-sauce-bot"
           git config --global user.email "devx.bot@saucelabs.com"
 
       - name: Install dependencies
+        if: ${{ steps.check.outputs.tag_name == '' }}
         run: npm ci
 
       - name: generate (pre-)release draft
