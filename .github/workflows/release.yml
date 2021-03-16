@@ -21,10 +21,10 @@ jobs:
         run: |
           TAG_NAME=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
-                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name | select (. != null)")
           IS_DRAFT=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
-                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .draft")
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .draft | select (. != null)")
 
           if [ -n "${TAG_NAME}" ] && [ "${IS_DRAFT}" == "false" ];then
               echo "A release has already been published for this run_id (${{ github.run_id }} / ${TAG_NAME})."
