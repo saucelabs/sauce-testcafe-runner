@@ -16,13 +16,31 @@ jobs:
   create-release-draft:
     runs-on: ubuntu-latest
     steps:
+      - name: Check tag
+        id: check
+        run: |
+          TAG_NAME=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
+          IS_DRAFT=$(curl -s -H "Authorization: token ${{ github.token }}" \
+                      https://api.github.com/repos/${{ github.repository }}/releases | \
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .draft")
+
+          if [ -n "${TAG_NAME}" ] && [ "${IS_DRAFT}" == "false" ];then
+              echo "A release has already been published for this run_id (${{ github.run_id }} / ${TAG_NAME})."
+              exit 1
+          fi
+          echo ::set-output name=tag_name::${TAG_NAME}
+
       - uses: actions/checkout@v2
+        if: ${{ steps.check.outputs.tag_name == '' }}
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup Node version
         uses: actions/setup-node@v1
+        if: ${{ steps.check.outputs.tag_name == '' }}
         with:
           node-version: 14.x
 
@@ -35,6 +53,7 @@ jobs:
         run: npm ci
 
       - name: generate (pre-)release draft
+        if: ${{ steps.check.outputs.tag_name == '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
