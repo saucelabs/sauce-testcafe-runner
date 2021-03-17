@@ -4,32 +4,32 @@ sauce:
   region: us-west-1
   concurrency: 1
   metadata:
-    name: Testing Testcafe Support
+    name: Testing Testcafe macOS Support
     tags:
       - e2e
       - release team
       - other tag
     build: Release $CI_COMMIT_SHORT_SHA
 suites:
-  - name: "saucy test"
+  - name: "safari test"
     browserName: "safari"
     platformName: "mac 11.00"
     src:
       - "*/*.test.js"
     speed: 1
-  - name: "saucy test"
+  - name: "chrome test"
     browserName: "chrome"
     platformName: "mac 11.00"
     src:
       - "*/*.test.js"
     speed: 1
-  - name: "saucy test"
+  - name: "firefox test"
     browserName: "firefox"
     platformName: "mac 11.00"
     src:
       - "*/*.test.js"
     speed: 1
-  - name: "saucy test"
+  - name: "edge test"
     platformName: "mac 11.00"
     browserName: "microsoftedge"
     src:
