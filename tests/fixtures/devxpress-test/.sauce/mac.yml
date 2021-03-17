@@ -1,0 +1,41 @@
+apiVersion: v1alpha
+kind: testcafe
+sauce:
+  region: us-west-1
+  concurrency: 1
+  metadata:
+    name: Testing Testcafe Support
+    tags:
+      - e2e
+      - release team
+      - other tag
+    build: Release $CI_COMMIT_SHORT_SHA
+suites:
+  - name: "saucy test"
+    browserName: "safari"
+    platformName: "mac 11.00"
+    src:
+      - "*/*.test.js"
+    speed: 1
+  - name: "saucy test"
+    browserName: "chrome"
+    platformName: "mac 11.00"
+    src:
+      - "*/*.test.js"
+    speed: 1
+  - name: "saucy test"
+    browserName: "firefox"
+    platformName: "mac 11.00"
+    src:
+      - "*/*.test.js"
+    speed: 1
+  - name: "saucy test"
+    platformName: "mac 11.00"
+    browserName: "microsoftedge"
+    src:
+      - "*/*.test.js"
+    speed: 1
+
+testcafe:
+  projectPath: tests/
+  version: 1.11.1
