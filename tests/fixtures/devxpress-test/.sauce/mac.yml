@@ -38,4 +38,4 @@ suites:
 
 testcafe:
   projectPath: tests/
-  version: 1.11.0
+  version: 1.11.0 # TODO: Change this to "latest" once the Sauce cloud supports platform-specific "latest" version matching
