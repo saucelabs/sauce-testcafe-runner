@@ -92,6 +92,7 @@ jobs:
       - uses: saucelabs/saucectl-run-action@v1
         with:
           skip-run: true
+          saucectl-version: v0.33.2
 
       - name: Install yq
         run: sudo snap install yq
@@ -102,7 +103,8 @@ jobs:
         run: sudo chmod -R 777 .saucetpl/tests/
 
       # Run test in template
-      - run: |
+      - name: Run template tests
+        run: |
           docker build -t saucelabs/stt-testcafe-node:local . > /dev/null 2>&1
           cd .saucetpl
           yq e -i '.docker.image = "saucelabs/stt-testcafe-node:local"' .sauce/config.yml
@@ -111,4 +113,3 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        name: Run template tests
