@@ -1,0 +1,41 @@
+apiVersion: v1alpha
+kind: testcafe
+sauce:
+  region: us-west-1
+  concurrency: 1
+  metadata:
+    name: Testing Testcafe macOS Support
+    tags:
+      - e2e
+      - release team
+      - other tag
+    build: Release $CI_COMMIT_SHORT_SHA
+suites:
+  - name: "safari test"
+    browserName: "safari"
+    platformName: "mac 11.00"
+    src:
+      - "*/*.test.js"
+    speed: 1
+  - name: "chrome test"
+    browserName: "chrome"
+    platformName: "mac 11.00"
+    src:
+      - "*/*.test.js"
+    speed: 1
+  - name: "firefox test"
+    browserName: "firefox"
+    platformName: "mac 11.00"
+    src:
+      - "*/*.test.js"
+    speed: 1
+  - name: "edge test"
+    platformName: "mac 11.00"
+    browserName: "microsoftedge"
+    src:
+      - "*/*.test.js"
+    speed: 1
+
+testcafe:
+  projectPath: tests/
+  version: 1.11.0 # TODO: Change this to "latest" once the Sauce cloud supports platform-specific "latest" version matching
