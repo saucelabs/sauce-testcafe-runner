@@ -11,7 +11,7 @@ for i in ${tests[@]}; do
 
     echo "Running ${key}:"
     pushd ./tests/fixtures/${key}/ > /dev/null
-    ${SAUCECTL} run -c .sauce/config.yml > ${tmpfile} 2>&1
+    ${SAUCECTL} run -c .sauce/config.yml --test-env docker > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
 
@@ -21,7 +21,7 @@ for i in ${tests[@]}; do
         cat ${tmpfile}
         rm -f ${tmpfile}
 
-        echo "TEST FAILURE: Result expected is ${result}, and exitCode is ${RETURN_CODE}" 
+        echo "TEST FAILURE: Result expected is ${result}, and exitCode is ${RETURN_CODE}"
         exit 1
     fi
     rm -f ${tmpfile}
