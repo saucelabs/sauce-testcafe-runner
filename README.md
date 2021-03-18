@@ -35,3 +35,21 @@ $ docker exec testrunner saucectl run /home/seluser/tests
 # stop container
 $ docker stop testrunner
 ```
+
+## VM Mode
+
+To simulate how this runs in a Sauce VM:
+
+```
+export SAUCE_VM="truth"
+node . --runCfgPath ./tests/fixtures/sauceswag-ok/sauce-runner.json --suiteName "saucy test"
+```
+
+### Run with iOS Simulator
+
+```
+export SAUCE_VM="truth"
+export SAUCE_BROWSER_PATH="ios:iPhone 11:iOS 14.3"
+```
+
+This uses the plugin https://github.com/dpgraham/testcafe-browser-provider-ios which allows tests to run on an iOS Simulator.
