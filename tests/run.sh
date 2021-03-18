@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SAUCECTL=$(realpath ${SAUCE_CTL_BINARY})
+# SAUCECTL=$(realpath ${SAUCE_CTL_BINARY})
 # suite=result
 tests=(devxpress-test=success sauceswag-ok=success sauceswag-fail=failure)
 
@@ -11,7 +11,7 @@ for i in ${tests[@]}; do
 
     echo "Running ${key}:"
     pushd ./tests/fixtures/${key}/ > /dev/null
-    ${SAUCECTL} run -c .sauce/config.yml --test-env docker > ${tmpfile} 2>&1
+    saucectl run -c .sauce/config.yml --test-env docker > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
 

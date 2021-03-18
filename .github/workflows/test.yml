@@ -23,15 +23,19 @@ jobs:
           push: false
           tags: local
 
-      - name: Install Dependencies
-        run: npm ci
+      # - name: Install Dependencies
+      #   run: npm ci
+      - uses: saucelabs/saucectl-run-action@v1
+        with:
+          skip-run: true
+          saucectl-version: v0.33.2
 
       # Run tests
       # TODO: Run a saucectl test on testcafe local here
       - name: Run tests
         run: ./tests/run.sh
         env:
-          SAUCE_CTL_BINARY: ./node_modules/.bin/saucectl
+          # SAUCE_CTL_BINARY: ./node_modules/.bin/saucectl
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
