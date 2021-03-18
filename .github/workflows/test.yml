@@ -107,7 +107,7 @@ jobs:
           cd .saucetpl
           yq e -i '.docker.image = "saucelabs/stt-testcafe-node:local"' .sauce/config.yml
           yq e -i '.testcafe.version = "latest"' .sauce/config.yml
-          saucectl run
+          saucectl run --test-env docker
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
