@@ -117,6 +117,8 @@ jobs:
   test-slack:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Set release version
         id: parse_version
         run: echo ::set-output name=version::v1.0.0
