@@ -113,3 +113,25 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+
+  test-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set release version
+        id: parse_version
+        run: echo ::set-output name=version::v1.0.0
+      - name: Notify slack on failure
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          JOB_NAME: "test-slack"
+          RUN_LINK: ${{ format('https://github.com/{0}/runs/{1}', github.repository, github.run_id) }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RELEASE_NAME: ${{ steps.parse_version.outputs.version }}
+          RELEASE_LINK: ${{ format('https://github.com/{0}/releases/{1}', github.repository, steps.parse_version.outputs.version) }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_LINK: ${{ format('https://github.com/{0}/commit/{1}', github.repository, github.sha) }}
+        run: |
+          pwd
+          ls
+          node ./slack/notify.js
