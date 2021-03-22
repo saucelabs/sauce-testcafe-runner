@@ -23,9 +23,8 @@ async function prepareConfiguration (runCfgPath, suiteName) {
   }
 }
 
-async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
+async function runTestCafe ({ projectPath, assetsPath, suite, metrics = [] }) {
   let testCafe;
-  metrics = metrics || [];
 
   try {
     // Run the tests now
