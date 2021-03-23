@@ -411,15 +411,13 @@ jobs:
           fields: commit,workflow,job
           custom_payload: |
             {
-              text: `${process.env.AS_JOB} job failed  :homer_back_away:`,
               attachments: [{
+                mrkdwn_in: ['text'],
+                title: `${{ github.repository }}@${process.env.RELEASE}`,
+                title_link: `https://github.com/${{ github.repository }}/releases/${process.env.RELEASE}`,
+                text: `${process.env.AS_JOB} job failed  :homer_back_away:`,
                 color: 'danger',
                 fields: [{
-                  title: 'Release',
-                  value: `https://github.com/${{ github.repository }}/releases/${process.env.RELEASE}`,
-                  short: true
-                },
-                {
                   title: 'Commit',
                   value: `${process.env.AS_COMMIT}`,
                   short: true
@@ -467,15 +465,13 @@ jobs:
           fields: commit,workflow,job
           custom_payload: |
             {
-              text: `${process.env.AS_JOB} job failed  :homer_back_away:`,
               attachments: [{
+                mrkdwn_in: ['text'],
+                title: `${{ github.repository }}@${process.env.RELEASE}`,
+                title_link: `https://github.com/${{ github.repository }}/releases/${process.env.RELEASE}`,
+                text: `${process.env.AS_JOB} job failed  :homer_back_away:`,
                 color: 'danger',
                 fields: [{
-                  title: 'Release',
-                  value: `https://github.com/${{ github.repository }}/releases/${process.env.RELEASE}`,
-                  short: true
-                },
-                {
                   title: 'Commit',
                   value: `${process.env.AS_COMMIT}`,
                   short: true
