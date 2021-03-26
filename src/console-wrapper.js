@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
 const child_process = require('child_process');
-const { getArgs, loadRunConfig, getAbsolutePath } = require('./utils');
+const { getArgs, loadRunConfig, getAbsolutePath } = require('sauce-testrunner-utils');
 
 async function testCafeRunner () {
   const { runCfgPath } = getArgs();

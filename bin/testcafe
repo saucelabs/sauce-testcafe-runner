@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+const { testCafeRunner } = require('../src/console-wrapper');
+
+(async () => await testCafeRunner())();

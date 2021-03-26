@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const SauceLabs = require('saucelabs').default;
 const region = process.env.SAUCE_REGION || 'us-west-1';
 const tld = region === 'staging' ? 'net' : 'com';
@@ -186,7 +187,7 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
   return sessionId || 0;
 };
 
-exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime}) => {
+exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime, metrics}) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
@@ -226,7 +227,18 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
     path.join(assetsPath, 'report.xml')
   );
 
-  let uploadAssets = [...assets, logJson, nativeLogJson];
+  // Upload metrics
+  let mtFiles = [];
+  for (let [, mt] of Object.entries(metrics)) {
+    if (_.isEmpty(mt.data)) {
+      continue;
+    }
+    let mtFile = path.join(assetsPath, mt.name);
+    fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2));
+    mtFiles.push(mtFile);
+  }
+
+  let uploadAssets = [...assets, logJson, nativeLogJson, ...mtFiles];
   // updaload assets
   await Promise.all([
     api.uploadJobAssets(

@@ -14,7 +14,7 @@ suites:
   - name: "saucy test"
     browserName: "chrome"
     src:
-      - "*/*.test.js" # test files glob
+      - "**/*.test.js" # test files glob
     screenshots:
       takeOnFails: true
       fullPage: true
