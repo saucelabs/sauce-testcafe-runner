@@ -18,7 +18,7 @@ suites:
     screenshots:
       takeOnFails: true
       fullPage: true
-    platformName: "Windows 10" # or "macOS 11.00"
+    platformName: "macOS 11.00" # or "Windows 10"
     env:
       hello: world
     speed: 1
