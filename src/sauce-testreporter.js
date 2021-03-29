@@ -178,25 +178,12 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
   return sessionId || 0;
 };
 
-exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime, metrics, region}) => {
+exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime, metrics, region, metadata}) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
-  let tags = process.env.SAUCE_TAGS;
-  if (tags) {
-    tags = tags.split(',');
-  }
-
-  let build = process.env.SAUCE_BUILD_NAME;
-
-  /**
-   * replace placeholders (e.g. $BUILD_ID) with environment values
-   */
-  const buildMatches = (build || '').match(/\$[a-zA-Z0-9_-]+/g) || [];
-  for (const match of buildMatches) {
-    const replacement = process.env[match.slice(1)];
-    build = build.replace(match, replacement || '');
-  }
+  const tags = metadata.tags || [];
+  const build = metadata.build || '';
 
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
