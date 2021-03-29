@@ -182,8 +182,8 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
-  let tags = metadata.tags || [];
-  let build = metadata.build || '';
+  const tags = metadata.tags || [];
+  const build = metadata.build || '';
 
   const tld = region === 'staging' ? 'net' : 'com';
   const api = new SauceLabs({
