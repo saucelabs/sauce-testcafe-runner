@@ -28,6 +28,10 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
   metrics = metrics || [];
 
   try {
+    promiseWithTimeout(1).catch(function (error) {
+      throw new Error(error.message);
+    });
+
     // Run the tests now
     const startTime = new Date().toISOString();
 
@@ -126,6 +130,15 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
       console.warn(`Failed to close testcafe :(. Reason: ${e.message}`);
     }
   }
+}
+
+function promiseWithTimeout(duration) {
+  const durationMs = duration * 1000;
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`timeout ${durationMs} ms was exceeded`))
+    }, durationMs)
+  });
 }
 
 async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime, region }) {
