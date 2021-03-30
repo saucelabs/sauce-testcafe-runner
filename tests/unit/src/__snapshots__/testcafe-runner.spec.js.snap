@@ -190,3 +190,194 @@ Object {
 `;
 
 exports[`.run calls TestCafe method with a kitchen sink runCfg (Sauce VM mode) 2`] = `Array []`;
+
+exports[`.run calls TestCafe with timeout 0 seconds  with a kitchen sink runCfg (Sauce VM mode) 1`] = `
+Object {
+  "browsers": Array [
+    Array [
+      "browser:/fake/browser",
+    ],
+  ],
+  "clientScriptPath": Array [
+    Array [
+      Array [
+        "/fake/path/to/fake",
+        "/fake/path/to/scripts",
+      ],
+    ],
+  ],
+  "concurrency": Array [
+    Array [
+      1,
+    ],
+  ],
+  "reporter": Array [
+    Array [
+      Array [
+        Object {
+          "name": "xunit",
+          "output": "/fake/path/to/__assets__/report.xml",
+        },
+        Object {
+          "name": "json",
+          "output": "/fake/path/to/__assets__/report.json",
+        },
+        "list",
+      ],
+    ],
+  ],
+  "run": Array [
+    Array [
+      Object {
+        "assertionTimeout": 1234,
+        "debugMode": false,
+        "debugOnFail": false,
+        "disablePageCaching": true,
+        "disableScreenshots": true,
+        "pageLoadTimeout": 1234,
+        "quarantineMode": true,
+        "selectorTimeout": 1234,
+        "skipJsErrors": true,
+        "skipUncaughtErrors": true,
+        "speed": 1234,
+        "stopOnFirstFail": true,
+      },
+    ],
+  ],
+  "screenshots": Array [
+    Array [
+      Object {
+        "path": "/fake/path/to/__assets__",
+        "pathPattern": "\${FIXTURE}__\${TEST}__screenshot-\${FILE_INDEX}",
+        "takeOnFails": true,
+      },
+    ],
+  ],
+  "src": Array [
+    Array [
+      Array [
+        "/fake/path/to/tests/*.*",
+      ],
+    ],
+  ],
+  "tsConfigPath": Array [
+    Array [
+      "/fake/path/to/fake/tsconfig/path",
+    ],
+  ],
+  "video": Array [],
+}
+`;
+
+exports[`.run calls TestCafe with timeout 0 seconds  with a kitchen sink runCfg (Sauce VM mode) 2`] = `Array []`;
+
+exports[`.run calls TestCafe with timeout 0 seconds with a kitchen sink runCfg (Docker mode) 1`] = `
+Object {
+  "browsers": Array [
+    Array [
+      "chrome:headless",
+    ],
+  ],
+  "clientScriptPath": Array [
+    Array [
+      Array [
+        "/fake/path/to/fake",
+        "/fake/path/to/scripts",
+      ],
+    ],
+  ],
+  "concurrency": Array [
+    Array [
+      1,
+    ],
+  ],
+  "reporter": Array [
+    Array [
+      Array [
+        Object {
+          "name": "xunit",
+          "output": "/fake/path/to/__assets__/report.xml",
+        },
+        Object {
+          "name": "json",
+          "output": "/fake/path/to/__assets__/report.json",
+        },
+        "list",
+      ],
+    ],
+  ],
+  "run": Array [
+    Array [
+      Object {
+        "assertionTimeout": 1234,
+        "debugMode": false,
+        "debugOnFail": false,
+        "disablePageCaching": true,
+        "disableScreenshots": true,
+        "pageLoadTimeout": 1234,
+        "quarantineMode": true,
+        "selectorTimeout": 1234,
+        "skipJsErrors": true,
+        "skipUncaughtErrors": true,
+        "speed": 1234,
+        "stopOnFirstFail": true,
+      },
+    ],
+  ],
+  "screenshots": Array [
+    Array [
+      Object {
+        "path": "/fake/path/to/__assets__",
+        "pathPattern": "\${FIXTURE}__\${TEST}__screenshot-\${FILE_INDEX}",
+        "takeOnFails": true,
+      },
+    ],
+  ],
+  "src": Array [
+    Array [
+      Array [
+        "/fake/path/to/tests/*.*",
+      ],
+    ],
+  ],
+  "tsConfigPath": Array [
+    Array [
+      "/fake/path/to/fake/tsconfig/path",
+    ],
+  ],
+  "video": Array [
+    Array [
+      "/fake/path/to/__assets__",
+      Object {
+        "failedOnly": false,
+        "pathPattern": "video.mp4",
+        "singleFile": true,
+      },
+    ],
+  ],
+}
+`;
+
+exports[`.run calls TestCafe with timeout 0 seconds with a kitchen sink runCfg (Docker mode) 2`] = `
+Array [
+  Array [
+    Object {
+      "assets": Array [
+        "/fake/path/to/__assets__/report.xml",
+        "/fake/path/to/__assets__/report.json",
+        "/fake/path/to/__assets__/video.mp4",
+        "/fake/path/to/__assets__/console.log",
+      ],
+      "assetsPath": "/fake/path/to/__assets__",
+      "browserName": "chrome",
+      "endTime": "10",
+      "metrics": Array [
+        undefined,
+      ],
+      "region": "staging",
+      "results": 1,
+      "startTime": "9",
+    },
+  ],
+]
+`;
