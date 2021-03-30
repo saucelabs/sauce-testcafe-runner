@@ -1,4 +1,3 @@
-const createTestCafe = require('gherkin-testcafe');
 const path = require('path');
 const { getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv } = require('sauce-testrunner-utils');
 const { sauceReporter } = require('./sauce-testreporter');
@@ -31,6 +30,19 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics = [] }) {
     // Run the tests now
     const startTime = new Date().toISOString();
 
+    // Get the 'src' array and translate it to fully qualified URLs that are part of project path
+    let src = Array.isArray(suite.src) ? suite.src : [suite.src];
+    src = src.map((srcPath) => path.join(projectPath, srcPath));
+
+    const useGherkin = src.filter((i) => i.endsWith('.feature')).length > 0;
+
+    let createTestCafe;
+    if (useGherkin) {
+      createTestCafe = require('gherkin-testcafe');
+    } else {
+      createTestCafe = require('testcafe');
+    }
+
     testCafe = await createTestCafe('localhost', 1337, 2337);
     const runner = testCafe.createRunner();
 
@@ -47,9 +59,6 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics = [] }) {
       throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
     }
 
-    // Get the 'src' array and translate it to fully qualified URLs that are part of project path
-    let src = Array.isArray(suite.src) ? suite.src : [suite.src];
-    src = src.map((srcPath) => path.join(projectPath, srcPath));
 
     const runnerInstance = runner
       .src(src)
