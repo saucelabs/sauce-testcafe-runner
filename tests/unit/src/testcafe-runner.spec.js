@@ -108,6 +108,12 @@ describe('.run', function () {
     };
     utils.loadRunConfig.mockImplementation(() => ({
       ...baseRunCfg,
+      sauce: {
+        metadata: {
+          tags: ['1', '2'],
+          build: 'build id'
+        }
+      },
       suites: [
         {
           ...baseSuite,
