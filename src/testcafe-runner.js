@@ -1,4 +1,4 @@
-const createTestCafe = require('testcafe');
+const createTestCafe = require('gherkin-testcafe');
 const path = require('path');
 const { getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv } = require('sauce-testrunner-utils');
 const { sauceReporter } = require('./sauce-testreporter');
@@ -24,9 +24,8 @@ async function prepareConfiguration (runCfgPath, suiteName) {
   }
 }
 
-async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
+async function runTestCafe ({ projectPath, assetsPath, suite, metrics = [] }) {
   let testCafe;
-  metrics = metrics || [];
 
   try {
     // Run the tests now
