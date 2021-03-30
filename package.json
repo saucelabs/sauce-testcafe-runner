@@ -16,6 +16,8 @@
     "testcafe"
   ],
   "dependencies": {
+    "@cucumber/cucumber": "^7.0.0",
+    "gherkin-testcafe": "^5.0.0",
     "glob": "^7.1.6",
     "js-yaml": "^3.14.0",
     "mocha-junit-reporter": "^2.0.0",
