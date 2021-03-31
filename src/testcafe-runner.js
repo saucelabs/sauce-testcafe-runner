@@ -1,5 +1,6 @@
 const createTestCafe = require('testcafe');
 const path = require('path');
+const fs = require('fs');
 const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv} = require('sauce-testrunner-utils');
 const {sauceReporter} = require('./sauce-testreporter');
 
@@ -113,7 +114,8 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
 
     const timeoutPromise = new Promise((resolve) => {
       setTimeout(() => {
-        console.error(`Maximum timeout ${timeoutSec} seconds was exceeded`);
+        console.error(`Test timed out after ${timeoutSec} seconds`);
+        // 1 means amount of failed tests and will be translated to status code 1 afterwards
         resolve(1);
       }, timeoutSec * 1000);
     });
@@ -139,17 +141,22 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
 
 async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime, region, metadata }) {
   try {
+    let assets = [
+      path.join(assetsPath, 'report.xml'),
+      path.join(assetsPath, 'report.json'),
+      path.join(assetsPath, 'console.log'),
+    ];
+    const video = path.join(assetsPath, 'video.mp4');
+    if (fs.existsSync(video)) {
+      assets.push(video);
+    }
+
     await sauceReporter({
       browserName,
       assetsPath,
       results,
       metrics,
-      assets: [
-        path.join(assetsPath, 'report.xml'),
-        path.join(assetsPath, 'report.json'),
-        path.join(assetsPath, 'video.mp4'),
-        path.join(assetsPath, 'console.log'),
-      ],
+      assets,
       startTime,
       endTime,
       region,

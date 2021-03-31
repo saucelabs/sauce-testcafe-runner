@@ -94,7 +94,6 @@ Array [
       "assets": Array [
         "/fake/path/to/__assets__/report.xml",
         "/fake/path/to/__assets__/report.json",
-        "/fake/path/to/__assets__/video.mp4",
         "/fake/path/to/__assets__/console.log",
       ],
       "assetsPath": "/fake/path/to/__assets__",
@@ -375,7 +374,6 @@ Array [
       "assets": Array [
         "/fake/path/to/__assets__/report.xml",
         "/fake/path/to/__assets__/report.json",
-        "/fake/path/to/__assets__/video.mp4",
         "/fake/path/to/__assets__/console.log",
       ],
       "assetsPath": "/fake/path/to/__assets__",
