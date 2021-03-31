@@ -51,8 +51,8 @@ if (require.main === module) {
       })
       // eslint-disable-next-line promise/prefer-await-to-callbacks
       .catch((err) => {
-        console.log(err);
-        process.exit(1);
+        console.error(err);
+        process.exit(err);
       });
 }
 
