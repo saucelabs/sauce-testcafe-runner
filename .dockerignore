@@ -3,6 +3,8 @@ node_modules
 reports
 tests
 Dockerfile
+Dockerfile.gherkin
+Makefile
 .dockerignore
 .git
 .github
