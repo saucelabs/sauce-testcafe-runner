@@ -2,6 +2,7 @@
 const path = require('path');
 const { getArgs } = require('sauce-testrunner-utils');
 const createTestCafe = require('gherkin-testcafe');
+const { run } = require('../lib/testcafe-runner');
 
 if (require.main === module) {
   console.log(`Sauce TestCafe Gherkin Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
