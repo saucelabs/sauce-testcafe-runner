@@ -1,5 +1,5 @@
 FROM saucelabs/stt-testcafe-node:latest
 
 # Use Gherkin
-RUN jq '.scripts.test = "node bin/testcafe"' package.json > package.json.new
+RUN jq '.scripts.test = "node bin/gherkin"' package.json > package.json.new
 RUN mv package.json.new package.json
