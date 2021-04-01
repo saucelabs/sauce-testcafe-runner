@@ -1,7 +1,8 @@
 const createTestCafe = require('testcafe');
 const path = require('path');
-const { getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv } = require('sauce-testrunner-utils');
-const { sauceReporter } = require('./sauce-testreporter');
+const fs = require('fs');
+const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv} = require('sauce-testrunner-utils');
+const {sauceReporter} = require('./sauce-testreporter');
 
 async function prepareConfiguration (runCfgPath, suiteName) {
   try {
@@ -24,7 +25,7 @@ async function prepareConfiguration (runCfgPath, suiteName) {
   }
 }
 
-async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
+async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec}) {
   let testCafe;
   metrics = metrics || [];
 
@@ -53,14 +54,14 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
     src = src.map((srcPath) => path.join(projectPath, srcPath));
 
     const runnerInstance = runner
-      .src(src)
-      .browsers(testCafeBrowserName)
-      .concurrency(1)
-      .reporter([
-        { name: 'xunit', output: path.join(assetsPath, 'report.xml') },
-        { name: 'json', output: path.join(assetsPath, 'report.json') },
-        'list'
-      ]);
+            .src(src)
+            .browsers(testCafeBrowserName)
+            .concurrency(1)
+            .reporter([
+              {name: 'xunit', output: path.join(assetsPath, 'report.xml')},
+              {name: 'json', output: path.join(assetsPath, 'report.json')},
+              'list'
+            ]);
 
     if (suite.tsConfigPath) {
       runnerInstance.tsConfigPath(path.join(projectPath, suite.tsConfigPath));
@@ -94,7 +95,7 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
       });
     }
 
-    const results = await runnerInstance.run({
+    const testCafeRunner = runnerInstance.run({
       skipJsErrors: suite.skipJsErrors,
       quarantineMode: suite.quarantineMode,
       skipUncaughtErrors: suite.skipUncaughtErrors,
@@ -111,13 +112,22 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
       debugOnFail: false,
     });
 
+    const timeoutPromise = new Promise((resolve) => {
+      setTimeout(() => {
+        console.error(`Test timed out after ${timeoutSec} seconds`);
+        // 1 means amount of failed tests and will be translated to status code 1 afterwards
+        resolve(1);
+      }, timeoutSec * 1000);
+    });
+    const results = await Promise.race([testCafeRunner, timeoutPromise]);
+
     const endTime = new Date().toISOString();
 
-    return { browserName, results, startTime, endTime, metrics };
+    return {browserName, results, startTime, endTime, metrics};
 
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
-    return ;
+    return;
   } finally {
     try {
       if (testCafe && testCafe.close) {
@@ -131,17 +141,22 @@ async function runTestCafe ({ projectPath, assetsPath, suite, metrics }) {
 
 async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime, region, metadata }) {
   try {
+    let assets = [
+      path.join(assetsPath, 'report.xml'),
+      path.join(assetsPath, 'report.json'),
+      path.join(assetsPath, 'console.log'),
+    ];
+    const video = path.join(assetsPath, 'video.mp4');
+    if (fs.existsSync(video)) {
+      assets.push(video);
+    }
+
     await sauceReporter({
       browserName,
       assetsPath,
       results,
       metrics,
-      assets: [
-        path.join(assetsPath, 'report.xml'),
-        path.join(assetsPath, 'report.json'),
-        path.join(assetsPath, 'video.mp4'),
-        path.join(assetsPath, 'console.log'),
-      ],
+      assets,
       startTime,
       endTime,
       region,
@@ -152,18 +167,19 @@ async function runReporter ({ results, metrics, assetsPath, browserName, startTi
   }
 }
 
-async function run (runCfgPath, suiteName) {
+async function run (runCfgPath, suiteName, timeoutSec) {
   const cfg = await prepareConfiguration(runCfgPath, suiteName);
   if (!cfg) {
     return false;
   }
 
+  cfg.timeoutSec = timeoutSec;
   const testCafeResults = await runTestCafe(cfg);
   if (!testCafeResults) {
     return false;
   }
 
-  const { results } = testCafeResults;
+  const {results} = testCafeResults;
   const passed = results === 0;
   if (process.env.SAUCE_VM) {
     return passed;
@@ -180,18 +196,20 @@ async function run (runCfgPath, suiteName) {
 
 if (require.main === module) {
   console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
-  const { runCfgPath, suiteName } = getArgs();
+  const {runCfgPath, suiteName} = getArgs();
+  // maxTimeout maximum test execution timeout is 1800 seconds (30 mins)
+  const maxTimeout = 1800;
 
-  run(runCfgPath, suiteName)
-      // eslint-disable-next-line promise/prefer-await-to-then
-      .then((passed) => {
-        process.exit(passed ? 0 : 1);
-      })
-      // eslint-disable-next-line promise/prefer-await-to-callbacks
-      .catch((err) => {
-        console.log(err);
-        process.exit(1);
-      });
+  run(runCfgPath, suiteName, maxTimeout)
+        // eslint-disable-next-line promise/prefer-await-to-then
+        .then((passed) => {
+          process.exit(passed ? 0 : 1);
+        })
+        // eslint-disable-next-line promise/prefer-await-to-callbacks
+        .catch((err) => {
+          console.log(err);
+          process.exit(1);
+        });
 }
 
-module.exports = { run };
+module.exports = {run};

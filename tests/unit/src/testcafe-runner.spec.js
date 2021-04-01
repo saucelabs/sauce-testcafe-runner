@@ -83,7 +83,7 @@ describe('.run', function () {
         }
       ]
     }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
     expect(passed).toBe(true);
     const results = {
       'src': runner.src.mock.calls,
@@ -125,7 +125,7 @@ describe('.run', function () {
         }
       ]
     }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
     expect(passed).toBe(true);
     const results = {
       'src': runner.src.mock.calls,
@@ -160,7 +160,7 @@ describe('.run', function () {
         }
       ]
     }));
-    await run('/fake/path/to/runCfg', 'fake-suite-name');
+    await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
     expect(sauceReporter.mock.calls).toEqual([]);
   });
   it('fails if provide a fake browser', async function () {
@@ -176,7 +176,7 @@ describe('.run', function () {
     process.env = {
       SAUCE_VM: '',
     };
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
     expect(passed).toBe(false);
   });
   it('fails if run returns non-zero', async function () {
@@ -192,7 +192,81 @@ describe('.run', function () {
       SAUCE_VM: 'truth',
     };
     runReturnValue = 1;
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
     expect(passed).toBe(false);
+  });
+  it('calls TestCafe with timeout 0 seconds with a kitchen sink runCfg (Docker mode)', async function () {
+    process.env = {
+      SAUCE_USERNAME: 'fake',
+      SAUCE_ACCESS_KEY: 'fake',
+      SAUCE_VM: '',
+    };
+    utils.loadRunConfig.mockImplementation(() => ({
+      ...baseRunCfg,
+      sauce: {
+        region: 'staging'
+      },
+      suites: [
+        {
+          ...baseSuite,
+          screenshots: {
+            'takeOnFails': true
+          },
+          clientScripts: ['fake', 'scripts'],
+          tsConfigPath: '/fake/tsconfig/path',
+        }
+      ]
+    }));
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 0);
+    expect(passed).toBe(false);
+    const results = {
+      'src': runner.src.mock.calls,
+      'browsers': runner.browsers.mock.calls,
+      'concurrency': runner.concurrency.mock.calls,
+      'reporter': runner.reporter.mock.calls,
+      'tsConfigPath': runner.tsConfigPath.mock.calls,
+      'clientScriptPath': runner.clientScriptPath.mock.calls,
+      'video': runner.video.mock.calls,
+      'screenshots': runner.screenshots.mock.calls,
+      'run': runner.run.mock.calls,
+    };
+    expect(results).toMatchSnapshot();
+    expect(sauceReporter.mock.calls).toMatchSnapshot();
+  });
+  it('calls TestCafe with timeout 0 seconds  with a kitchen sink runCfg (Sauce VM mode)', async function () {
+    process.env = {
+      SAUCE_USERNAME: 'fake',
+      SAUCE_ACCESS_KEY: 'fake',
+      SAUCE_VM: 'truth',
+      SAUCE_BROWSER_PATH: 'browser:/fake/browser'
+    };
+    utils.loadRunConfig.mockImplementation(() => ({
+      ...baseRunCfg,
+      suites: [
+        {
+          ...baseSuite,
+          screenshots: {
+            'takeOnFails': true
+          },
+          clientScripts: ['fake', 'scripts'],
+          tsConfigPath: '/fake/tsconfig/path',
+        }
+      ]
+    }));
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 0);
+    expect(passed).toBe(false);
+    const results = {
+      'src': runner.src.mock.calls,
+      'browsers': runner.browsers.mock.calls,
+      'concurrency': runner.concurrency.mock.calls,
+      'reporter': runner.reporter.mock.calls,
+      'tsConfigPath': runner.tsConfigPath.mock.calls,
+      'clientScriptPath': runner.clientScriptPath.mock.calls,
+      'video': runner.video.mock.calls,
+      'screenshots': runner.screenshots.mock.calls,
+      'run': runner.run.mock.calls,
+    };
+    expect(results).toMatchSnapshot();
+    expect(sauceReporter.mock.calls).toMatchSnapshot();
   });
 });

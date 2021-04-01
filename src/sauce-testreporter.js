@@ -16,6 +16,9 @@ exports.createSauceJson = async (reportsFolder, xunitReport) => {
   let testCafeXML = fs.readFileSync(xunitReport);
   let result = await parser.parseStringPromise(testCafeXML);
 
+  if (result === null) {
+    return [];
+  }
   let testsuite = result.testsuite;
 
   const jsonLog = [];
@@ -224,7 +227,14 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
     mtFiles.push(mtFile);
   }
 
-  let uploadAssets = [...assets, logJson, nativeLogJson, ...mtFiles];
+
+  let uploadAssets = [...assets, ...mtFiles];
+  if (nativeLogJson !== undefined) {
+    uploadAssets.push(nativeLogJson);
+  }
+  if (logJson !== undefined) {
+    uploadAssets.push(logJson);
+  }
   // updaload assets
   await Promise.all([
     api.uploadJobAssets(
