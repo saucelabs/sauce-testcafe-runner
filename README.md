@@ -35,3 +35,7 @@ $ docker exec testrunner saucectl run /home/seluser/tests
 # stop container
 $ docker stop testrunner
 ```
+
+## What is the maximum execution time of TestCafe tests?
+
+The maximum execution time of TestCafe tests is limited to 30 minutes. After that, all available assets will be uploaded to Sauce Labs platform. 
