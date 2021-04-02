@@ -10,11 +10,16 @@ sauce:
       - release team
       - other tag
     build: Release $CI_COMMIT_SHORT_SHA
+docker:
+  fileTransfer: mount
+testcafe:
+  version: ##VERSION##
+rootDir: ./
 suites:
   - name: "saucy test"
     browserName: "chrome"
     src:
-      - "*/*.test.js" # test files glob
+      - "**/*.test.js" # test files glob
     screenshots:
       takeOnFails: true
       fullPage: true
@@ -22,10 +27,3 @@ suites:
     env:
       hello: world
     speed: 1
-
-docker:
-  fileTransfer: mount
-
-testcafe:
-  projectPath: tests/
-  version: ##VERSION##
