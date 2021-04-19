@@ -33,7 +33,7 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
     // Run the tests now
     const startTime = new Date().toISOString();
 
-    testCafe = await createTestCafe('localhost', 1337, 2337);
+    testCafe = await createTestCafe({port1: 1337, port2: 2337});
     const runner = testCafe.createRunner();
 
     const supportedBrowsers = {
@@ -127,7 +127,6 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
 
   } catch (e) {
     console.error(`Could not complete test. Reason '${e.message}'`);
-    return;
   } finally {
     try {
       if (testCafe && testCafe.close) {
