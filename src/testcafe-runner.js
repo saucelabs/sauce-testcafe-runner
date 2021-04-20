@@ -33,8 +33,8 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
     // Run the tests now
     const startTime = new Date().toISOString();
 
-    const port1 = parseInt(process.env.SAUCE_TESTCAFE_PORT1 || 1337);
-    const port2 = parseInt(process.env.SAUCE_TESTCAFE_PORT2 || 2337);
+    const port1 = parseInt(process.env.SAUCE_TESTCAFE_PORT1 || 1337, 10);
+    const port2 = parseInt(process.env.SAUCE_TESTCAFE_PORT2 || 2337, 10);
     testCafe = await createTestCafe({port1, port2});
     const runner = testCafe.createRunner();
 
