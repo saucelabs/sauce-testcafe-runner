@@ -97,6 +97,11 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
       });
     }
 
+    if (process.env.HTTP_PROXY) {
+      let proxyURL = new URL(process.env.HTTP_PROXY);
+      runnerInstance.useProxy(proxyURL.host);
+    }
+
     const testCafeRunner = runnerInstance.run({
       skipJsErrors: suite.skipJsErrors,
       quarantineMode: suite.quarantineMode,

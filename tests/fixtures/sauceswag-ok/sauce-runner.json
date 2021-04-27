@@ -24,7 +24,7 @@
       "name": "saucy test",
       "speed": 1,
       "src": [
-        "*/*.test.js"
+        "**/*.test.js"
       ]
     }
   ],

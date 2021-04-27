@@ -25,7 +25,6 @@ jobs:
       - uses: saucelabs/saucectl-run-action@v1
         with:
           skip-run: true
-          saucectl-version: v0.33.2
 
       # Run tests
       # TODO: Run a saucectl test on testcafe local here
@@ -92,7 +91,6 @@ jobs:
       - uses: saucelabs/saucectl-run-action@v1
         with:
           skip-run: true
-          saucectl-version: v0.33.2
 
       - name: Install yq
         run: sudo snap install yq

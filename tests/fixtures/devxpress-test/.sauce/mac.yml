@@ -15,25 +15,25 @@ suites:
     browserName: "safari"
     platformName: "mac 11.00"
     src:
-      - "*/*.test.js"
+      - "**/*.test.js"
     speed: 1
   - name: "chrome test"
     browserName: "chrome"
     platformName: "mac 11.00"
     src:
-      - "*/*.test.js"
+      - "**/*.test.js"
     speed: 1
   - name: "firefox test"
     browserName: "firefox"
     platformName: "mac 11.00"
     src:
-      - "*/*.test.js"
+      - "**/*.test.js"
     speed: 1
   - name: "edge test"
     platformName: "mac 11.00"
     browserName: "microsoftedge"
     src:
-      - "*/*.test.js"
+      - "**/*.test.js"
     speed: 1
 
 testcafe:

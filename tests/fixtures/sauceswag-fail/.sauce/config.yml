@@ -14,7 +14,7 @@ suites:
   - name: "saucy test"
     browserName: "chrome"
     src:
-      - "*/*.test.js"
+      - "**/*.test.js"
     speed: 1
 
 docker:

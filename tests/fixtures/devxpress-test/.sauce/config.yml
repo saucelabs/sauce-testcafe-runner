@@ -14,17 +14,17 @@ suites:
   - name: "saucy test"
     browserName: "chrome"
     src:
-      - "*/*.test.js"
+      - "**/*.test.js"
     speed: 1
   - name: "saucy test"
     browserName: "firefox"
     src:
-      - "*/*.test.js"
+      - "**/*.test.js"
     speed: 1
   - name: "saucy test"
     browserName: "microsoftedge"
     src:
-      - "*/*.test.js"
+      - "**/*.test.js"
     speed: 1
 
 docker:
