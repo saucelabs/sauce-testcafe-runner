@@ -97,7 +97,7 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
       });
     }
 
-    if (process.env.HTTP_PROXY !== undefined) {
+    if (process.env.HTTP_PROXY) {
       let proxyURL = new URL(process.env.HTTP_PROXY);
       runnerInstance.useProxy(proxyURL.host);
     }
