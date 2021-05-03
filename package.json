@@ -22,7 +22,7 @@
     "sauce-testrunner-utils": "0.4.0",
     "saucelabs": "4.7.5",
     "testcafe": "1.14.0",
-    "testcafe-browser-provider-ios": "0.4.0",
+    "testcafe-browser-provider-ios": "0.5.0",
     "typescript": "^3.9.7",
     "xml2js": "^0.4.23"
   },
