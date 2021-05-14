@@ -14,6 +14,11 @@ async function prepareConfiguration (runCfgPath, suiteName) {
     const suite = getSuite(runCfg, suiteName);
     const metadata = runCfg.sauce.metadata || {};
 
+    // Set env vars
+    for (const key in suite.env) {
+      process.env[key] = suite.env[key];
+    }
+
     // Install NPM dependencies
     let metrics = [];
     let npmMetrics = await prepareNpmEnv(runCfg);
