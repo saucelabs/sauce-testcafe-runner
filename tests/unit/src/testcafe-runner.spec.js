@@ -16,6 +16,7 @@ const baseSuite = {
   name: 'fake-suite-name',
   browserName: 'chrome',
   src: ['tests/*.*'],
+  env: {'my-key': 'my-val'},
   selectorTimeout: 1234,
   skipJsErrors: true,
   quarantineMode: true,
@@ -98,6 +99,7 @@ describe('.run', function () {
     };
     expect(results).toMatchSnapshot();
     expect(sauceReporter.mock.calls).toMatchSnapshot();
+    expect(process.env['my-key']).toBe('my-val');
   });
   it('calls TestCafe method with a kitchen sink runCfg (Sauce VM mode)', async function () {
     process.env = {
