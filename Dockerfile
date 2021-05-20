@@ -16,7 +16,7 @@ RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/insta
 
 ENV PATH="/home/seluser/bin:/home/seluser/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
 
-ENV TESTCAFE_VERSION=1.11.0
+ENV TESTCAFE_VERSION=1.14.2
 
 COPY package.json .
 COPY package-lock.json .
@@ -28,7 +28,6 @@ RUN mkdir -p reports
 RUN mkdir -p tests
 
 # Workaround for permissions in CI if run with a different user
-RUN chmod 777 -R /home/seluser/
 
 ENV IMAGE_NAME=saucelabs/stt-testcafe-node
 ARG BUILD_TAG
