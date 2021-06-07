@@ -81,7 +81,8 @@ describe('.run', function () {
           clientScripts: ['fake', 'scripts'],
           tsConfigPath: '/fake/tsconfig/path',
         }
-      ]
+      ],
+      saucectlVersion: "0.47.0",
     }));
     const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
     expect(passed).toBe(true);
@@ -215,7 +216,8 @@ describe('.run', function () {
           clientScripts: ['fake', 'scripts'],
           tsConfigPath: '/fake/tsconfig/path',
         }
-      ]
+      ],
+      saucectlVersion: "0.47.0",
     }));
     const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 0);
     expect(passed).toBe(false);

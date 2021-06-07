@@ -139,7 +139,7 @@ const createJobShell = async (api, testName, browserName, tags) => {
 
 // TODO Tian: this method is a temporary solution for creating jobs via test-composer.
 // Once the global data store is ready, this method will be deprecated.
-const createJobWorkaround = async (api, browserName, testName, tags, build, passed, startTime, endTime) => {
+const createJobWorkaround = async (api, browserName, testName, tags, build, passed, startTime, endTime, saucectlVersion) => {
   let browserVersion;
   switch (browserName.toLowerCase()) {
     case 'firefox':
@@ -165,7 +165,8 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
     build,
     browserName,
     browserVersion,
-    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
+    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
+    saucectlVersion: saucectlVersion,
   };
 
   let sessionId;
@@ -181,7 +182,7 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
   return sessionId || 0;
 };
 
-exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime, metrics, region, metadata}) => {
+exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime, metrics, region, metadata, saucectlVersion}) => {
 // SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
   const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
 
@@ -200,7 +201,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
   if (process.env.ENABLE_DATA_STORE) {
     sessionId = await createJobShell(api, testName, browserName, tags);
   } else {
-    sessionId = await createJobWorkaround(api, browserName, testName, tags, build, results === 0, startTime, endTime, region);
+    sessionId = await createJobWorkaround(api, browserName, testName, tags, build, results === 0, startTime, endTime, saucectlVersion);
   }
 
   if (!sessionId) {
