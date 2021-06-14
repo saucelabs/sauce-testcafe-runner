@@ -13,6 +13,7 @@ async function prepareConfiguration (runCfgPath, suiteName) {
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
     const suite = getSuite(runCfg, suiteName);
     const metadata = runCfg.sauce.metadata || {};
+    const saucectlVersion = runCfg.saucectlVersion;
 
     // Set env vars
     for (const key in suite.env) {
@@ -24,7 +25,7 @@ async function prepareConfiguration (runCfgPath, suiteName) {
     let npmMetrics = await prepareNpmEnv(runCfg);
     metrics.push(npmMetrics);
 
-    return { runCfg, projectPath, assetsPath, suite, metrics, metadata };
+    return { runCfg, projectPath, assetsPath, suite, metrics, metadata, saucectlVersion };
   } catch (e) {
     console.error(`failed to prepare testcafe. Reason: ${e.message}`);
   }
@@ -150,7 +151,7 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
   }
 }
 
-async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime, region, metadata }) {
+async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime, region, metadata, saucectlVersion }) {
   try {
     let assets = [
       path.join(assetsPath, 'report.xml'),
@@ -171,7 +172,8 @@ async function runReporter ({ results, metrics, assetsPath, browserName, startTi
       startTime,
       endTime,
       region,
-      metadata
+      metadata,
+      saucectlVersion,
     });
   } catch (e) {
     console.error(`Reporting to Sauce Labs failed. Reason '${e.message}'`);
@@ -201,7 +203,7 @@ async function run (runCfgPath, suiteName, timeoutSec) {
   }
 
   const region = cfg.runCfg.sauce.region || 'us-west-1';
-  await runReporter({ assetsPath: cfg.assetsPath, region, metadata: cfg.metadata, ...testCafeResults });
+  await runReporter({ assetsPath: cfg.assetsPath, region, metadata: cfg.metadata, saucectlVersion: cfg.saucectlVersion, ...testCafeResults });
   return passed;
 }
 
