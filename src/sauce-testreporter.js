@@ -87,9 +87,9 @@ exports.createSauceJson = async (reportsFolder, xunitReport) => {
 // NOTE: this function is not available currently.
 // It will be ready once data store API actually works.
 // Keep these pieces of code for future integration.
-const createJobShell = async (api, testName, browserName, tags) => {
+const createJobShell = async (api, suiteName, browserName, tags) => {
   const body = {
-    name: testName,
+    name: suiteName,
     acl: [
       {
         type: 'username',
@@ -139,7 +139,7 @@ const createJobShell = async (api, testName, browserName, tags) => {
 
 // TODO Tian: this method is a temporary solution for creating jobs via test-composer.
 // Once the global data store is ready, this method will be deprecated.
-const createJobWorkaround = async (api, browserName, testName, tags, build, passed, startTime, endTime, saucectlVersion) => {
+const createJobWorkaround = async (api, browserName, suiteName, tags, build, passed, startTime, endTime, saucectlVersion) => {
   let browserVersion;
   switch (browserName.toLowerCase()) {
     case 'firefox':
@@ -152,13 +152,14 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
       browserVersion = '*';
   }
   const body = {
-    name: testName,
+    name: suiteName,
     user: process.env.SAUCE_USERNAME,
     startTime,
     endTime,
     framework: 'testcafe',
     frameworkVersion: process.env.TESTCAFE_VERSION,
     status: 'complete',
+    suite: suiteName,
     errors: [],
     passed,
     tags,
@@ -182,10 +183,7 @@ const createJobWorkaround = async (api, browserName, testName, tags, build, pass
   return sessionId || 0;
 };
 
-exports.sauceReporter = async ({browserName, assets, assetsPath, results, startTime, endTime, metrics, region, metadata, saucectlVersion}) => {
-// SAUCE_JOB_NAME is only available for saucectl >= 0.16, hence the fallback
-  const testName = process.env.SAUCE_JOB_NAME || `DevX TestCafe Test Run - ${(new Date()).getTime()}`;
-
+exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, results, startTime, endTime, metrics, region, metadata, saucectlVersion}) => {
   const tags = metadata.tags || [];
   const build = metadata.build || '';
 
@@ -199,9 +197,9 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
 
   let sessionId;
   if (process.env.ENABLE_DATA_STORE) {
-    sessionId = await createJobShell(api, testName, browserName, tags);
+    sessionId = await createJobShell(api, suiteName, browserName, tags);
   } else {
-    sessionId = await createJobWorkaround(api, browserName, testName, tags, build, results === 0, startTime, endTime, saucectlVersion);
+    sessionId = await createJobWorkaround(api, browserName, suiteName, tags, build, results === 0, startTime, endTime, saucectlVersion);
   }
 
   if (!sessionId) {
@@ -255,7 +253,7 @@ exports.sauceReporter = async ({browserName, assets, assetsPath, results, startT
       }
     ),
     api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
-      name: testName,
+      name: suiteName,
       passed: results === 0
     }).then(
       () => {},

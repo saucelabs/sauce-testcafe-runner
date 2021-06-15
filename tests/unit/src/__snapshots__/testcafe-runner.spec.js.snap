@@ -107,6 +107,7 @@ Array [
       "results": 0,
       "saucectlVersion": "0.47.0",
       "startTime": "0",
+      "suiteName": "fake-suite-name",
     },
   ],
 ]
@@ -388,6 +389,7 @@ Array [
       "results": 1,
       "saucectlVersion": "0.47.0",
       "startTime": "4",
+      "suiteName": "fake-suite-name",
     },
   ],
 ]
