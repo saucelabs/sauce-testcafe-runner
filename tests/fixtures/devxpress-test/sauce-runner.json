@@ -1,6 +1,5 @@
 {
   "apiVersion": "v1alpha",
-  "saucectlVersion": "0.47.0",
   "docker": {
     "fileTransfer": "copy",
     "image": "saucelabs/stt-testcafe-node:local"

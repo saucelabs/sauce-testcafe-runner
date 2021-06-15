@@ -13,7 +13,7 @@ async function prepareConfiguration (runCfgPath, suiteName) {
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
     const suite = getSuite(runCfg, suiteName);
     const metadata = runCfg.sauce.metadata || {};
-    const saucectlVersion = runCfg.saucectlVersion;
+    const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
 
     // Set env vars
     for (const key in suite.env) {
