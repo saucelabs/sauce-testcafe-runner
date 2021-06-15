@@ -151,7 +151,7 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
   }
 }
 
-async function runReporter ({ results, metrics, assetsPath, browserName, startTime, endTime, region, metadata, saucectlVersion }) {
+async function runReporter ({ suiteName, results, metrics, assetsPath, browserName, startTime, endTime, region, metadata, saucectlVersion }) {
   try {
     let assets = [
       path.join(assetsPath, 'report.xml'),
@@ -164,6 +164,7 @@ async function runReporter ({ results, metrics, assetsPath, browserName, startTi
     }
 
     await sauceReporter({
+      suiteName,
       browserName,
       assetsPath,
       results,
@@ -203,7 +204,7 @@ async function run (runCfgPath, suiteName, timeoutSec) {
   }
 
   const region = cfg.runCfg.sauce.region || 'us-west-1';
-  await runReporter({ assetsPath: cfg.assetsPath, region, metadata: cfg.metadata, saucectlVersion: cfg.saucectlVersion, ...testCafeResults });
+  await runReporter({ suiteName, assetsPath: cfg.assetsPath, region, metadata: cfg.metadata, saucectlVersion: cfg.saucectlVersion, ...testCafeResults });
   return passed;
 }
 
