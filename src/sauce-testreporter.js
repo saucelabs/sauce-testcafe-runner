@@ -289,9 +289,10 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
 
 const generateJunitFile = (assetsPath, suiteName, browserName) => {
   let result;
+  const opts = {compact: true, spaces: 4};
   try {
     const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
-    result = convert.xml2js(xmlData, {compact: true, spaces: 4});
+    result = convert.xml2js(xmlData, opts);
   } catch (err) {
     console.error(err);
   }
@@ -318,8 +319,7 @@ const generateJunitFile = (assetsPath, suiteName, browserName) => {
   delete result.testsuite;
 
   try {
-    let options = {compact: true, spaces: 4};
-    let xmlResult = convert.js2xml(result, options);
+    let xmlResult = convert.js2xml(result, opts);
     fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
   } catch (err) {
     console.error(err);
