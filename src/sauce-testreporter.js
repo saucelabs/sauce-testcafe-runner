@@ -4,6 +4,7 @@ const xml2js = require('xml2js');
 const path = require('path');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const SauceLabs = require('saucelabs').default;
+const convert = require('xml-js');
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
@@ -210,6 +211,7 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
 
   // create sauce asset
   console.log('Preparing assets');
+  generateJunitFile(assetsPath, suiteName, browserName);
   let [nativeLogJson, logJson] = await exports.createSauceJson(
     path.join(assetsPath, 'reports'),
     path.join(assetsPath, 'report.xml')
@@ -226,6 +228,10 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
     mtFiles.push(mtFile);
   }
 
+  let junitPath = path.join(assetsPath, 'junit.xml');
+  if (fs.existsSync(junitPath)) {
+    assets.push(junitPath);
+  }
 
   let uploadAssets = [...assets, ...mtFiles];
   if (nativeLogJson !== undefined) {
@@ -279,4 +285,43 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
 
   updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl, reportingSucceeded: true });
   return true;
+};
+
+const generateJunitFile = (assetsPath, suiteName, browserName) => {
+  let result;
+  const opts = {compact: true, spaces: 4};
+  try {
+    const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
+    result = convert.xml2js(xmlData, opts);
+  } catch (err) {
+    console.error(err);
+  }
+  result.testsuite._attributes.id = 0;
+  result.testsuite._attributes.name = suiteName;
+  result.testsuite._attributes.timestamp = (new Date(result.testsuite._attributes.timestamp)).toISOString();
+  result.testsuite.properties = {};
+  result.testsuite.properties.property = [
+    {
+      _attributes: {
+        name: 'platformName',
+        value: process.platform,
+      }
+    },
+    {
+      _attributes: {
+        name: 'browserName',
+        value: browserName,
+      }
+    }
+  ];
+  result.testsuites = {};
+  result.testsuites.testsuite = result.testsuite;
+  delete result.testsuite;
+
+  try {
+    let xmlResult = convert.js2xml(result, opts);
+    fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
+  } catch (err) {
+    console.error(err);
+  }
 };
