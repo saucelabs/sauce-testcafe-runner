@@ -1,4 +1,5 @@
 apiVersion: v1alpha
+rootDir: ./
 kind: testcafe
 sauce:
   region: us-west-1
