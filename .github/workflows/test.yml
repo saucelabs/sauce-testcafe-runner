@@ -79,35 +79,3 @@ jobs:
 #      - 
 #        name: List bundle contents
 #        run: ls -R bundle/
-
-  test_template:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-
-      # Install saucectl
-      - uses: saucelabs/saucectl-run-action@v1
-        with:
-          skip-run: true
-
-      - name: Install yq
-        run: sudo snap install yq
-
-      # There is discrepencies between uid used to clone and uid in container,
-      # As a temporary measure, we chmod files to allow test outputs to be written.
-      - name: Workaround for container permissions
-        run: sudo chmod -R 777 .saucetpl/tests/
-
-      # Run test in template
-      - name: Run template tests
-        run: |
-          docker build -t saucelabs/stt-testcafe-node:local . > /dev/null 2>&1
-          cd .saucetpl
-          yq e -i '.docker.image = "saucelabs/stt-testcafe-node:local"' .sauce/config.yml
-          yq e -i '.testcafe.version = "latest"' .sauce/config.yml
-          saucectl run --test-env docker
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
