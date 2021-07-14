@@ -341,7 +341,7 @@ jobs:
       - name: saucectl test
         working-directory: ./tests/fixtures/devxpress-test
         run: |
-          npx saucectl run --test-env sauce --ccy 5 --region us-west-1 --runner-version "github-release: ${{ steps.parse_version.outputs.version }}"
+          npx saucectl run --ccy 5 --region us-west-1 --runner-version "github-release: ${{ steps.parse_version.outputs.version }}"
 
       - name: Notify slack on failure
         uses: 8398a7/action-slack@v3
@@ -395,7 +395,7 @@ jobs:
       - name: saucectl test
         working-directory: ./tests/fixtures/devxpress-test
         run: |
-          npx saucectl run --config .sauce/mac.yml --test-env sauce --ccy 5 --region us-west-1 --runner-version "github-release: ${{ steps.parse_version.outputs.version }}"
+          npx saucectl run --config .sauce/mac.yml --ccy 5 --region us-west-1 --runner-version "github-release: ${{ steps.parse_version.outputs.version }}"
 
       - name: Notify slack on failure
         uses: 8398a7/action-slack@v3
