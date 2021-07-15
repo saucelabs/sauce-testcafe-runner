@@ -1,0 +1,64 @@
+apiVersion: v1alpha
+kind: testcafe
+sauce:
+  region: us-west-1
+  concurrency: 10
+  metadata:
+    tags:
+      - e2e
+      - post release
+    build: Github Run $GITHUB_RUN_ID
+testcafe:
+  # CAUTION: This has to be an already deployed framework version in the cloud. Not necessarily the one you want to test.
+  # Then use --runner-version to specify the release you actually want to use.
+  version: 1.14.2
+rootDir: ./
+
+#####################
+# All the mac tests #
+#####################
+suites:
+  - name: "test safari on mac"
+    browserName: "safari"
+    platformName: "mac 11.00"
+    src:
+      - "**/*.test.js"
+
+  - name: "test chrome on mac"
+    browserName: "chrome"
+    platformName: "mac 11.00"
+    src:
+      - "**/*.test.js"
+
+  - name: "test firefox on mac"
+    browserName: "firefox"
+    platformName: "mac 11.00"
+    src:
+      - "**/*.test.js"
+
+  - name: "test edge on mac"
+    browserName: "microsoftedge"
+    platformName: "mac 11.00"
+    src:
+      - "**/*.test.js"
+
+#####################################
+# Followed by all the windows tests #
+#####################################
+  - name: "test chrome on windows"
+    browserName: "chrome"
+    platformName: "Windows 10"
+    src:
+      - "**/*.test.js"
+
+  - name: "test firefox on windows"
+    browserName: "firefox"
+    platformName: "Windows 10"
+    src:
+      - "**/*.test.js"
+
+  - name: "test edge on windows"
+    browserName: "microsoftedge"
+    platformName: "Windows 10"
+    src:
+      - "**/*.test.js"
