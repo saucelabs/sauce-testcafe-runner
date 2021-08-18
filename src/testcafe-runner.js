@@ -193,7 +193,7 @@ async function run (runCfgPath, suiteName, timeoutSec) {
     return false;
   }
 
-  generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName);
+  generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
   const {results} = testCafeResults;
   const passed = results === 0;
   if (process.env.SAUCE_VM) {

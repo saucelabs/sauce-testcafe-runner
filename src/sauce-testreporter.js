@@ -286,7 +286,7 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
   return true;
 };
 
-exports.generateJunitFile = (assetsPath, suiteName, browserName) => {
+exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
   let result;
   const opts = {compact: true, spaces: 4};
   try {
@@ -299,11 +299,14 @@ exports.generateJunitFile = (assetsPath, suiteName, browserName) => {
   result.testsuite._attributes.name = suiteName;
   result.testsuite._attributes.timestamp = (new Date(result.testsuite._attributes.timestamp)).toISOString();
   result.testsuite.properties = {};
+  if (process.platform.toLowerCase() === 'linux') {
+    platform = 'Linux';
+  }
   result.testsuite.properties.property = [
     {
       _attributes: {
         name: 'platformName',
-        value: process.platform,
+        value: platform,
       }
     },
     {
