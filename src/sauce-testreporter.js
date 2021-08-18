@@ -211,7 +211,6 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
 
   // create sauce asset
   console.log('Preparing assets');
-  generateJunitFile(assetsPath, suiteName, browserName);
   let [nativeLogJson, logJson] = await exports.createSauceJson(
     path.join(assetsPath, 'reports'),
     path.join(assetsPath, 'report.xml')
@@ -287,7 +286,7 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
   return true;
 };
 
-const generateJunitFile = (assetsPath, suiteName, browserName) => {
+exports.generateJunitFile = (assetsPath, suiteName, browserName) => {
   let result;
   const opts = {compact: true, spaces: 4};
   try {
@@ -319,6 +318,16 @@ const generateJunitFile = (assetsPath, suiteName, browserName) => {
   delete result.testsuite;
 
   try {
+    opts.textFn = (val) => val.replace(/[<>&'"]/g, function (c) {
+      switch (c) {
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '&': return '&amp;';
+        case '\'': return '&apos;';
+        case '"': return '&quot;';
+      }
+    });
+
     let xmlResult = convert.js2xml(result, opts);
     fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
   } catch (err) {
