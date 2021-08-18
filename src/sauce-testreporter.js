@@ -298,6 +298,13 @@ exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
   result.testsuite._attributes.id = 0;
   result.testsuite._attributes.name = suiteName;
   result.testsuite._attributes.timestamp = (new Date(result.testsuite._attributes.timestamp)).toISOString();
+  for (let i = 0; i < result.testsuite.testcase.length; i++) {
+    const testcase = result.testsuite.testcase[i];
+    if (testcase.failure && testcase.failure._cdata) {
+      result.testsuite.testcase[i].failure = testcase.failure._cdata;
+      delete result.testsuite.testcase[i].failure._cdata;
+    }
+  }
   result.testsuite.properties = {};
   if (process.platform.toLowerCase() === 'linux') {
     platform = 'Linux';
