@@ -3,6 +3,7 @@ const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
+const { escapeXML } = require('sauce-testrunner-utils');
 const SauceLabs = require('saucelabs').default;
 const convert = require('xml-js');
 
@@ -328,15 +329,7 @@ exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
   delete result.testsuite;
 
   try {
-    opts.textFn = (val) => val.replace(/[<>&'"]/g, function (c) {
-      switch (c) {
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '&': return '&amp;';
-        case '\'': return '&apos;';
-        case '"': return '&quot;';
-      }
-    });
+    opts.textFn = escapeXML;
 
     let xmlResult = convert.js2xml(result, opts);
     fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
