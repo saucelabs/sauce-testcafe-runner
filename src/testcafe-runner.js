@@ -57,6 +57,11 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
       throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
     }
 
+    if (suite.browserArgs) {
+      const browserArgs = suite.browserArgs.join(' ');
+      testCafeBrowserName = testCafeBrowserName + ' ' + browserArgs;
+    }
+
     // Get the 'src' array and translate it to fully qualified URLs that are part of project path
     let src = Array.isArray(suite.src) ? suite.src : [suite.src];
     src = src.map((srcPath) => path.join(projectPath, srcPath));
