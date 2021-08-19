@@ -2,7 +2,7 @@ const createTestCafe = require('testcafe');
 const path = require('path');
 const fs = require('fs');
 const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv} = require('sauce-testrunner-utils');
-const {sauceReporter} = require('./sauce-testreporter');
+const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
 
 async function prepareConfiguration (runCfgPath, suiteName) {
   try {
@@ -193,6 +193,7 @@ async function run (runCfgPath, suiteName, timeoutSec) {
     return false;
   }
 
+  generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
   const {results} = testCafeResults;
   const passed = results === 0;
   if (process.env.SAUCE_VM) {

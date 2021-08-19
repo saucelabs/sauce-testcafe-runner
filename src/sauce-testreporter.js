@@ -3,6 +3,7 @@ const fs = require('fs');
 const xml2js = require('xml2js');
 const path = require('path');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
+const { escapeXML } = require('sauce-testrunner-utils');
 const SauceLabs = require('saucelabs').default;
 const convert = require('xml-js');
 
@@ -211,7 +212,6 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
 
   // create sauce asset
   console.log('Preparing assets');
-  generateJunitFile(assetsPath, suiteName, browserName);
   let [nativeLogJson, logJson] = await exports.createSauceJson(
     path.join(assetsPath, 'reports'),
     path.join(assetsPath, 'report.xml')
@@ -287,7 +287,7 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
   return true;
 };
 
-const generateJunitFile = (assetsPath, suiteName, browserName) => {
+exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
   let result;
   const opts = {compact: true, spaces: 4};
   try {
@@ -299,12 +299,22 @@ const generateJunitFile = (assetsPath, suiteName, browserName) => {
   result.testsuite._attributes.id = 0;
   result.testsuite._attributes.name = suiteName;
   result.testsuite._attributes.timestamp = (new Date(result.testsuite._attributes.timestamp)).toISOString();
+  for (let i = 0; i < result.testsuite.testcase.length; i++) {
+    const testcase = result.testsuite.testcase[i];
+    if (testcase.failure && testcase.failure._cdata) {
+      result.testsuite.testcase[i].failure = testcase.failure._cdata;
+      delete result.testsuite.testcase[i].failure._cdata;
+    }
+  }
   result.testsuite.properties = {};
+  if (process.platform.toLowerCase() === 'linux') {
+    platform = 'Linux';
+  }
   result.testsuite.properties.property = [
     {
       _attributes: {
         name: 'platformName',
-        value: process.platform,
+        value: platform,
       }
     },
     {
@@ -319,6 +329,8 @@ const generateJunitFile = (assetsPath, suiteName, browserName) => {
   delete result.testsuite;
 
   try {
+    opts.textFn = escapeXML;
+
     let xmlResult = convert.js2xml(result, opts);
     fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
   } catch (err) {
