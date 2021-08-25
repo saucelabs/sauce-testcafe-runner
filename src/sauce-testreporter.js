@@ -302,8 +302,10 @@ exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
   for (let i = 0; i < result.testsuite.testcase.length; i++) {
     const testcase = result.testsuite.testcase[i];
     if (testcase.failure && testcase.failure._cdata) {
-      result.testsuite.testcase[i].failure = testcase.failure._cdata;
-      delete result.testsuite.testcase[i].failure._cdata;
+      result.testsuite.testcase[i].failure._attributes = testcase.failure._attributes || {};
+      result.testsuite.testcase[i].failure._attributes.message = escapeXML(testcase.failure._attributes.message || '');
+      result.testsuite.testcase[i].failure._attributes.type = testcase.failure._attributes.type || '';
+      result.testsuite.testcase[i].failure._cdata = testcase.failure._cdata || '';
     }
   }
   result.testsuite.properties = {};
