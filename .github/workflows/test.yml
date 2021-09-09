@@ -34,48 +34,112 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
-  # The GitHub Actions ubuntu version doesn't work because
-  #   "Could not complete test. Reason 'Your Linux version does not have a graphic subsystem to run chrome with a GUI. You can launch the browser in headless mode. If you use a portable browser version, specify the browser alias before the path instead of the 'path' prefix. For more information, see https://devexpress.github.io/testcafe/documentation/guides/concepts/browsers.html#test-in-headless-mode'"
-  #   Keeping this around in case we ever need to figure out how to support Linux bundles
-  #build-ubuntu-bundle-and-test:
-    #runs-on: ubuntu-latest
-    #steps:
-      #-
-        #name: Checkout
-        #uses: actions/checkout@v2
-      #- uses: FedericoCarboni/setup-ffmpeg@v1-beta
-        #id: setup-ffmpeg
-      #- 
-        #name: Bundle Directory
-        #run: bash ./scripts/bundle.sh
-      #- 
-        #name: List bundle contents
-        #run: ls -R bundle/
   build-windows-bundle-and-test:
     runs-on: windows-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      - uses: FedericoCarboni/setup-ffmpeg@v1-beta
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Use Node.js v14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install gcloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCS_RUNNER_SA_KEY }}
+          project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
+        env:
+          CLOUDSDK_PYTHON: ${{env.pythonLocation}}\python.exe
+
+      - name: Update Release version
+        run: npm version --no-git-tag-version 1.0.0
+
+      - run: npm ci --production
+
+      - uses: FedericoCarboni/setup-ffmpeg@v1
+        if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
-      - 
-        name: Bundle Directory
+        with:
+          token: ${{ github.token }}
+
+      - name: Bundle Directory
         run: bash ./scripts/bundle.sh
-      - 
-        name: List bundle contents
-        run: ls -R bundle/
-#  build-macos-bundle-and-test:
-#    runs-on: macos-latest
-#    steps:
-#      -
-#        name: Checkout
-#        uses: actions/checkout@v2
-#      - uses: FedericoCarboni/setup-ffmpeg@v1-beta
-#        id: setup-ffmpeg
-#      - 
-#        name: Bundle Directory
-#        run: bash ./scripts/bundle.sh
-#      - 
-#        name: List bundle contents
-#        run: ls -R bundle/
+
+      - name: Archive bundle
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            Compress-Archive bundle/ sauce-testcafe-runner.zip
+          azPSVersion: '3.1.0'
+
+      - name: Upload to GCS
+        run: |
+          gsutil cp ./sauce-testcafe-runner.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-runner-${{ github.run_id }}.zip
+
+      - name: Test on Sauce
+        working-directory: ./tests/fixtures/post-release
+        run: |
+          npx saucectl run --config .sauce/config_win.yml --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-runner-${{ github.run_id }}.zip"
+
+  build-mac-bundle-and-test:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Use Node.js v14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install gcloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCS_RUNNER_SA_KEY }}
+          project_id: ${{ secrets.GCS_RUNNER_PROJECT_ID }}
+        env:
+          CLOUDSDK_PYTHON: ${{env.pythonLocation}}\python.exe
+
+      - name: Update Release version
+        run: npm version --no-git-tag-version 1.0.0
+
+      - run: npm ci --production
+
+      - uses: FedericoCarboni/setup-ffmpeg@v1
+        if: ${{ steps.prep.outputs.asset_id == '' }}
+        id: setup-ffmpeg
+        with:
+          token: ${{ github.token }}
+
+      - name: Bundle Directory
+        run: bash ./scripts/bundle.sh
+
+      - name: Archive bundle
+        run: zip -r sauce-testcafe-macos.zip bundle/
+
+      - name: Upload to GCS
+        run: |
+          gsutil cp ./sauce-testcafe-macos.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-macos-${{ github.run_id }}.zip
+
+      - name: Test on Sauce
+        working-directory: ./tests/fixtures/post-release
+        run: |
+          npx saucectl run --config .sauce/config_mac.yml --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-runner-${{ github.run_id }}.zip"
