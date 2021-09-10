@@ -41,3 +41,18 @@ suites:
     platformName: "macOS 11.00"
     src:
       - "**/*.test.js"
+
+  - name: iOS Test
+    mode: sauce
+    browserName: "safari"
+    src:
+      - "**/*.test.js"
+    simulators:
+      - name: iPhone 12 Simulator
+        platformName: iOS
+        platformVersions:
+          - "14.3"
+      - name: iPad mini (5th generation) Simulator
+        platformName: iOS
+        platformVersions:
+          - "14.3"
