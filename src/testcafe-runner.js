@@ -125,6 +125,16 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
       disablePageCaching: suite.disablePageCaching,
       disableScreenshots: suite.disableScreenshots,
 
+      // Filter parameters
+      filter: {
+        test: suite.filter?.test,
+        testGrep: suite.filter?.testGrep,
+        fixture: suite.filter?.fixture,
+        fixtureGrep: suite.filter?.fixtureGrep,
+        testMeta: suite.filter?.testMeta,
+        fixtureMeta: suite.filter?.fixtureMeta,
+      },
+
       // Parameters that aren't supported in cloud or docker:
       debugMode: false,
       debugOnFail: false,
