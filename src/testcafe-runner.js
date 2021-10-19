@@ -168,7 +168,7 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics}) {
       debugOnFail: false,
     });
 
-    // saucectl suite timeoutSec is in nanoseconds
+    // saucectl suite.timeout is in nanoseconds
     const timeoutSec = suite.timeout / 1000000000 || 1800;
     const timeoutPromise = new Promise((resolve) => {
       setTimeout(() => {
