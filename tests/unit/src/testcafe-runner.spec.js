@@ -1,7 +1,7 @@
 jest.mock('testcafe');
 jest.mock('sauce-testrunner-utils');
 jest.mock('../../../src/sauce-testreporter');
-const { run } = require('../../../src/testcafe-runner');
+const { run, buildFilterFunc } = require('../../../src/testcafe-runner');
 const utils = require('sauce-testrunner-utils');
 const { sauceReporter } = require('../../../src/sauce-testreporter');
 const testcafe = require('testcafe');
@@ -272,5 +272,109 @@ describe('.run', function () {
     };
     expect(results).toMatchSnapshot();
     expect(sauceReporter.mock.calls).toMatchSnapshot();
+  });
+});
+
+describe('.buildFilterFunc', function () {
+  const testSets = [
+    ['dummy-test-1', 'fixture-001', { 'browser': 'chrome', 'platform': 'windows' }, { 'browser': 'chrome', 'platform': 'windows' }],
+    ['test-2', 'fixture-001', { 'browser': 'chrome', 'platform': 'windows' }, { 'browser': 'chrome', 'platform': 'windows' }],
+    ['test-dummy-3', 'fixture-001', { 'browser': 'safari', 'platform': 'macos' }, { 'browser': 'safari', 'platform': 'macos' }],
+    ['dummy-4', 'fixture-002', { 'browser': 'chrome', 'platform': 'macos' }, { 'browser': 'chrome', 'platform': 'macos' }],
+    ['5-dummy', 'fixture-002', { 'browser': 'firefox', 'platform': 'windows' }, { 'browser': 'firefox', 'platform': 'windows' }],
+  ];
+  it('no filters, all should pass', function () {
+    const filterFunc = buildFilterFunc();
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([true, true, true, true, true]);
+  });
+  it('matching with test name', function () {
+    const filterFunc = buildFilterFunc({ test: 'dummy-test-1' });
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([true, false, false, false, false]);
+  });
+  it('matching with testGrep', function () {
+    const filterFunc = buildFilterFunc({ testGrep: 'dummy' });
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([true, false, true, true, true]);
+  });
+  it('matching with testGrep - with regex', function () {
+    const filterFunc = buildFilterFunc({ testGrep: 'dummy(-.*)?-[0-9]' });
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([true, false, true, true, false]);
+  });
+  it('matching with fixture name', function () {
+    const filterFunc = buildFilterFunc({ fixture: 'fixture-002' });
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([false, false, false, true, true]);
+  });
+  it('matching with fixtureGrep', function () {
+    const filterFunc = buildFilterFunc({ fixtureGrep: '.*-002' });
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([false, false, false, true, true]);
+  });
+  it('matching with testMeta', function () {
+    const filterFunc = buildFilterFunc({ testMeta: { 'browser': 'safari' }});
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([false, false, true, false, false]);
+  });
+  it('matching with fixtureMeta', function () {
+    const filterFunc = buildFilterFunc({ fixtureMeta: { 'platform': 'macos' }});
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([false, false, true, true, false]);
+  });
+  it('matching with combination', function () {
+    const filterFunc = buildFilterFunc({
+      testGrep: 'dummy',
+      testMeta: { 'browser': 'chrome' },
+      fixtureMeta: { 'platform': 'macos' }
+    });
+    expect(typeof filterFunc).toBe('function');
+    const results = [];
+    for (const testCase of testSets) {
+      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
+      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
+    }
+    expect(results).toMatchObject([false, false, false, true, false]);
   });
 });

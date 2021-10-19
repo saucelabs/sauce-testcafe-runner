@@ -1,6 +1,7 @@
 const createTestCafe = require('testcafe');
 const path = require('path');
 const fs = require('fs');
+const { isMatch, cloneDeep } = require('lodash');
 const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv} = require('sauce-testrunner-utils');
 const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
 
@@ -29,6 +30,40 @@ async function prepareConfiguration (runCfgPath, suiteName) {
   } catch (e) {
     console.error(`failed to prepare testcafe. Reason: ${e.message}`);
   }
+}
+
+// Function derived from TC implementation:
+//  => https://github.com/DevExpress/testcafe/blob/master/src/utils/get-filter-fn.js#L18
+function buildFilterFunc (filters) {
+  let { testGrep, fixtureGrep, test, fixture, testMeta, fixtureMeta } = cloneDeep(filters || {});
+  if (testGrep) {
+    testGrep = new RegExp(testGrep);
+  }
+  if (fixtureGrep) {
+    fixtureGrep = new RegExp(fixtureGrep);
+  }
+
+  return function (tcTestName, tcFixtureName, tcFixturePath, tcTestMeta, tcFixtureMeta) {
+    if (test && test !== tcTestName) {
+      return false;
+    }
+    if (fixture && fixture !== tcFixtureName) {
+      return false;
+    }
+    if (testGrep && !testGrep.test(tcTestName)) {
+      return false;
+    }
+    if (fixtureGrep && !fixtureGrep.test(tcFixtureName)) {
+      return false;
+    }
+    if (testMeta && !isMatch(tcTestMeta, testMeta)) {
+      return false;
+    }
+    if (fixtureMeta && !isMatch(tcFixtureMeta, fixtureMeta)) {
+      return false;
+    }
+    return true;
+  };
 }
 
 async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec}) {
@@ -113,7 +148,10 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
       runnerInstance.useProxy(proxyURL.host);
     }
 
+    const filterFunc = buildFilterFunc(suite.filter);
+
     const testCafeRunner = runnerInstance.run({
+      filter: filterFunc,
       skipJsErrors: suite.skipJsErrors,
       quarantineMode: suite.quarantineMode,
       skipUncaughtErrors: suite.skipUncaughtErrors,
@@ -232,4 +270,4 @@ if (require.main === module) {
         });
 }
 
-module.exports = {run};
+module.exports = {run, buildFilterFunc};
