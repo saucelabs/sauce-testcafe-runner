@@ -66,7 +66,7 @@ function buildFilterFunc (filters) {
   };
 }
 
-async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec}) {
+async function runTestCafe ({projectPath, assetsPath, suite, metrics}) {
   let testCafe;
   metrics = metrics || [];
 
@@ -168,12 +168,14 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics, timeoutSec
       debugOnFail: false,
     });
 
+    // saucectl suite timeout is in nanoseconds
+    const timeout = suite.timeout / 1000000000 || 1800;
     const timeoutPromise = new Promise((resolve) => {
       setTimeout(() => {
-        console.error(`Test timed out after ${timeoutSec} seconds`);
+        console.error(`Test timed out after ${timeout} seconds`);
         // 1 means amount of failed tests and will be translated to status code 1 afterwards
         resolve(1);
-      }, timeoutSec * 1000);
+      }, timeout * 1000);
     });
     const results = await Promise.race([testCafeRunner, timeoutPromise]);
 
@@ -224,13 +226,12 @@ async function runReporter ({ suiteName, results, metrics, assetsPath, browserNa
   }
 }
 
-async function run (runCfgPath, suiteName, timeoutSec) {
+async function run (runCfgPath, suiteName) {
   const cfg = await prepareConfiguration(runCfgPath, suiteName);
   if (!cfg) {
     return false;
   }
 
-  cfg.timeoutSec = timeoutSec;
   const testCafeResults = await runTestCafe(cfg);
   if (!testCafeResults) {
     return false;
@@ -255,10 +256,8 @@ async function run (runCfgPath, suiteName, timeoutSec) {
 if (require.main === module) {
   console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
   const {runCfgPath, suiteName} = getArgs();
-  // maxTimeout maximum test execution timeout is 1800 seconds (30 mins)
-  const maxTimeout = 1800;
 
-  run(runCfgPath, suiteName, maxTimeout)
+  run(runCfgPath, suiteName)
         // eslint-disable-next-line promise/prefer-await-to-then
         .then((passed) => {
           process.exit(passed ? 0 : 1);
