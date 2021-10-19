@@ -168,14 +168,14 @@ async function runTestCafe ({projectPath, assetsPath, suite, metrics}) {
       debugOnFail: false,
     });
 
-    // saucectl suite timeout is in nanoseconds
-    const timeout = suite.timeout / 1000000000 || 1800;
+    // saucectl suite timeoutSec is in nanoseconds
+    const timeoutSec = suite.timeout / 1000000000 || 1800;
     const timeoutPromise = new Promise((resolve) => {
       setTimeout(() => {
-        console.error(`Test timed out after ${timeout} seconds`);
+        console.error(`Test timed out after ${timeoutSec} seconds`);
         // 1 means amount of failed tests and will be translated to status code 1 afterwards
         resolve(1);
-      }, timeout * 1000);
+      }, timeoutSec * 1000);
     });
     const results = await Promise.race([testCafeRunner, timeoutPromise]);
 
