@@ -27,6 +27,7 @@ const baseSuite = {
   stopOnFirstFail: true,
   disablePageCaching: true,
   disableScreenshots: true,
+  timeout: 1000000000
 };
 
 describe('.run', function () {
@@ -85,7 +86,7 @@ describe('.run', function () {
       ],
       saucectlVersion: '0.47.0',
     }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
     expect(passed).toBe(true);
     const results = {
       'src': runner.src.mock.calls,
@@ -128,7 +129,7 @@ describe('.run', function () {
         }
       ]
     }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
     expect(passed).toBe(true);
     const results = {
       'src': runner.src.mock.calls,
@@ -221,7 +222,7 @@ describe('.run', function () {
       ],
       saucectlVersion: '0.47.0',
     }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 0);
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
     expect(passed).toBe(false);
     const results = {
       'src': runner.src.mock.calls,
@@ -257,7 +258,7 @@ describe('.run', function () {
         }
       ]
     }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 0);
+    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
     expect(passed).toBe(false);
     const results = {
       'src': runner.src.mock.calls,
