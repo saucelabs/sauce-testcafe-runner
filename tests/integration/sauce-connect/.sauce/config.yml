@@ -14,7 +14,14 @@ testcafe:
   version: 1.16.1
 
 suites:
-  - name: "Sauce with sauce-connect"
+  - name: "Sauce with sauce-connect (windows)"
     browserName: "chrome"
-    src: 
+    platformName: "Windows 10"
+    src:
+      - "tests/sauce-connect.test.js"
+
+  - name: "Sauce with sauce-connect (mac)"
+    browserName: "chrome"
+    platformName: "macOS 11.00"
+    src:
       - "tests/sauce-connect.test.js"
