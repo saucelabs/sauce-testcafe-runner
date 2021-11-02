@@ -1,0 +1,20 @@
+apiVersion: v1alpha
+kind: testcafe
+sauce:
+  metadata:
+    tags:
+      - sauce-connect
+    build: Pre-Release sauce-connect test
+  tunnel:
+    name: github-testcafe-sc-check-tunnel
+  region: us-west-1
+defaults:
+  mode: sauce
+testcafe:
+  version: 1.16.1
+
+suites:
+  - name: "Sauce with sauce-connect"
+    browserName: "chrome"
+    src: 
+      - "tests/sauce-connect.test.js"
