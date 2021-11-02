@@ -168,7 +168,7 @@ jobs:
       - name: Run web-page
         run: |
           python -m http.server 8000 &
-        working-directory: ./tests/integration/sauce-connect/
+        working-directory: ./tests/integration/sauce-connect/www/
 
       - name: Start sauce-connect
         uses: saucelabs/sauce-connect-action@v2.0.0
