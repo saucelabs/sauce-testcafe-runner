@@ -13,8 +13,8 @@ describe('.buildCommandLine', function () {
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
     ]);
@@ -41,8 +41,8 @@ describe('.buildCommandLine', function () {
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--test', 'fixed-test-name',
       '--fixture', 'fixed-fixture-name',
       '--test-grep', '.*test-name.*',
@@ -65,8 +65,8 @@ describe('.buildCommandLine', function () {
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
@@ -85,8 +85,8 @@ describe('.buildCommandLine', function () {
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
       '--quarantine-mode', 'attemptLimit=10,successThreshold=3',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
     ]);
@@ -117,8 +117,8 @@ describe('.buildCommandLine', function () {
       '--stop-on-first-fail',
       '--disable-page-caching',
       '--disable-screenshots',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
     ]);
@@ -135,8 +135,8 @@ describe('.buildCommandLine', function () {
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
       '--client-scripts', '/fake/project/path/script.js',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
     ]);
@@ -151,8 +151,8 @@ describe('.buildCommandLine', function () {
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
       '--ts-config-path', 'tsconfig.json',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
     ]);
@@ -165,8 +165,8 @@ describe('.buildCommandLine', function () {
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
     ]);
@@ -180,8 +180,8 @@ describe('.buildCommandLine', function () {
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223 --chrome-fake-param',
       '**/*.test.js',
-      '--video',
-      '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
     ]);
@@ -214,8 +214,8 @@ describe('.buildCommandLine', function () {
       expect(cli).toMatchObject([
         'D:\\chrome99\\chrome.exe',
         '**/*.test.js',
-        '--video',
-        '--video-options singleFile=true,failedOnly=false,pathPattern=/fake/assets/path/video.mp4',
+        '--video', '/fake/assets/path',
+        '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
         '--proxy', 'http://localhost:8080',
         '--reporter',
         'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',

@@ -143,11 +143,9 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
   const shouldRecordVideo = !suite.disableVideo && (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD);
   if (shouldRecordVideo) {
-    const videoFilePath = path.join(assetsPath, 'video.mp4');
-
     cli.push(
-      `--video`,
-      `--video-options singleFile=true,failedOnly=false,pathPattern=${videoFilePath}`,
+      '--video', assetsPath,
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     );
   }
 
