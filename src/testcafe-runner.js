@@ -1,7 +1,5 @@
-const createTestCafe = require('testcafe');
 const path = require('path');
 const fs = require('fs');
-const { isMatch, cloneDeep } = require('lodash');
 const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv} = require('sauce-testrunner-utils');
 const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
 const { spawn } = require('child_process');
@@ -33,170 +31,6 @@ async function prepareConfiguration (runCfgPath, suiteName) {
   }
 }
 
-// Function derived from TC implementation:
-//  => https://github.com/DevExpress/testcafe/blob/master/src/utils/get-filter-fn.js#L18
-function buildFilterFunc (filters) {
-  let { testGrep, fixtureGrep, test, fixture, testMeta, fixtureMeta } = cloneDeep(filters || {});
-  if (testGrep) {
-    testGrep = new RegExp(testGrep);
-  }
-  if (fixtureGrep) {
-    fixtureGrep = new RegExp(fixtureGrep);
-  }
-
-  return function (tcTestName, tcFixtureName, tcFixturePath, tcTestMeta, tcFixtureMeta) {
-    if (test && test !== tcTestName) {
-      return false;
-    }
-    if (fixture && fixture !== tcFixtureName) {
-      return false;
-    }
-    if (testGrep && !testGrep.test(tcTestName)) {
-      return false;
-    }
-    if (fixtureGrep && !fixtureGrep.test(tcFixtureName)) {
-      return false;
-    }
-    if (testMeta && !isMatch(tcTestMeta, testMeta)) {
-      return false;
-    }
-    if (fixtureMeta && !isMatch(tcFixtureMeta, fixtureMeta)) {
-      return false;
-    }
-    return true;
-  };
-}
-
-async function runTestCafe ({projectPath, assetsPath, suite, metrics}) {
-  let testCafe;
-  metrics = metrics || [];
-
-  try {
-    // Run the tests now
-    const startTime = new Date().toISOString();
-
-    const port1 = parseInt(process.env.SAUCE_TESTCAFE_PORT1 || 1337, 10);
-    const port2 = parseInt(process.env.SAUCE_TESTCAFE_PORT2 || 2337, 10);
-    testCafe = await createTestCafe({port1, port2, hostname: 'localhost'});
-    const runner = testCafe.createRunner();
-
-    const supportedBrowsers = {
-      'chrome': 'chrome:headless',
-      'firefox': 'firefox:headless:marionettePort=9223'
-    };
-    const browserName = suite.browserName;
-    let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
-    if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
-      testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
-    }
-    if (!testCafeBrowserName) {
-      throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
-    }
-
-    if (suite.browserArgs) {
-      const browserArgs = suite.browserArgs.join(' ');
-      testCafeBrowserName = testCafeBrowserName + ' ' + browserArgs;
-    }
-
-    // Get the 'src' array and translate it to fully qualified URLs that are part of project path
-    let src = Array.isArray(suite.src) ? suite.src : [suite.src];
-    src = src.map((srcPath) => path.join(projectPath, srcPath));
-
-    const runnerInstance = runner
-            .src(src)
-            .browsers(testCafeBrowserName)
-            .concurrency(1)
-            .reporter([
-              {name: 'xunit', output: path.join(assetsPath, 'report.xml')},
-              {name: 'json', output: path.join(assetsPath, 'report.json')},
-              'list'
-            ]);
-
-    if (suite.tsConfigPath) {
-      runnerInstance.tsConfigPath(path.join(projectPath, suite.tsConfigPath));
-    }
-
-    if (suite.clientScripts) {
-      let clientScriptsPaths = Array.isArray(suite.clientScripts) ? suite.clientScripts : [suite.clientScripts];
-      clientScriptsPaths = clientScriptsPaths.map((clientScriptPath) => path.join(projectPath, clientScriptPath));
-      runnerInstance.clientScriptPath(clientScriptsPaths);
-    }
-
-    // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
-    const shouldRecordVideo = !suite.disableVideo && (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD);
-    if (shouldRecordVideo) {
-      runnerInstance.video(assetsPath, {
-        singleFile: true,
-        failedOnly: false,
-        pathPattern: 'video.mp4'
-      });
-    }
-
-    // Screenshots
-    if (suite.screenshots) {
-      runnerInstance.screenshots({
-        ...suite.screenshots,
-        path: assetsPath,
-        // Set screenshot pattern as fixture name, test name and screenshot #
-        // This format prevents nested screenshots and shows only the info that
-        // a Sauce session needs
-        pathPattern: '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}',
-      });
-    }
-
-    if (process.env.HTTP_PROXY) {
-      let proxyURL = new URL(process.env.HTTP_PROXY);
-      runnerInstance.useProxy(proxyURL.host);
-    }
-
-    const filterFunc = buildFilterFunc(suite.filter);
-
-    const testCafeRunner = runnerInstance.run({
-      filter: filterFunc,
-      skipJsErrors: suite.skipJsErrors,
-      quarantineMode: suite.quarantineMode,
-      skipUncaughtErrors: suite.skipUncaughtErrors,
-      selectorTimeout: suite.selectorTimeout,
-      assertionTimeout: suite.assertionTimeout,
-      pageLoadTimeout: suite.pageLoadTimeout,
-      speed: suite.speed,
-      stopOnFirstFail: suite.stopOnFirstFail,
-      disablePageCaching: suite.disablePageCaching,
-      disableScreenshots: suite.disableScreenshots,
-
-      // Parameters that aren't supported in cloud or docker:
-      debugMode: false,
-      debugOnFail: false,
-    });
-
-    // saucectl suite.timeout is in nanoseconds
-    const timeoutSec = suite.timeout / 1000000000 || 1800;
-    const timeoutPromise = new Promise((resolve) => {
-      setTimeout(() => {
-        console.error(`Test timed out after ${timeoutSec} seconds`);
-        // 1 means amount of failed tests and will be translated to status code 1 afterwards
-        resolve(1);
-      }, timeoutSec * 1000);
-    });
-    const results = await Promise.race([testCafeRunner, timeoutPromise]);
-
-    const endTime = new Date().toISOString();
-
-    return {browserName, results, startTime, endTime, metrics};
-
-  } catch (e) {
-    console.error(`Could not complete test. Reason '${e.message}'`);
-  } finally {
-    try {
-      if (testCafe && testCafe.close) {
-        await testCafe.close();
-      }
-    } catch (e) {
-      console.warn(`Failed to close testcafe :(. Reason: ${e.message}`);
-    }
-  }
-}
-
 async function runReporter ({ suiteName, results, metrics, assetsPath, browserName, startTime, endTime, region, metadata, saucectlVersion }) {
   try {
     let assets = [
@@ -224,38 +58,12 @@ async function runReporter ({ suiteName, results, metrics, assetsPath, browserNa
     });
   } catch (e) {
     console.error(`Reporting to Sauce Labs failed. Reason '${e.message}'`);
+    console.error(e);
   }
-}
-
-async function run (runCfgPath, suiteName) {
-  const cfg = await prepareConfiguration(runCfgPath, suiteName);
-  if (!cfg) {
-    return false;
-  }
-
-  const testCafeResults = await runTestCafe(cfg);
-  if (!testCafeResults) {
-    return false;
-  }
-
-  generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
-  const {results} = testCafeResults;
-  const passed = results === 0;
-  if (process.env.SAUCE_VM) {
-    return passed;
-  }
-  if (!process.env.SAUCE_USERNAME && !process.env.SAUCE_ACCESS_KEY) {
-    console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
-    return passed;
-  }
-
-  const region = cfg.runCfg.sauce.region || 'us-west-1';
-  await runReporter({ suiteName, assetsPath: cfg.assetsPath, region, metadata: cfg.metadata, saucectlVersion: cfg.saucectlVersion, ...testCafeResults });
-  return passed;
 }
 
 // Buid the command line to invoke TestCafe with all required parameters
-function buildCommandLine (suiteName, runCfg, suite, projectPath, assetsPath) {
+function buildCommandLine (suite, projectPath, assetsPath) {
   const cli = [];
 
   // Browser support
@@ -269,7 +77,7 @@ function buildCommandLine (suiteName, runCfg, suite, projectPath, assetsPath) {
     testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
   }
   if (!testCafeBrowserName) {
-    throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
+    throw new Error(`Unsupported browser: ${browserName}.`);
   }
   if (suite.browserArgs) {
     const browserArgs = suite.browserArgs.join(' ');
@@ -347,11 +155,13 @@ function buildCommandLine (suiteName, runCfg, suite, projectPath, assetsPath) {
     // This format prevents nested screenshots and shows only the info that
     // a Sauce session needs
     const pathPattern = '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}';
-    cli.push(`--screenshots takeOnFails=true,fullPage=true,path=${assetsPath},pathPattern=${pathPattern}`);
+    const takeOnFails = suite.screenshots.takeOnFails;
+    const fullPage = suite.screenshots.fullPage;
+    cli.push('--screenshots', `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern}`);
   }
 
   if (process.env.HTTP_PROXY) {
-    const proxyURL = new URL(process.env.HTTP_PROXY);
+    const proxyURL = process.env.HTTP_PROXY;
     cli.push('--proxy', proxyURL);
   }
 
@@ -397,7 +207,7 @@ async function runTestCafeV2 (runCfgPath, suiteName) {
     return false;
   }
 
-  const tcCommandLine = buildCommandLine(suiteName, cfg.runCfg, cfg.suite, cfg.projectPath, cfg.assetsPath);
+  const tcCommandLine = buildCommandLine(cfg.suite, cfg.projectPath, cfg.assetsPath);
 
   // invoke command line
   const nodeBin = process.argv[0];
@@ -459,4 +269,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {run, buildFilterFunc};
+module.exports = {buildCommandLine, runTestCafeV2};
