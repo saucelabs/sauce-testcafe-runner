@@ -211,7 +211,7 @@ async function runTestCafeV2 (runCfgPath, suiteName) {
 
   // invoke command line
   const nodeBin = process.argv[0];
-  const testcafeBin = path.join(`${__dirname}/../node_modules/.bin/`, 'testcafe');
+  const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
   console.log([nodeBin, testcafeBin, ...tcCommandLine]);
   const testcafeProc = spawn(nodeBin, [testcafeBin, ...tcCommandLine], {stdio: 'inherit', cwd: cfg.projectPath, env: process.env});
