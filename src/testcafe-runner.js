@@ -4,6 +4,7 @@ const fs = require('fs');
 const { isMatch, cloneDeep } = require('lodash');
 const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv} = require('sauce-testrunner-utils');
 const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
+const { spawn } = require('child_process');
 
 async function prepareConfiguration (runCfgPath, suiteName) {
   try {
@@ -253,20 +254,209 @@ async function run (runCfgPath, suiteName) {
   return passed;
 }
 
+// Buid the command line to invoke TestCafe with all required parameters
+function buildCommandLine (suiteName, runCfg, suite, projectPath, assetsPath) {
+  const cli = [];
+
+  // Browser support
+  const supportedBrowsers = {
+    'chrome': 'chrome:headless',
+    'firefox': 'firefox:headless:marionettePort=9223'
+  };
+  const browserName = suite.browserName;
+  let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
+  if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
+    testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
+  }
+  if (!testCafeBrowserName) {
+    throw new Error(`Unsupported browser: ${testCafeBrowserName}.`);
+  }
+  if (suite.browserArgs) {
+    const browserArgs = suite.browserArgs.join(' ');
+    testCafeBrowserName = testCafeBrowserName + ' ' + browserArgs;
+  }
+  cli.push(testCafeBrowserName);
+
+  // Add all sources files/globs
+  if (Array.isArray(suite.src)) {
+    cli.push(...suite.src);
+  } else {
+    cli.push(suite.src);
+  }
+
+  if (suite.tsConfigPath) {
+    cli.push('--ts-config-path', suite.tsConfigPath);
+  }
+  if (suite.clientScripts) {
+    let clientScriptsPaths = Array.isArray(suite.clientScripts) ? suite.clientScripts : [suite.clientScripts];
+    clientScriptsPaths = clientScriptsPaths.map((clientScriptPath) => path.join(projectPath, clientScriptPath));
+    cli.push('--client-scripts', clientScriptsPaths.join(','));
+  }
+  if (suite.skipJsErrors) {
+    cli.push('--skip-js-errors');
+  }
+  if (suite.skipUncaughtErrors) {
+    cli.push('--skip-uncaught-errors');
+  }
+  if (suite.selectorTimeout) {
+    cli.push('--selector-timeout', suite.selectorTimeout);
+  }
+  if (suite.assertionTimeout) {
+    cli.push('--assertion-timeout', suite.assertionTimeout);
+  }
+  if (suite.pageLoadTimeout) {
+    cli.push('--page-load-timeout', suite.pageLoadTimeout);
+  }
+  if (suite.speed) {
+    cli.push('--speed', suite.speed);
+  }
+  if (suite.stopOnFirstFail) {
+    cli.push('--stop-on-first-fail');
+  }
+  if (suite.disablePageCaching) {
+    cli.push('--disable-page-caching');
+  }
+  if (suite.disableScreenshots) {
+    cli.push('--disable-screenshots');
+  }
+  if (suite.quarantineMode) {
+    const flags = [];
+    if (suite.quarantineMode.attemptLimit) {
+      flags.push(`attemptLimit=${suite.quarantineMode.attemptLimit}`);
+    }
+    if (suite.quarantineMode.successThreshold) {
+      flags.push(`successThreshold=${suite.quarantineMode.successThreshold}`);
+    }
+    if (flags.length) {
+      cli.push('--quarantine-mode', flags.join(','));
+    }
+  }
+
+  // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
+  const shouldRecordVideo = !suite.disableVideo && (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD);
+  if (shouldRecordVideo) {
+    cli.push(
+      `--video`,
+      `--video-options singleFile=true,failedOnly=false,pathPattern=video.mp4`,
+    );
+  }
+
+  // Screenshots
+  if (suite.screenshots) {
+    // Set screenshot pattern as fixture name, test name and screenshot #
+    // This format prevents nested screenshots and shows only the info that
+    // a Sauce session needs
+    const pathPattern = '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}';
+    cli.push(`--screenshots takeOnFails=true,fullPage=true,path=${assetsPath},pathPattern=${pathPattern}`);
+  }
+
+  if (process.env.HTTP_PROXY) {
+    const proxyURL = new URL(process.env.HTTP_PROXY);
+    cli.push('--proxy', proxyURL);
+  }
+
+  // Filters
+  if (suite.filter && suite.filter.test) {
+    cli.push('--test', suite.filter.test);
+  }
+  if (suite.filter && suite.filter.fixture) {
+    cli.push('--fixture', suite.filter.fixture);
+  }
+  if (suite.filter && suite.filter.testGrep) {
+    cli.push('--test-grep', suite.filter.testGrep);
+  }
+  if (suite.filter && suite.filter.fixtureGrep) {
+    cli.push('--fixture-grep', suite.filter.fixtureGrep);
+  }
+  if (suite.filter && suite.filter.testMeta) {
+    const filters = [];
+    for (const key of Object.keys(suite.filter.testMeta)) {
+      filters.push(`${key}=${suite.filter.testMeta[key]}`);
+    }
+    cli.push('--test-meta', filters.join(','));
+  }
+  if (suite.filter && suite.filter.fixtureMeta) {
+    const filters = [];
+    for (const key of Object.keys(suite.filter.fixtureMeta)) {
+      filters.push(`${key}=${suite.filter.fixtureMeta[key]}`);
+    }
+    cli.push('--fixture-meta', filters.join(','));
+  }
+
+  // Reporters
+  const xmlReportPath = path.join(assetsPath, 'report.xml');
+  const jsonReportPath = path.join(assetsPath, 'report.json');
+  cli.push('--reporter', `xunit:${xmlReportPath},json:${jsonReportPath},list`);
+
+  return cli;
+}
+
+async function runTestCafeV2 (runCfgPath, suiteName) {
+  const cfg = await prepareConfiguration(runCfgPath, suiteName);
+  if (!cfg) {
+    return false;
+  }
+
+  const tcCommandLine = buildCommandLine(suiteName, cfg.runCfg, cfg.suite, cfg.projectPath, cfg.assetsPath);
+
+  // invoke command line
+  const nodeBin = process.argv[0];
+  const testcafeBin = path.join(`${__dirname}/../node_modules/.bin/`, 'testcafe');
+
+  console.log([nodeBin, testcafeBin, ...tcCommandLine]);
+  const testcafeProc = spawn(nodeBin, [testcafeBin, ...tcCommandLine], {stdio: 'inherit', cwd: cfg.projectPath, env: process.env});
+
+  const testcafePromise = new Promise((resolve) => {
+    testcafeProc.on('close', (code /*, ...args*/) => {
+      const hasPassed = code === 0;
+      resolve(hasPassed);
+    });
+  });
+
+  let startTime, endTime, hasPassed = false;
+  try {
+    startTime = new Date().toISOString();
+    hasPassed = await testcafePromise;
+    endTime = new Date().toISOString();
+  } catch (e) {
+    console.error(`Could not complete job. Reason: ${e}`);
+  }
+  // return {browserName, results, startTime, endTime, metrics};
+
+
+  // Rework Generated JSON
+  generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
+
+  // Publish results
+  const passed = hasPassed;
+  if (process.env.SAUCE_VM) {
+    return passed;
+  }
+  if (!process.env.SAUCE_USERNAME && !process.env.SAUCE_ACCESS_KEY) {
+    console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
+    return passed;
+  }
+
+  const region = cfg.runCfg.sauce.region || 'us-west-1';
+  await runReporter({ suiteName, assetsPath: cfg.assetsPath, region, metadata: cfg.metadata, saucectlVersion: cfg.saucectlVersion,
+                      startTime, endTime, results: hasPassed ? 0 : 1, metrics: {}, browserName: cfg.suite.browserName, platformName: cfg.platformName });
+  return passed;
+}
+
 if (require.main === module) {
   console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
   const {runCfgPath, suiteName} = getArgs();
 
-  run(runCfgPath, suiteName)
-        // eslint-disable-next-line promise/prefer-await-to-then
-        .then((passed) => {
-          process.exit(passed ? 0 : 1);
-        })
-        // eslint-disable-next-line promise/prefer-await-to-callbacks
-        .catch((err) => {
-          console.log(err);
-          process.exit(1);
-        });
+  runTestCafeV2(runCfgPath, suiteName)
+    // eslint-disable-next-line promise/prefer-await-to-then
+    .then((passed) => {
+      process.exit(passed ? 0 : 1);
+    })
+    // eslint-disable-next-line promise/prefer-await-to-callbacks
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
 }
 
 module.exports = {run, buildFilterFunc};
