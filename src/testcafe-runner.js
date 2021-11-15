@@ -143,9 +143,11 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
   const shouldRecordVideo = !suite.disableVideo && (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD);
   if (shouldRecordVideo) {
+    const videoFilePath = path.join(assetsPath, 'video.mp4');
+
     cli.push(
       `--video`,
-      `--video-options singleFile=true,failedOnly=false,pathPattern=video.mp4`,
+      `--video-options singleFile=true,failedOnly=false,pathPattern=${videoFilePath}`,
     );
   }
 
@@ -213,7 +215,6 @@ async function runTestCafeV2 (runCfgPath, suiteName) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
-  console.log([nodeBin, testcafeBin, ...tcCommandLine]);
   const testcafeProc = spawn(nodeBin, [testcafeBin, ...tcCommandLine], {stdio: 'inherit', cwd: cfg.projectPath, env: process.env});
 
   const testcafePromise = new Promise((resolve) => {
@@ -231,8 +232,6 @@ async function runTestCafeV2 (runCfgPath, suiteName) {
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
-  // return {browserName, results, startTime, endTime, metrics};
-
 
   // Rework Generated JSON
   generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
@@ -249,7 +248,7 @@ async function runTestCafeV2 (runCfgPath, suiteName) {
 
   const region = cfg.runCfg.sauce.region || 'us-west-1';
   await runReporter({ suiteName, assetsPath: cfg.assetsPath, region, metadata: cfg.metadata, saucectlVersion: cfg.saucectlVersion,
-                      startTime, endTime, results: hasPassed ? 0 : 1, metrics: {}, browserName: cfg.suite.browserName, platformName: cfg.platformName });
+                      startTime, endTime, results: hasPassed ? 0 : 1, metrics: cfg.metrics, browserName: cfg.suite.browserName, platformName: cfg.platformName });
   return passed;
 }
 
