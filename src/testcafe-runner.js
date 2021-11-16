@@ -161,8 +161,8 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   }
 
   if (process.env.HTTP_PROXY) {
-    const proxyURL = process.env.HTTP_PROXY;
-    cli.push('--proxy', proxyURL);
+    const proxyURL = new URL(process.env.HTTP_PROXY);
+    cli.push('--proxy', `${proxyURL.hostname}:${proxyURL.port}`);
   }
 
   // Filters
