@@ -217,7 +217,7 @@ describe('.buildCommandLine', function () {
         '--video', '/fake/assets/path',
         '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
         '--proxy', 'http://localhost:8080',
-        '--proxy-bypass', '127.0.0.1:8000,localhost:8000',
+        '--proxy-bypass', '127.0.0.1,localhost',
         '--reporter',
         'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
       ]);
