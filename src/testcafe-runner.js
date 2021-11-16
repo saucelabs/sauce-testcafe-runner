@@ -162,7 +162,7 @@ function buildCommandLine (suite, projectPath, assetsPath) {
 
   if (process.env.HTTP_PROXY) {
     const proxyURL = new URL(process.env.HTTP_PROXY);
-    cli.push('--proxy', `${proxyURL.hostname}:${proxyURL.port}`);
+    cli.push('--proxy', proxyURL.host);
   }
 
   // Filters
