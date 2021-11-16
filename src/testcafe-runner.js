@@ -163,7 +163,6 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   if (process.env.HTTP_PROXY) {
     const proxyURL = process.env.HTTP_PROXY;
     cli.push('--proxy', proxyURL);
-    cli.push('--proxy-bypass', '127.0.0.1,localhost');
   }
 
   // Filters
