@@ -201,19 +201,11 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   return cli;
 }
 
-async function runTestCafeV2 (runCfgPath, suiteName) {
-  const cfg = await prepareConfiguration(runCfgPath, suiteName);
-  if (!cfg) {
-    return false;
-  }
-
-  const tcCommandLine = buildCommandLine(cfg.suite, cfg.projectPath, cfg.assetsPath);
-
-  // invoke command line
+async function runTestCafe (tcCommandLine, projectPath) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
-  const testcafeProc = spawn(nodeBin, [testcafeBin, ...tcCommandLine], {stdio: 'inherit', cwd: cfg.projectPath, env: process.env});
+  const testcafeProc = spawn(nodeBin, [testcafeBin, ...tcCommandLine], {stdio: 'inherit', cwd: projectPath, env: process.env});
 
   const testcafePromise = new Promise((resolve) => {
     testcafeProc.on('close', (code /*, ...args*/) => {
@@ -230,8 +222,17 @@ async function runTestCafeV2 (runCfgPath, suiteName) {
   } catch (e) {
     console.error(`Could not complete job. Reason: ${e}`);
   }
+  return { startTime, endTime, hasPassed };
+}
 
-  // Rework Generated JSON
+async function run (runCfgPath, suiteName) {
+  const cfg = await prepareConfiguration(runCfgPath, suiteName);
+  if (!cfg) {
+    return false;
+  }
+
+  const tcCommandLine = buildCommandLine(cfg.suite, cfg.projectPath, cfg.assetsPath);
+  const { startTime, endTime, hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
 
   // Publish results
@@ -254,7 +255,7 @@ if (require.main === module) {
   console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
   const {runCfgPath, suiteName} = getArgs();
 
-  runTestCafeV2(runCfgPath, suiteName)
+  run(runCfgPath, suiteName)
     // eslint-disable-next-line promise/prefer-await-to-then
     .then((passed) => {
       process.exit(passed ? 0 : 1);
@@ -266,4 +267,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {buildCommandLine, runTestCafeV2};
+module.exports = {buildCommandLine, run};
