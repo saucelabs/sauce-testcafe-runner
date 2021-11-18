@@ -1,381 +1,225 @@
 jest.mock('testcafe');
 jest.mock('sauce-testrunner-utils');
 jest.mock('../../../src/sauce-testreporter');
-const { run, buildFilterFunc } = require('../../../src/testcafe-runner');
-const utils = require('sauce-testrunner-utils');
-const { sauceReporter } = require('../../../src/sauce-testreporter');
-const testcafe = require('testcafe');
+const { buildCommandLine } = require('../../../src/testcafe-runner');
 
-const baseRunCfg = {
-  testcafe: {
-    projectPath: '../',
-    version: '1.11.0'
-  },
-};
-const baseSuite = {
-  name: 'fake-suite-name',
-  browserName: 'chrome',
-  src: ['tests/*.*'],
-  env: {'my-key': 'my-val'},
-  selectorTimeout: 1234,
-  skipJsErrors: true,
-  quarantineMode: true,
-  skipUncaughtErrors: true,
-  assertionTimeout: 1234,
-  pageLoadTimeout: 1234,
-  speed: 1234,
-  stopOnFirstFail: true,
-  disablePageCaching: true,
-  disableScreenshots: true,
-  timeout: 1000000000
-};
 
-describe('.run', function () {
-  let createRunner, runner, backupEnv;
-  let date = 0;
-  let runReturnValue;
-  beforeEach(function () {
-    jest.spyOn(Date.prototype, 'toISOString').mockImplementation(() => '' + date++);
-    backupEnv = process.env;
-    sauceReporter.mockImplementation(() => true);
-    utils.getAbsolutePath.mockImplementation((path) => path);
-    utils.getSuite.mockImplementation((runCfg, suiteName) => (
-      runCfg.suites.find((testSuite) => testSuite.name === suiteName)
-    ));
-    testcafe.mockImplementation(() => {
-      createRunner = jest.fn(function () {
-        runner = jest.fn();
-        runner.src = jest.fn(function () { return this; });
-        runner.browsers = jest.fn(function () { return this; });
-        runner.concurrency = jest.fn(function () { return this; });
-        runner.reporter = jest.fn(function () { return this; });
-        runner.tsConfigPath = jest.fn(function () { return this; });
-        runner.clientScriptPath = jest.fn(function () { return this; });
-        runner.video = jest.fn(function () { return this; });
-        runner.screenshots = jest.fn(function () { return this; });
-        runner.run = jest.fn(() => runReturnValue || 0);
-        return runner;
-      });
-      return { createRunner };
-    });
+describe('.buildCommandLine', function () {
+  it('most basic config', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: ['**/*.test.js'],
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
   });
-  afterEach(function () {
-    process.env = backupEnv;
-    sauceReporter.mockRestore();
+  it('basic with filters', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: ['**/*.test.js'],
+      filter: {
+        test: 'fixed-test-name',
+        testGrep: '.*test-name.*',
+        fixture: 'fixed-fixture-name',
+        fixtureGrep: '.*fixture-name.*',
+        testMeta: {
+          'my-key': 'my-val',
+          '2nd-key': '2nd-val',
+        },
+        fixtureMeta: {
+          'my-key': 'my-val',
+          '2nd-key': '2nd-val',
+        },
+      }
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--test', 'fixed-test-name',
+      '--fixture', 'fixed-fixture-name',
+      '--test-grep', '.*test-name.*',
+      '--fixture-grep', '.*fixture-name.*',
+      '--test-meta', 'my-key=my-val,2nd-key=2nd-val',
+      '--fixture-meta', 'my-key=my-val,2nd-key=2nd-val',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
   });
-  it('calls TestCafe method with a kitchen sink runCfg (Docker mode)', async function () {
-    process.env = {
-      SAUCE_USERNAME: 'fake',
-      SAUCE_ACCESS_KEY: 'fake',
-      SAUCE_VM: '',
-    };
-    utils.loadRunConfig.mockImplementation(() => ({
-      ...baseRunCfg,
-      sauce: {
-        region: 'staging'
+  it('basic with screenshots', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: ['**/*.test.js'],
+      screenshots: {
+        fullPage: true,
+        takeOnFails: true,
       },
-      suites: [
-        {
-          ...baseSuite,
-          screenshots: {
-            'takeOnFails': true
-          },
-          clientScripts: ['fake', 'scripts'],
-          tsConfigPath: '/fake/tsconfig/path',
-        }
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
+  });
+  it('basic with quarantineMode', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: ['**/*.test.js'],
+      quarantineMode: {
+        attemptLimit: 10,
+        successThreshold: 3,
+      },
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--quarantine-mode', 'attemptLimit=10,successThreshold=3',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
+  });
+  it('basic with different flags', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: ['**/*.test.js'],
+      skipJsErrors: true,
+      skipUncaughtErrors: true,
+      selectorTimeout: 1000,
+      assertionTimeout: 1000,
+      pageLoadTimeout: 1000,
+      speed: 0.5,
+      stopOnFirstFail: true,
+      disablePageCaching: true,
+      disableScreenshots: true,
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--skip-js-errors',
+      '--skip-uncaught-errors',
+      '--selector-timeout', 1000,
+      '--assertion-timeout', 1000,
+      '--page-load-timeout', 1000,
+      '--speed', 0.5,
+      '--stop-on-first-fail',
+      '--disable-page-caching',
+      '--disable-screenshots',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
+  });
+  it('basic with client scripts', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: ['**/*.test.js'],
+      clientScripts: [
+        'script.js',
       ],
-      saucectlVersion: '0.47.0',
-    }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
-    expect(passed).toBe(true);
-    const results = {
-      'src': runner.src.mock.calls,
-      'browsers': runner.browsers.mock.calls,
-      'concurrency': runner.concurrency.mock.calls,
-      'reporter': runner.reporter.mock.calls,
-      'tsConfigPath': runner.tsConfigPath.mock.calls,
-      'clientScriptPath': runner.clientScriptPath.mock.calls,
-      'video': runner.video.mock.calls,
-      'screenshots': runner.screenshots.mock.calls,
-      'run': runner.run.mock.calls,
-    };
-    expect(results).toMatchSnapshot();
-    expect(sauceReporter.mock.calls).toMatchSnapshot();
-    expect(process.env['my-key']).toBe('my-val');
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--client-scripts', '/fake/project/path/script.js',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
   });
-  it('calls TestCafe method with a kitchen sink runCfg (Sauce VM mode)', async function () {
-    process.env = {
-      SAUCE_USERNAME: 'fake',
-      SAUCE_ACCESS_KEY: 'fake',
-      SAUCE_VM: 'truth',
-      SAUCE_BROWSER_PATH: 'browser:/fake/browser'
-    };
-    utils.loadRunConfig.mockImplementation(() => ({
-      ...baseRunCfg,
-      sauce: {
-        metadata: {
-          tags: ['1', '2'],
-          build: 'build id'
-        }
-      },
-      suites: [
-        {
-          ...baseSuite,
-          screenshots: {
-            'takeOnFails': true
-          },
-          clientScripts: ['fake', 'scripts'],
-          tsConfigPath: '/fake/tsconfig/path',
-        }
-      ]
-    }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
-    expect(passed).toBe(true);
-    const results = {
-      'src': runner.src.mock.calls,
-      'browsers': runner.browsers.mock.calls,
-      'concurrency': runner.concurrency.mock.calls,
-      'reporter': runner.reporter.mock.calls,
-      'tsConfigPath': runner.tsConfigPath.mock.calls,
-      'clientScriptPath': runner.clientScriptPath.mock.calls,
-      'video': runner.video.mock.calls,
-      'screenshots': runner.screenshots.mock.calls,
-      'run': runner.run.mock.calls,
-    };
-    expect(results).toMatchSnapshot();
-    expect(sauceReporter.mock.calls).toMatchSnapshot();
+  it('basic with tsConfigPath', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: ['**/*.test.js'],
+      tsConfigPath: 'tsconfig.json',
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--ts-config-path', 'tsconfig.json',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
   });
-  it('reports nothing if no SAUCE_USERNAME or SAUCE_ACCESS_KEY', async function () {
-    process.env = {
-      SAUCE_USERNAME: '',
-      SAUCE_ACCESS_KEY: '',
-      SAUCE_VM: '',
-    };
-    utils.loadRunConfig.mockImplementation(() => ({
-      ...baseRunCfg,
-      suites: [
-        {
-          ...baseSuite,
-          screenshots: {
-            'takeOnFails': true
-          },
-          clientScripts: ['fake', 'scripts'],
-          tsConfigPath: '/fake/tsconfig/path',
-        }
-      ]
-    }));
-    await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
-    expect(sauceReporter.mock.calls).toEqual([]);
+  it('basic with no-array src', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: '**/*.test.js',
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
   });
-  it('fails if provide a fake browser', async function () {
-    utils.loadRunConfig.mockImplementation(() => ({
-      ...baseRunCfg,
-      suites: [
-        {
-          ...baseSuite,
-          browserName: 'GrahamBrowser',
-        }
-      ]
-    }));
-    process.env = {
-      SAUCE_VM: '',
-    };
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
-    expect(passed).toBe(false);
+  it('basic with browserArgs', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: '**/*.test.js',
+      browserArgs: ['--chrome-fake-param'],
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223 --chrome-fake-param',
+      '**/*.test.js',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+    ]);
   });
-  it('fails if run returns non-zero', async function () {
-    utils.loadRunConfig.mockImplementation(() => ({
-      ...baseRunCfg,
-      suites: [
-        {
-          ...baseSuite,
-        }
-      ]
-    }));
-    process.env = {
-      SAUCE_VM: 'truth',
+  it('basic with invalid browser', function () {
+    const t = () => {
+      buildCommandLine({
+        browserName: 'invalid',
+        src: '**/*.test.js',
+      }, '/fake/project/path', '/fake/assets/path');
     };
-    runReturnValue = 1;
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name', 1);
-    expect(passed).toBe(false);
+    expect(t).toThrow('Unsupported browser: invalid.');
   });
-  it('calls TestCafe with timeout 0 seconds with a kitchen sink runCfg (Docker mode)', async function () {
-    process.env = {
-      SAUCE_USERNAME: 'fake',
-      SAUCE_ACCESS_KEY: 'fake',
-      SAUCE_VM: '',
-    };
-    utils.loadRunConfig.mockImplementation(() => ({
-      ...baseRunCfg,
-      sauce: {
-        region: 'staging'
-      },
-      suites: [
-        {
-          ...baseSuite,
-          screenshots: {
-            'takeOnFails': true
-          },
-          clientScripts: ['fake', 'scripts'],
-          tsConfigPath: '/fake/tsconfig/path',
-        }
-      ],
-      saucectlVersion: '0.47.0',
-    }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
-    expect(passed).toBe(false);
-    const results = {
-      'src': runner.src.mock.calls,
-      'browsers': runner.browsers.mock.calls,
-      'concurrency': runner.concurrency.mock.calls,
-      'reporter': runner.reporter.mock.calls,
-      'tsConfigPath': runner.tsConfigPath.mock.calls,
-      'clientScriptPath': runner.clientScriptPath.mock.calls,
-      'video': runner.video.mock.calls,
-      'screenshots': runner.screenshots.mock.calls,
-      'run': runner.run.mock.calls,
-    };
-    expect(results).toMatchSnapshot();
-    expect(sauceReporter.mock.calls).toMatchSnapshot();
-  });
-  it('calls TestCafe with timeout 0 seconds  with a kitchen sink runCfg (Sauce VM mode)', async function () {
-    process.env = {
-      SAUCE_USERNAME: 'fake',
-      SAUCE_ACCESS_KEY: 'fake',
-      SAUCE_VM: 'truth',
-      SAUCE_BROWSER_PATH: 'browser:/fake/browser'
-    };
-    utils.loadRunConfig.mockImplementation(() => ({
-      ...baseRunCfg,
-      suites: [
-        {
-          ...baseSuite,
-          screenshots: {
-            'takeOnFails': true
-          },
-          clientScripts: ['fake', 'scripts'],
-          tsConfigPath: '/fake/tsconfig/path',
-        }
-      ]
-    }));
-    const passed = await run('/fake/path/to/runCfg', 'fake-suite-name');
-    expect(passed).toBe(false);
-    const results = {
-      'src': runner.src.mock.calls,
-      'browsers': runner.browsers.mock.calls,
-      'concurrency': runner.concurrency.mock.calls,
-      'reporter': runner.reporter.mock.calls,
-      'tsConfigPath': runner.tsConfigPath.mock.calls,
-      'clientScriptPath': runner.clientScriptPath.mock.calls,
-      'video': runner.video.mock.calls,
-      'screenshots': runner.screenshots.mock.calls,
-      'run': runner.run.mock.calls,
-    };
-    expect(results).toMatchSnapshot();
-    expect(sauceReporter.mock.calls).toMatchSnapshot();
-  });
-});
+  describe('with env + inside VM', function () {
+    const OLD_ENV = process.env;
 
-describe('.buildFilterFunc', function () {
-  const testSets = [
-    ['dummy-test-1', 'fixture-001', { 'browser': 'chrome', 'platform': 'windows' }, { 'browser': 'chrome', 'platform': 'windows' }],
-    ['test-2', 'fixture-001', { 'browser': 'chrome', 'platform': 'windows' }, { 'browser': 'chrome', 'platform': 'windows' }],
-    ['test-dummy-3', 'fixture-001', { 'browser': 'safari', 'platform': 'macos' }, { 'browser': 'safari', 'platform': 'macos' }],
-    ['dummy-4', 'fixture-002', { 'browser': 'chrome', 'platform': 'macos' }, { 'browser': 'chrome', 'platform': 'macos' }],
-    ['5-dummy', 'fixture-002', { 'browser': 'firefox', 'platform': 'windows' }, { 'browser': 'firefox', 'platform': 'windows' }],
-  ];
-  it('no filters, all should pass', function () {
-    const filterFunc = buildFilterFunc();
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([true, true, true, true, true]);
-  });
-  it('matching with test name', function () {
-    const filterFunc = buildFilterFunc({ test: 'dummy-test-1' });
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([true, false, false, false, false]);
-  });
-  it('matching with testGrep', function () {
-    const filterFunc = buildFilterFunc({ testGrep: 'dummy' });
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([true, false, true, true, true]);
-  });
-  it('matching with testGrep - with regex', function () {
-    const filterFunc = buildFilterFunc({ testGrep: 'dummy(-.*)?-[0-9]' });
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([true, false, true, true, false]);
-  });
-  it('matching with fixture name', function () {
-    const filterFunc = buildFilterFunc({ fixture: 'fixture-002' });
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([false, false, false, true, true]);
-  });
-  it('matching with fixtureGrep', function () {
-    const filterFunc = buildFilterFunc({ fixtureGrep: '.*-002' });
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([false, false, false, true, true]);
-  });
-  it('matching with testMeta', function () {
-    const filterFunc = buildFilterFunc({ testMeta: { 'browser': 'safari' }});
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([false, false, true, false, false]);
-  });
-  it('matching with fixtureMeta', function () {
-    const filterFunc = buildFilterFunc({ fixtureMeta: { 'platform': 'macos' }});
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([false, false, true, true, false]);
-  });
-  it('matching with combination', function () {
-    const filterFunc = buildFilterFunc({
-      testGrep: 'dummy',
-      testMeta: { 'browser': 'chrome' },
-      fixtureMeta: { 'platform': 'macos' }
+    afterAll(function () {
+      process.env = OLD_ENV;
     });
-    expect(typeof filterFunc).toBe('function');
-    const results = [];
-    for (const testCase of testSets) {
-      const [tcTestName, tcFixtureName, tcTestMeta, tcFixtureMeta] = testCase;
-      results.push(filterFunc(tcTestName, tcFixtureName, '', tcTestMeta, tcFixtureMeta));
-    }
-    expect(results).toMatchObject([false, false, false, true, false]);
+
+    it('should use http_proxy', function () {
+      process.env.SAUCE_VM = 'truthy';
+      process.env.SAUCE_VIDEO_RECORD = 'truthy';
+      process.env.SAUCE_BROWSER_PATH = 'D:\\chrome99\\chrome.exe';
+      process.env.HTTP_PROXY = 'http://localhost:8080';
+      const cli = buildCommandLine({
+        browserName: 'firefox',
+        src: '**/*.test.js',
+      }, '/fake/project/path', '/fake/assets/path');
+      expect(cli).toMatchObject([
+        'D:\\chrome99\\chrome.exe',
+        '**/*.test.js',
+        '--video', '/fake/assets/path',
+        '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+        '--proxy', 'localhost:8080',
+        '--reporter',
+        'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      ]);
+    });
   });
 });
