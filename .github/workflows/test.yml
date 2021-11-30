@@ -8,6 +8,7 @@ on:
 env:
   SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+  NODE_VERSION: 14.x
 
 jobs:
   build:
@@ -47,10 +48,10 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Use Node.js v14.x
+      - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
@@ -104,10 +105,10 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - name: Use Node.js v14.x
+      - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
@@ -157,10 +158,10 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Use Node.js v14.x
+      - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install saucectl
         run: npm install -g saucectl
