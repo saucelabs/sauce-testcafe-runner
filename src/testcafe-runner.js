@@ -196,7 +196,8 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   // Reporters
   const xmlReportPath = path.join(assetsPath, 'report.xml');
   const jsonReportPath = path.join(assetsPath, 'report.json');
-  cli.push('--reporter', `xunit:${xmlReportPath},json:${jsonReportPath},list`);
+  const sauceReportPath = path.join(assetsPath, 'sauce-test-report.json');
+  cli.push('--reporter', `xunit:${xmlReportPath},json:${jsonReportPath},sauce-json:${sauceReportPath},list`);
 
   return cli;
 }
