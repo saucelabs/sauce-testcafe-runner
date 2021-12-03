@@ -16,7 +16,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with filters', function () {
@@ -50,7 +50,7 @@ describe('.buildCommandLine', function () {
       '--test-meta', 'my-key=my-val,2nd-key=2nd-val',
       '--fixture-meta', 'my-key=my-val,2nd-key=2nd-val',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with screenshots', function () {
@@ -69,7 +69,7 @@ describe('.buildCommandLine', function () {
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with quarantineMode', function () {
@@ -88,7 +88,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with different flags', function () {
@@ -120,7 +120,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with client scripts', function () {
@@ -138,7 +138,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with tsConfigPath', function () {
@@ -154,7 +154,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with no-array src', function () {
@@ -168,7 +168,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with browserArgs', function () {
@@ -183,7 +183,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);
   });
   it('basic with invalid browser', function () {
@@ -218,7 +218,7 @@ describe('.buildCommandLine', function () {
         '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
         '--proxy', 'localhost:8080',
         '--reporter',
-        'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,list',
+        'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
       ]);
     });
   });
