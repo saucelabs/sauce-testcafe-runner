@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const fs = require('fs');
-const xml2js = require('xml2js');
 const path = require('path');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const { escapeXML } = require('sauce-testrunner-utils');
@@ -10,81 +9,6 @@ const convert = require('xml-js');
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-const parser = new xml2js.Parser(
-  {'attrkey': 'attr'}
-);
-
-exports.createSauceJson = async (reportsFolder, xunitReport) => {
-  let testCafeXML = fs.readFileSync(xunitReport);
-  let result = await parser.parseStringPromise(testCafeXML);
-
-  if (result === null) {
-    return [];
-  }
-  let testsuite = result.testsuite;
-
-  const jsonLog = [];
-  const nativeLog = {
-    total_tests: parseInt(testsuite.attr.tests, 10),
-    total_success: testsuite.attr.tests - testsuite.attr.errors,
-    total_failures: parseInt(testsuite.attr.errors, 10),
-    total_time: testsuite.attr.time,
-    tests: []
-  };
-  let id = 0;
-  let in_video_timeline = 0;
-  let lastFixture = '';
-  for (let testcase of testsuite.testcase) {
-    let testFailed = testcase.failure || false;
-    let fixture = testcase.attr.classname;
-    let test = {
-      class: fixture,
-      failure_reason: testFailed ? testcase.failure[0] : null,
-      name: testcase.attr.name,
-      status: testFailed ? 'error' : 'success',
-      status_code: testFailed ? 1 : 0,
-      test_time: testcase.attr.time
-    };
-    nativeLog.tests.push(test);
-    if (fixture !== lastFixture) {
-      jsonLog.push({
-        'status': 'info',
-        'message': `Fixture: ${fixture}`,
-        'screenshot': null
-      });
-      lastFixture = fixture;
-    }
-    jsonLog.push({
-      id: id++,
-      'screenshot': 0,
-      'HTTPStatus': test.status_code ? 200 : 500,
-      'suggestion': null,
-      'statusCode': test.status_code,
-      'path': test.name,
-      'between_commands': test.test_time,
-      'result': {
-        'status': test.status,
-        'failure_reason': test.failure_reason
-      },
-      'request': {
-        'skipped': testcase.skipped ? true : false
-      },
-      in_video_timeline
-    });
-    in_video_timeline += parseFloat(test.test_time);
-  }
-  const nativeLogFile = path.join('reports', 'native-log.json');
-  fs.writeFileSync(
-    nativeLogFile,
-    JSON.stringify(nativeLog, '', 2)
-  );
-  const jsonLogFile = path.join('reports', 'log.json');
-  fs.writeFileSync(
-    jsonLogFile,
-    JSON.stringify(jsonLog, '', 2)
-  );
-  return [nativeLogFile, jsonLogFile];
-};
 
 // NOTE: this function is not available currently.
 // It will be ready once data store API actually works.
@@ -212,10 +136,6 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
 
   // create sauce asset
   console.log('Preparing assets');
-  let [nativeLogJson, logJson] = await exports.createSauceJson(
-    path.join(assetsPath, 'reports'),
-    path.join(assetsPath, 'report.xml')
-  );
 
   // Upload metrics
   let mtFiles = [];
@@ -233,14 +153,13 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
     assets.push(junitPath);
   }
 
+  let sauceTestReport = path.join(assetsPath, 'sauce-test-report.json');
+  if (fs.existsSync(sauceTestReport)) {
+    assets.push(sauceTestReport);
+  }
+
   let uploadAssets = [...assets, ...mtFiles];
-  if (nativeLogJson !== undefined) {
-    uploadAssets.push(nativeLogJson);
-  }
-  if (logJson !== undefined) {
-    uploadAssets.push(logJson);
-  }
-  // updaload assets
+  // upload assets
   await Promise.all([
     api.uploadJobAssets(
       sessionId,
