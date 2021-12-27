@@ -62,6 +62,21 @@ async function runReporter ({ suiteName, results, metrics, assetsPath, browserNa
   }
 }
 
+// Build --compiler-options argument
+function buildCompilerOptions (compilerOptions) {
+  const args = [];
+  if (compilerOptions?.typescript?.configPath) {
+    args.push(`typescript.configPath='${compilerOptions?.typescript?.configPath}'`);
+  }
+  if (compilerOptions?.typescript?.customCompilerModulePath) {
+    args.push(`typescript.customCompilerModulePath='${compilerOptions?.typescript?.customCompilerModulePath}'`);
+  }
+  for (const key in compilerOptions?.typescript?.options) {
+    args.push(`typescript.options.${key}=${compilerOptions?.typescript?.options[key]}`);
+  }
+  return args.join(',');
+}
+
 // Buid the command line to invoke TestCafe with all required parameters
 function buildCommandLine (suite, projectPath, assetsPath) {
   const cli = [];
@@ -137,6 +152,12 @@ function buildCommandLine (suite, projectPath, assetsPath) {
     }
     if (flags.length) {
       cli.push('--quarantine-mode', flags.join(','));
+    }
+  }
+  if (suite.compilerOptions) {
+    const options = buildCompilerOptions(suite.compilerOptions);
+    if (options) {
+      cli.push('--compiler-options', options);
     }
   }
 
@@ -268,4 +289,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {buildCommandLine, run};
+module.exports = {buildCommandLine, buildCompilerOptions, run};

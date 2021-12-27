@@ -1,7 +1,7 @@
 jest.mock('testcafe');
 jest.mock('sauce-testrunner-utils');
 jest.mock('../../../src/sauce-testreporter');
-const { buildCommandLine } = require('../../../src/testcafe-runner');
+const { buildCommandLine, buildCompilerOptions } = require('../../../src/testcafe-runner');
 
 
 describe('.buildCommandLine', function () {
@@ -13,6 +13,27 @@ describe('.buildCommandLine', function () {
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
+      '--video', '/fake/assets/path',
+      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+      '--reporter',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+    ]);
+  });
+  it('most basic config with typescript options', function () {
+    const cli = buildCommandLine({
+      browserName: 'firefox',
+      src: ['**/*.test.js'],
+      compilerOptions: {
+        typescript: {
+          customCompilerModulePath: '/compiler/path',
+          configPath: 'tsconfig.json',
+        },
+      },
+    }, '/fake/project/path', '/fake/assets/path');
+    expect(cli).toMatchObject([
+      'firefox:headless:marionettePort=9223',
+      '**/*.test.js',
+      '--compiler-options', 'typescript.configPath=\'tsconfig.json\',typescript.customCompilerModulePath=\'/compiler/path\'',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
@@ -221,5 +242,59 @@ describe('.buildCommandLine', function () {
         'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
       ]);
     });
+  });
+});
+
+describe('.buildCompilerOptions', function () {
+  it('Empty input', function () {
+    const input = {};
+    const expected = '';
+    expect(buildCompilerOptions(input)).toEqual(expected);
+  });
+  it('TypeScript config file', function () {
+    const input = {
+      typescript: {
+        configPath: './tsconfig.json',
+      },
+    };
+    const expected = `typescript.configPath='./tsconfig.json'`;
+    expect(buildCompilerOptions(input)).toEqual(expected);
+  });
+  it('CustomCompilerPath set', function () {
+    const input = {
+      typescript: {
+        customCompilerModulePath: '/path/to/custom/compiler',
+      },
+    };
+    const expected = `typescript.customCompilerModulePath='/path/to/custom/compiler'`;
+    expect(buildCompilerOptions(input)).toEqual(expected);
+  });
+  it('With options', function () {
+    const input = {
+      typescript: {
+        options: {
+          allowUnusedLabels: true,
+          noFallthroughCasesInSwitch: true,
+          allowUmdGlobalAccess: true,
+        },
+      },
+    };
+    const expected = 'typescript.options.allowUnusedLabels=true,typescript.options.noFallthroughCasesInSwitch=true,typescript.options.allowUmdGlobalAccess=true';
+    expect(buildCompilerOptions(input)).toEqual(expected);
+  });
+  it('All with options', function () {
+    const input = {
+      typescript: {
+        configPath: './tsconfig.json',
+        customCompilerModulePath: '/path/to/custom/compiler',
+        options: {
+          allowUnusedLabels: true,
+          noFallthroughCasesInSwitch: true,
+          allowUmdGlobalAccess: true,
+        },
+      },
+    };
+    const expected = `typescript.configPath='./tsconfig.json',typescript.customCompilerModulePath='/path/to/custom/compiler',typescript.options.allowUnusedLabels=true,typescript.options.noFallthroughCasesInSwitch=true,typescript.options.allowUmdGlobalAccess=true`;
+    expect(buildCompilerOptions(input)).toEqual(expected);
   });
 });
