@@ -88,8 +88,13 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   };
   const browserName = suite.browserName;
   let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
-  if (process.env.SAUCE_VM && process.env.SAUCE_BROWSER_PATH) {
-    testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
+  if (process.env.SAUCE_VM) {
+    if (process.env.SAUCE_BROWSER_PATH) {
+      testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
+    }
+    if (suite.headless) {
+      testCafeBrowserName = `${testCafeBrowserName}:headless`;
+    }
   }
   if (!testCafeBrowserName) {
     throw new Error(`Unsupported browser: ${browserName}.`);
