@@ -99,7 +99,7 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   if (!testCafeBrowserName) {
     throw new Error(`Unsupported browser: ${browserName}.`);
   }
-  if (suite.browserArgs) {
+  if (suite.browserArgs && suite.browserArgs.length > 0) {
     const browserArgs = suite.browserArgs.join(' ');
     testCafeBrowserName = testCafeBrowserName + ' ' + browserArgs;
   }
