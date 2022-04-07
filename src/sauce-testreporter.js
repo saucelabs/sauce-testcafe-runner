@@ -209,48 +209,44 @@ exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, resu
 exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
   let result;
   const opts = {compact: true, spaces: 4};
-  try {
-    const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
-    result = convert.xml2js(xmlData, opts);
+  const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
+  result = convert.xml2js(xmlData, opts);
 
-    result.testsuite._attributes.id = 0;
-    result.testsuite._attributes.name = suiteName;
-    result.testsuite._attributes.timestamp = (new Date(result.testsuite._attributes.timestamp)).toISOString();
-    for (let i = 0; i < result.testsuite.testcase.length; i++) {
-      const testcase = result.testsuite.testcase[i];
-      if (testcase.failure && testcase.failure._cdata) {
-        result.testsuite.testcase[i].failure._attributes = testcase.failure._attributes || {};
-        result.testsuite.testcase[i].failure._attributes.message = escapeXML(testcase.failure._attributes.message || '');
-        result.testsuite.testcase[i].failure._attributes.type = testcase.failure._attributes.type || '';
-        result.testsuite.testcase[i].failure._cdata = testcase.failure._cdata || '';
-      }
+  result.testsuite._attributes.id = 0;
+  result.testsuite._attributes.name = suiteName;
+  result.testsuite._attributes.timestamp = (new Date(result.testsuite._attributes.timestamp)).toISOString();
+  for (let i = 0; i < result.testsuite.testcase.length; i++) {
+    const testcase = result.testsuite.testcase[i];
+    if (testcase.failure && testcase.failure._cdata) {
+      result.testsuite.testcase[i].failure._attributes = testcase.failure._attributes || {};
+      result.testsuite.testcase[i].failure._attributes.message = escapeXML(testcase.failure._attributes.message || '');
+      result.testsuite.testcase[i].failure._attributes.type = testcase.failure._attributes.type || '';
+      result.testsuite.testcase[i].failure._cdata = testcase.failure._cdata || '';
     }
-    result.testsuite.properties = {};
-    if (process.platform.toLowerCase() === 'linux') {
-      platform = 'Linux';
-    }
-    result.testsuite.properties.property = [
-      {
-        _attributes: {
-          name: 'platformName',
-          value: platform,
-        }
-      },
-      {
-        _attributes: {
-          name: 'browserName',
-          value: browserName,
-        }
-      }
-    ];
-    result.testsuites = {};
-    result.testsuites.testsuite = result.testsuite;
-    delete result.testsuite;
-
-    opts.textFn = escapeXML;
-    let xmlResult = convert.js2xml(result, opts);
-    fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
-  } catch (err) {
-    console.error('failed to generate junit file:', err);
   }
+  result.testsuite.properties = {};
+  if (process.platform.toLowerCase() === 'linux') {
+    platform = 'Linux';
+  }
+  result.testsuite.properties.property = [
+    {
+      _attributes: {
+        name: 'platformName',
+        value: platform,
+      }
+    },
+    {
+      _attributes: {
+        name: 'browserName',
+        value: browserName,
+      }
+    }
+  ];
+  result.testsuites = {};
+  result.testsuites.testsuite = result.testsuite;
+  delete result.testsuite;
+
+  opts.textFn = escapeXML;
+  let xmlResult = convert.js2xml(result, opts);
+  fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
 };
