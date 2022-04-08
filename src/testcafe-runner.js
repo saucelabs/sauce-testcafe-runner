@@ -266,7 +266,11 @@ async function run (runCfgPath, suiteName) {
 
   const tcCommandLine = buildCommandLine(cfg.suite, cfg.projectPath, cfg.assetsPath);
   const { startTime, endTime, hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
-  generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
+  try {
+    generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
+  } catch (err) {
+    console.error(`Failed to generate junit file: ${err}`);
+  }
 
   // Publish results
   const passed = hasPassed;
