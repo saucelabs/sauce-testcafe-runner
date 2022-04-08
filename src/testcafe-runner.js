@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv} = require('sauce-testrunner-utils');
+const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv, preExec} = require('sauce-testrunner-utils');
 const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
 const { spawn } = require('child_process');
 
@@ -253,8 +253,14 @@ async function runTestCafe (tcCommandLine, projectPath) {
 }
 
 async function run (runCfgPath, suiteName) {
+  const preExecTimeout = 300;
+
   const cfg = await prepareConfiguration(runCfgPath, suiteName);
   if (!cfg) {
+    return false;
+  }
+
+  if (!await preExec.run(cfg.suite, preExecTimeout)) {
     return false;
   }
 
