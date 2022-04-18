@@ -365,33 +365,3 @@ jobs:
         working-directory: ./tests/fixtures/post-release
         run: |
           npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-testcafe-runner-win-amd64.zip"
-
-      - name: Notify slack on failure
-        uses: 8398a7/action-slack@v3
-        if: failure()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          RELEASE: ${{ steps.parse_version.outputs.version }}
-        with:
-          status: custom
-          fields: commit,workflow,job
-          custom_payload: |
-            {
-              attachments: [{
-                mrkdwn_in: ['text'],
-                title: `${{ github.repository }}@${process.env.RELEASE}`,
-                title_link: `https://github.com/${{ github.repository }}/releases/${process.env.RELEASE}`,
-                text: `${process.env.AS_JOB} job failed  :homer_back_away:`,
-                color: 'danger',
-                fields: [{
-                  title: 'Commit',
-                  value: `${process.env.AS_COMMIT}`,
-                  short: true
-                },
-                {
-                  title: 'Workflow',
-                  value: `${process.env.AS_WORKFLOW}`,
-                  short: true
-                }]
-              }]
-            }

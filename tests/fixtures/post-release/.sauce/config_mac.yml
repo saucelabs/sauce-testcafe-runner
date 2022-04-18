@@ -52,3 +52,8 @@ suites:
         platformName: iOS
         platformVersions:
           - "14.3"
+
+notifications:
+  slack:
+    channels: ["devx"]
+    send: fail

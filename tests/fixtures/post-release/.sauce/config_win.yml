@@ -35,3 +35,8 @@ suites:
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
+
+notifications:
+  slack:
+    channels: ["devx"]
+    send: fail
