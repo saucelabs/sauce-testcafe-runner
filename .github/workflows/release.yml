@@ -364,7 +364,7 @@ jobs:
       - name: saucectl test
         working-directory: ./tests/fixtures/post-release
         run: |
-          npx saucectl run --runner-version "github-release: ${{ steps.parse_version.outputs.version }}"
+          npx saucectl run --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-testcafe-runner-win-amd64.zip"
 
       - name: Notify slack on failure
         uses: 8398a7/action-slack@v3
