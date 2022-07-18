@@ -263,6 +263,8 @@ async function run (runCfgPath, suiteName) {
   if (!await preExec.run(cfg.suite, preExecTimeout)) {
     return false;
   }
+  process.env.SAUCE_SUITE_NAME = suiteName;
+  process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.runCfg.artifacts?.download?.directory;
 
   const tcCommandLine = buildCommandLine(cfg.suite, cfg.projectPath, cfg.assetsPath);
   const { startTime, endTime, hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
