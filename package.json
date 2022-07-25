@@ -22,7 +22,7 @@
     "saucelabs": "4.7.5",
     "testcafe": "1.20.0",
     "testcafe-browser-provider-ios": "0.5.0",
-    "testcafe-reporter-sauce-json": "0.5.0",
+    "testcafe-reporter-sauce-json": "0.5.1",
     "typescript": "4.7.4",
     "xml-js": "1.6.11"
   },
