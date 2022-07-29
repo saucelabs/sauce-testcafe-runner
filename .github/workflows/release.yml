@@ -35,14 +35,14 @@ jobs:
           fi
           echo ::set-output name=tag_name::${TAG_NAME}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -96,7 +96,7 @@ jobs:
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ steps.prep.outputs.version }}
 
@@ -174,14 +174,14 @@ jobs:
 
       - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
       - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -260,14 +260,14 @@ jobs:
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
       - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
 
