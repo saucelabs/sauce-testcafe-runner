@@ -366,7 +366,7 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run  --config ./.sauce/config_win.yml  --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-testcafe-runner-win-amd64.zip"
+          npx saucectl run --config ./.sauce/config_win.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-testcafe-runner-win-amd64.zip"
 
   post-release-macos-tests:
     runs-on: ubuntu-latest
