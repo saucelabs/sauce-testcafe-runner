@@ -24,7 +24,8 @@
     "testcafe-browser-provider-ios": "0.5.0",
     "testcafe-reporter-sauce-json": "0.5.1",
     "typescript": "4.8.2",
-    "xml-js": "1.6.11"
+    "xml-js": "1.6.11",
+    "yargs": "17.5.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.12",
