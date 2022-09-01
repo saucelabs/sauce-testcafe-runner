@@ -19,7 +19,7 @@
     "dotenv": "16.0.2",
     "mocha-junit-reporter": "^2.0.0",
     "sauce-testrunner-utils": "0.6.1",
-    "saucelabs": "4.7.5",
+    "saucelabs": "7.2.0",
     "testcafe": "2.0.0",
     "testcafe-browser-provider-ios": "0.5.0",
     "testcafe-reporter-sauce-json": "0.5.1",
