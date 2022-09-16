@@ -8,7 +8,7 @@ on:
 env:
   SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
-  NODE_VERSION: 14.x
+  NODE_VERSION: 16
 
 jobs:
   build:
