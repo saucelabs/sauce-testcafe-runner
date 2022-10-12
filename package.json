@@ -16,6 +16,7 @@
     "testcafe"
   ],
   "dependencies": {
+    "@saucelabs/testcomposer": "^0.1.0",
     "dotenv": "16.0.2",
     "mocha-junit-reporter": "^2.0.0",
     "sauce-testrunner-utils": "0.6.1",

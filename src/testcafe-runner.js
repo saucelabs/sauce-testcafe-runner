@@ -3,6 +3,8 @@ const fs = require('fs');
 const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv, preExec} = require('sauce-testrunner-utils');
 const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
 const { spawn } = require('child_process');
+const _ = require('lodash');
+const stream = require('stream');
 
 async function prepareConfiguration (runCfgPath, suiteName) {
   try {
@@ -31,16 +33,49 @@ async function prepareConfiguration (runCfgPath, suiteName) {
   }
 }
 
-async function runReporter ({ suiteName, results, metrics, assetsPath, browserName, startTime, endTime, region, metadata, saucectlVersion }) {
+async function runReporter ({ suiteName, results, metrics, assetsPath, browserName, startTime, endTime, region, metadata }) {
   try {
-    let assets = [
-      path.join(assetsPath, 'report.xml'),
-      path.join(assetsPath, 'report.json'),
-      path.join(assetsPath, 'console.log'),
-    ];
-    const video = path.join(assetsPath, 'video.mp4');
-    if (fs.existsSync(video)) {
-      assets.push(video);
+    console.log('Preparing assets');
+
+    const streamAssets = function (files) {
+      const assets = [];
+      for (const f of files) {
+        if (fs.existsSync(path.join(assetsPath, f))) {
+          assets.push({
+            filename: f,
+            data: fs.createReadStream(path.join(assetsPath, f))
+          });
+        }
+      }
+
+      return assets;
+    };
+
+    let assets = streamAssets(
+      [
+        'report.xml',
+        'report.json',
+        'console.log',
+        'video.mp4',
+        'junit.xml',
+        'sauce-test-report.json'
+      ]
+    );
+
+    // Upload metrics
+    for (let [, mt] of Object.entries(metrics)) {
+      if (_.isEmpty(mt.data)) {
+        continue;
+      }
+
+      const r = new stream.Readable();
+      r.push(JSON.stringify(mt.data, ' ', 2));
+      r.push(null);
+
+      assets.push({
+        filename: mt.name,
+        data: r
+      });
     }
 
     await sauceReporter({
@@ -54,11 +89,9 @@ async function runReporter ({ suiteName, results, metrics, assetsPath, browserNa
       endTime,
       region,
       metadata,
-      saucectlVersion,
     });
   } catch (e) {
-    console.error(`Reporting to Sauce Labs failed. Reason '${e.message}'`);
-    console.error(e);
+    console.error(`Reporting to Sauce Labs failed:`, e);
   }
 }
 
@@ -285,8 +318,18 @@ async function run (runCfgPath, suiteName) {
   }
 
   const region = cfg.runCfg.sauce.region || 'us-west-1';
-  await runReporter({ suiteName, assetsPath: cfg.assetsPath, region, metadata: cfg.metadata, saucectlVersion: cfg.saucectlVersion,
-                      startTime, endTime, results: hasPassed ? 0 : 1, metrics: cfg.metrics, browserName: cfg.suite.browserName, platformName: cfg.platformName });
+  await runReporter({
+    suiteName,
+    assetsPath: cfg.assetsPath,
+    region,
+    metadata: cfg.metadata,
+    startTime,
+    endTime,
+    results: hasPassed ? 0 : 1,
+    metrics: cfg.metrics,
+    browserName: cfg.suite.browserName,
+    platformName: cfg.platformName
+  });
   return passed;
 }
 

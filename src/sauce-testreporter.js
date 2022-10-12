@@ -1,15 +1,14 @@
-const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 const { escapeXML } = require('sauce-testrunner-utils');
-const SauceLabs = require('saucelabs').default;
 const convert = require('xml-js');
+const {TestComposer} = require('@saucelabs/testcomposer');
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-const createJob = async (api, browserName, suiteName, tags, build, passed, startTime, endTime, saucectlVersion) => {
+const createJob = async (testComposer, browserName, suiteName, tags, build, passed, startTime, endTime) => {
   let browserVersion;
   switch (browserName.toLowerCase()) {
     case 'firefox':
@@ -21,127 +20,73 @@ const createJob = async (api, browserName, suiteName, tags, build, passed, start
     default:
       browserVersion = '*';
   }
-  const body = {
-    name: suiteName,
-    user: process.env.SAUCE_USERNAME,
-    startTime,
-    endTime,
-    framework: 'testcafe',
-    frameworkVersion: process.env.TESTCAFE_VERSION,
-    status: 'complete',
-    suite: suiteName,
-    errors: [],
-    passed,
-    tags,
-    build,
-    browserName,
-    browserVersion,
-    platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG,
-    saucectlVersion,
-  };
 
-  let sessionId;
-  await api.createJob(
-    body
-  ).then(
-    (resp) => {
-      sessionId = resp.ID;
-    },
-    (e) => console.error('Create job failed: ', e.stack)
-  );
+  let job;
+  try {
+    job = await testComposer.createReport({
+      name: suiteName,
+      startTime,
+      endTime,
+      framework: 'testcafe',
+      frameworkVersion: process.env.TESTCAFE_VERSION,
+      passed,
+      tags,
+      build,
+      browserName,
+      browserVersion,
+      platformName: process.env.IMAGE_NAME + ':' + process.env.IMAGE_TAG
+    });
+  } catch (e) {
+    console.error('Failed to create job:', e);
+  }
 
-  return sessionId || 0;
+  return job;
 };
 
-exports.sauceReporter = async ({suiteName, browserName, assets, assetsPath, results, startTime, endTime, metrics, region, metadata, saucectlVersion}) => {
+exports.sauceReporter = async ({suiteName, browserName, assets, results, startTime, endTime, region, metadata}) => {
   const tags = metadata.tags || [];
   const build = metadata.build || '';
 
-  const tld = region === 'staging' ? 'net' : 'com';
-  const api = new SauceLabs({
-    user: process.env.SAUCE_USERNAME,
-    key: process.env.SAUCE_ACCESS_KEY,
+  let pkgVersion = 'unknown';
+  try {
+    const pkgData = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8'));
+    pkgVersion = pkgData.version;
+    // eslint-disable-next-line no-empty
+  } catch (e) {
+  }
+
+  const testComposer = new TestComposer({
     region,
-    tld
+    username: process.env.SAUCE_USERNAME,
+    accessKey: process.env.SAUCE_ACCESS_KEY,
+    headers: {'User-Agent': `testcafe-runner/${pkgVersion}`}
   });
 
-  let sessionId = await createJob(api, browserName, suiteName, tags, build, results === 0, startTime, endTime, saucectlVersion);
+  let job = await createJob(testComposer, browserName, suiteName, tags, build, results === 0, startTime, endTime);
 
-  if (!sessionId) {
-    console.error('Unable to retrieve test entry. Assets won\'t be uploaded.');
+  if (!job) {
+    console.error('Unable to create job. Assets won\'t be uploaded.');
     updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
     return false;
   }
 
-  // create sauce asset
-  console.log('Preparing assets');
-
-  // Upload metrics
-  let mtFiles = [];
-  for (let [, mt] of Object.entries(metrics)) {
-    if (_.isEmpty(mt.data)) {
-      continue;
-    }
-    let mtFile = path.join(assetsPath, mt.name);
-    fs.writeFileSync(mtFile, JSON.stringify(mt.data, ' ', 2));
-    mtFiles.push(mtFile);
-  }
-
-  let junitPath = path.join(assetsPath, 'junit.xml');
-  if (fs.existsSync(junitPath)) {
-    assets.push(junitPath);
-  }
-
-  let sauceTestReport = path.join(assetsPath, 'sauce-test-report.json');
-  if (fs.existsSync(sauceTestReport)) {
-    assets.push(sauceTestReport);
-  }
-
-  let uploadAssets = [...assets, ...mtFiles];
-  // upload assets
-  await Promise.all([
-    api.uploadJobAssets(
-      sessionId,
-      { files: uploadAssets }
-    ).then(
-      (resp) => {
-        if (resp.errors) {
-          for (let err of resp.errors) {
-            console.error(err);
-          }
+  await testComposer.uploadAssets(
+    job.id,
+    assets
+  ).then(
+    (resp) => {
+      if (resp.errors) {
+        for (const err of resp.errors) {
+          console.error('Failed to upload asset:', err);
         }
-      },
-      (e) => {
-        console.log('upload failed:', e.stack);
-        updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
       }
-    ),
-    api.updateJob(process.env.SAUCE_USERNAME, sessionId, {
-      name: suiteName,
-      passed: results === 0
-    }).then(
-      () => {},
-      (e) => {
-        console.log('Failed to update job status', e);
-        updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
-      }
-    )
-  ]);
+    },
+    (e) => console.error('Failed to upload assets:', e.message)
+  );
 
-  let domain;
+  console.log(`\nOpen job details page: ${job.url}\n`);
 
-  switch (region) {
-    case 'us-west-1':
-      domain = 'saucelabs.com';
-      break;
-    default:
-      domain = `${region}.saucelabs.${tld}`;
-  }
-
-  const jobDetailsUrl = `https://app.${domain}/tests/${sessionId}`;
-  console.log(`\nOpen job details page: ${jobDetailsUrl}\n`);
-
-  updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl, reportingSucceeded: true });
+  updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl: job.url, reportingSucceeded: true });
   return true;
 };
 
