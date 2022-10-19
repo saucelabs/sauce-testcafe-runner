@@ -5,6 +5,7 @@ const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
 const { spawn } = require('child_process');
 const _ = require('lodash');
 const stream = require('stream');
+const glob = require('glob');
 
 async function prepareConfiguration (runCfgPath, suiteName) {
   try {
@@ -307,6 +308,8 @@ async function run (runCfgPath, suiteName) {
     console.error(`Failed to generate junit file: ${err}`);
   }
 
+  renameScreenshots(cfg.assetsPath);
+
   // Publish results
   const passed = hasPassed;
   if (process.env.SAUCE_VM) {
@@ -331,6 +334,14 @@ async function run (runCfgPath, suiteName) {
     platformName: cfg.platformName
   });
   return passed;
+}
+
+function renameScreenshots (assetsPath) {
+  const assets = glob.sync(path.join(assetsPath, '**', '*.png'));
+  for (const f of assets) {
+    const filename = path.join(path.dirname(f), `${path.basename(path.dirname(f))}-${path.basename(f)}`);
+    fs.renameSync(f, filename);
+  }
 }
 
 if (require.main === module) {
