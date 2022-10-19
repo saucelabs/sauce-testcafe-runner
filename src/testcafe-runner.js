@@ -216,7 +216,7 @@ function buildCommandLine (suite, projectPath, assetsPath) {
     const pathPattern = '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}';
     const takeOnFails = suite.screenshots.takeOnFails;
     const fullPage = suite.screenshots.fullPage;
-    cli.push('--screenshots', `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern}`);
+    cli.push('--screenshots', `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern},thumbnails=false`);
   }
 
   if (process.env.HTTP_PROXY) {
