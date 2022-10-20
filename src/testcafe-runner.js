@@ -307,8 +307,6 @@ async function run (runCfgPath, suiteName) {
     console.error(`Failed to generate junit file: ${err}`);
   }
 
-  //renameScreenshots(cfg.assetsPath);
-
   // Publish results
   const passed = hasPassed;
   if (process.env.SAUCE_VM) {
@@ -334,16 +332,6 @@ async function run (runCfgPath, suiteName) {
   });
   return passed;
 }
-
-/*
-function renameScreenshots (assetsPath) {
-  const assets = glob.sync(path.join(assetsPath, '**', '*.png'));
-  for (const f of assets) {
-    const filename = path.join(path.dirname(f), `${path.basename(path.dirname(f))}-${path.basename(f)}`);
-    fs.renameSync(f, filename);
-  }
-}
-*/
 
 if (require.main === module) {
   console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
