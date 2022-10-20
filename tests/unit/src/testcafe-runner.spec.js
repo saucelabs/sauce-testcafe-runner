@@ -88,7 +88,7 @@ describe('.buildCommandLine', function () {
       '**/*.test.js',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${FIXTURE}__${TEST}__screenshot-${FILE_INDEX},thumbnails=false',
+      '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${TEST} - ${FILE_INDEX}.png,thumbnails=false',
       '--reporter',
       'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
     ]);

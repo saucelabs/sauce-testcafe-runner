@@ -5,7 +5,6 @@ const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
 const { spawn } = require('child_process');
 const _ = require('lodash');
 const stream = require('stream');
-const glob = require('glob');
 
 async function prepareConfiguration (runCfgPath, suiteName) {
   try {
@@ -214,7 +213,7 @@ function buildCommandLine (suite, projectPath, assetsPath) {
     // Set screenshot pattern as fixture name, test name and screenshot #
     // This format prevents nested screenshots and shows only the info that
     // a Sauce session needs
-    const pathPattern = '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}';
+    const pathPattern = '${TEST} - ${FILE_INDEX}.png';
     const takeOnFails = suite.screenshots.takeOnFails;
     const fullPage = suite.screenshots.fullPage;
     cli.push('--screenshots', `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern},thumbnails=false`);
@@ -308,7 +307,7 @@ async function run (runCfgPath, suiteName) {
     console.error(`Failed to generate junit file: ${err}`);
   }
 
-  renameScreenshots(cfg.assetsPath);
+  //renameScreenshots(cfg.assetsPath);
 
   // Publish results
   const passed = hasPassed;
@@ -336,6 +335,7 @@ async function run (runCfgPath, suiteName) {
   return passed;
 }
 
+/*
 function renameScreenshots (assetsPath) {
   const assets = glob.sync(path.join(assetsPath, '**', '*.png'));
   for (const f of assets) {
@@ -343,6 +343,7 @@ function renameScreenshots (assetsPath) {
     fs.renameSync(f, filename);
   }
 }
+*/
 
 if (require.main === module) {
   console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
