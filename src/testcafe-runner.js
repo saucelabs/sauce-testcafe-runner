@@ -210,9 +210,13 @@ function buildCommandLine (suite, projectPath, assetsPath) {
 
   // Screenshots
   if (suite.screenshots) {
+    // Set screenshot pattern as fixture name, test name and screenshot #
+    // This format prevents nested screenshots and shows only the info that
+    // a Sauce session needs
+    const pathPattern = '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}';
     const takeOnFails = suite.screenshots.takeOnFails;
     const fullPage = suite.screenshots.fullPage;
-    cli.push('--screenshots', `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},thumbnails=false`);
+    cli.push('--screenshots', `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern},thumbnails=false`);
   }
 
   if (process.env.HTTP_PROXY) {
