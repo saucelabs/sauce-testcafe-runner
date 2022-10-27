@@ -212,11 +212,16 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   if (suite.screenshots) {
     // Set screenshot pattern as fixture name, test name and screenshot #
     // This format prevents nested screenshots and shows only the info that
-    // a Sauce session needs
-    const pathPattern = '${FIXTURE}__${TEST}__screenshot-${FILE_INDEX}';
+    // a Sauce session needs.
+    // WARNING: TestCafe does not respect the pattern in case of error screenshots and uses '${FILE_INDEX}.png'.
+    // However, if ${FILEX_INDEX} precedes ${TEST} it works: https://github.com/DevExpress/testcafe/issues/7014
+    const pathPattern = '${FILE_INDEX} - ${FIXTURE} - ${TEST}.png';
     const takeOnFails = suite.screenshots.takeOnFails;
     const fullPage = suite.screenshots.fullPage;
-    cli.push('--screenshots', `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern},thumbnails=false`);
+    cli.push(
+      '--screenshots',
+      `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern},thumbnails=false`
+    );
   }
 
   if (process.env.HTTP_PROXY) {
