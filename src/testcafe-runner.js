@@ -214,7 +214,7 @@ function buildCommandLine (suite, projectPath, assetsPath) {
     // This format prevents nested screenshots and shows only the info that
     // a Sauce session needs.
     // WARNING: TestCafe does not respect the pattern in case of error screenshots and uses '${FILE_INDEX}.png'.
-    // However, if ${FILEX_INDEX} precedes ${TEST} it works: https://github.com/DevExpress/testcafe/issues/7014
+    // However, if ${FILE_INDEX} precedes ${TEST} it works: https://github.com/DevExpress/testcafe/issues/7014
     const pathPattern = '${FILE_INDEX} - ${FIXTURE} - ${TEST}.png';
     const takeOnFails = suite.screenshots.takeOnFails;
     const fullPage = suite.screenshots.fullPage;
