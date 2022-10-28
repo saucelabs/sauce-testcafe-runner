@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-      - uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v3
         with:
           cache-from: saucelabs/stt-testcafe-node:latest
           push: false
