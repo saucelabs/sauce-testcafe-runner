@@ -19,7 +19,7 @@ jobs:
   create-release-draft:
     runs-on: ubuntu-latest
     steps:
-      - name: Check tag
+      - name: Check Tag
         id: prep
         run: |
           TAG_NAME=$(curl -s -H "Authorization: token ${{ github.token }}" \
@@ -33,9 +33,10 @@ jobs:
               echo "A release has already been published for this run_id (${{ github.run_id }} / ${TAG_NAME})."
               exit 1
           fi
-          echo ::set-output name=tag_name::${TAG_NAME}
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           ref: ${{ github.ref }}
@@ -46,6 +47,7 @@ jobs:
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -53,11 +55,11 @@ jobs:
           git config --global user.name "devx-sauce-bot"
           git config --global user.email "devx.bot@saucelabs.com"
 
-      - name: Install dependencies
+      - name: Install Dependencies
         if: ${{ steps.prep.outputs.tag_name == '' }}
         run: npm ci
 
-      - name: generate (pre-)release draft
+      - name: Generate (Pre-)Release Draft
         if: ${{ steps.prep.outputs.tag_name == '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -91,12 +93,14 @@ jobs:
               echo "No draft version found"
               exit 1
           fi
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=release_id::${RELEASE_ID}
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           ref: ${{ steps.prep.outputs.version }}
 
@@ -104,11 +108,11 @@ jobs:
         run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -119,11 +123,10 @@ jobs:
           echo "testcafe_version=$TESTCAFE_VERSION" >> $GITHUB_ENV
 
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
+          cache-from: saucelabs/stt-testcafe-node:latest
           push: true
-          context: .
-          file: ./Dockerfile
           tags: |
             saucelabs/stt-testcafe-node:latest
             saucelabs/stt-testcafe-node:${{ steps.prep.outputs.version }}
@@ -168,13 +171,15 @@ jobs:
           $tagName = $selectedRelease.tag_name
           $releaseId = $selectedRelease.id
           $assetId = $selectedAsset.id
-          Write-Output "::set-output name=version::$tagName"
-          Write-Output "::set-output name=release_id::$releaseId"
-          Write-Output "::set-output name=asset_id::$assetId"
+
+          echo "version=$tagName" >> $Env:GITHUB_OUTPUT
+          echo "release_id=$releaseId" >> $Env:GITHUB_OUTPUT
+          echo "asset_id=$assetId" >> $Env:GITHUB_OUTPUT
 
       - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
@@ -185,23 +190,24 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Update Release version
+      - name: Update Release Version
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
-      - run: npm ci --production
+      - name: Install Dependencies
+        run: npm ci --production
         if: ${{ steps.prep.outputs.asset_id == '' }}
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: bash ./scripts/bundle.sh
 
-      - name: List bundle contents
+      - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
 
-      - name: Archive bundle
+      - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: azure/powershell@v1
         with:
@@ -211,25 +217,13 @@ jobs:
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-runner-win-amd64.zip
-          asset_path: ./sauce-testcafe-runner-win-amd64.zip
-          asset_name: sauce-testcafe-runner-win-amd64.zip
-          asset_content_type: application/zip
-
-      - name: Upload Release Asset Legacy
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-runner.zip
-          asset_path: ./sauce-testcafe-runner-win-amd64.zip
-          asset_name: sauce-testcafe-runner.zip
-          asset_content_type: application/zip
+        run: |
+          gh release upload ${{ steps.prep.outputs.version }} sauce-testcafe-runner-win-amd64.zip
+          mv sauce-testcafe-runner-win-amd64.zip sauce-testcafe-runner.zip
+          # Legacy Filename
+          gh release upload ${{ steps.prep.outputs.version }} sauce-testcafe-runner.zip
 
   release-macos-bundle:
     runs-on: macos-latest
@@ -254,13 +248,14 @@ jobs:
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-testcafe-macos.zip\") | .id | select(. != null)")
 
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=release_id::${RELEASE_ID}
-          echo ::set-output name=asset_id::${ASSET_ID}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
+          echo "asset_id=${ASSET_ID}" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
@@ -276,10 +271,12 @@ jobs:
         run: |
           npm version --no-git-tag-version ${{  steps.prep.outputs.version }}
 
-      - run: npm ci --production
+      - name: Install Dependencies
+        run: npm ci --production
         if: ${{ steps.prep.outputs.asset_id == '' }}
 
-      - uses: FedericoCarboni/setup-ffmpeg@v1
+      - name: Setup ffmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v2
         if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
         with:
@@ -289,41 +286,29 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: bash ./scripts/bundle.sh
 
-      - name: List bundle contents
+      - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: ls -R bundle/
 
-      - name: Archive bundle
+      - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
         run: zip -r sauce-testcafe-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-macos-amd64.zip
-          asset_path: ./sauce-testcafe-macos-amd64.zip
-          asset_name: sauce-testcafe-macos-amd64.zip
-          asset_content_type: application/zip
-
-      - name: Upload Release Asset Legacy
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }}/assets?name=sauce-testcafe-macos.zip
-          asset_path: ./sauce-testcafe-macos-amd64.zip
-          asset_name: sauce-testcafe-macos.zip
-          asset_content_type: application/zip
+        run: |
+          gh release upload ${{ steps.prep.outputs.version }} sauce-testcafe-macos-amd64.zip
+          mv sauce-testcafe-macos-amd64.zip sauce-testcafe-macos.zip
+          # Legacy Filename
+          gh release upload ${{ steps.prep.outputs.version }} sauce-testcafe-macos.zip
 
   publish-release:
     runs-on: ubuntu-latest
     needs: [release-docker, release-windows-bundle, release-macos-bundle]
     steps:
-      - name: Find matching draft tag
+      - name: Find Matching Draft Tag
         id: prep
         run: |
           RELEASE_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
@@ -334,9 +319,10 @@ jobs:
               echo "No draft version found"
               exit 1
           fi
-          echo ::set-output name=release_id::${RELEASE_ID}
 
-      - name: Publish release
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
+
+      - name: Publish Release
         run: |
           curl -f -X PATCH -H "Authorization: token ${{ github.token }}" \
             https://api.github.com/repos/${{ github.repository }}/releases/${{ steps.prep.outputs.release_id }} \
@@ -350,18 +336,22 @@ jobs:
       SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
       SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
     steps:
-      - uses: actions/checkout@master
-      - name: Install saucectl
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup saucectl
         run: npm i saucectl
-      - name: Parse release version
+
+      - name: Parse Release Version
         id: parse_version
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
-          echo ::set-output name=version::${VERSION}
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: cloud tests (Windows)
+      - name: Cloud Tests (Windows)
         working-directory: ./tests/fixtures/post-release
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
@@ -375,18 +365,22 @@ jobs:
       SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
       SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Install saucectl
         run: npm i saucectl
-      - name: Parse release version
+
+      - name: Parse Release Version
         id: parse_version
         run: |
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
-          echo ::set-output name=version::${VERSION}
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: cloud tests (MacOS)
+      - name: Cloud Tests (MacOS)
         working-directory: ./tests/fixtures/post-release
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
