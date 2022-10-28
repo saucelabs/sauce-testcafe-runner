@@ -43,12 +43,20 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Get TestCafe Version
+        run: |
+          TESTCAFE_VERSION=$(< package-lock.json jq -r '.dependencies["testcafe"].version')
+          echo "testcafe_version=$TESTCAFE_VERSION" >> $GITHUB_ENV
+
       - name: Build Docker Image
         uses: docker/build-push-action@v3
         with:
           cache-from: saucelabs/stt-testcafe-node:latest
           push: false
           tags: saucelabs/stt-testcafe-node:local
+          build-args: |
+            BUILD_TAG=${{ github.ref }}
+            TESTCAFE_VERSION=${{ env.testcafe_version }}
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v2
