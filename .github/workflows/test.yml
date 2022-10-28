@@ -23,9 +23,14 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - run: npm ci
-      - run: npm run unit-test
-      - run: npm run lint
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Unit Test
+        run: npm run unit-test
+
+      - name: Lint
+        run: npm run lint
 
   integration:
     runs-on: ubuntu-latest
@@ -100,7 +105,7 @@ jobs:
 
       - run: npm ci --production
 
-      - name: Set up ffmpeg
+      - name: Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v1
         if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
@@ -134,7 +139,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - run: npm install saucectl -g
+      - name: Setup saucectl
+        run: npm install saucectl -g
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/post-release
@@ -168,7 +174,8 @@ jobs:
       - name: Update Release version
         run: npm version --no-git-tag-version 1.0.0
 
-      - run: npm ci --production
+      - name: Install Dependencies
+        run: npm ci --production
 
       - uses: FedericoCarboni/setup-ffmpeg@v2
         if: ${{ steps.prep.outputs.asset_id == '' }}
@@ -179,7 +186,7 @@ jobs:
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
 
-      - name: Archive bundle
+      - name: Archive Bundle
         run: zip -r sauce-testcafe-macos.zip bundle/
 
       - name: Upload to GCS
@@ -198,7 +205,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - run: npm i saucectl
+      - name: Setup saucectl
+        run: npm i saucectl
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/post-release
@@ -212,7 +220,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
@@ -221,7 +230,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install saucectl
+      - name: Setup saucectl
         run: npm install -g saucectl
 
       - name: Run web-page
