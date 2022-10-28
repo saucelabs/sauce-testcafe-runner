@@ -274,7 +274,7 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
 
       - name: Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v1
+        uses: FedericoCarboni/setup-ffmpeg@v2
         if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
         with:
