@@ -33,7 +33,7 @@ jobs:
               echo "A release has already been published for this run_id (${{ github.run_id }} / ${TAG_NAME})."
               exit 1
           fi
-          echo ::set-output name=tag_name::${TAG_NAME}
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -93,8 +93,9 @@ jobs:
               echo "No draft version found"
               exit 1
           fi
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=release_id::${RELEASE_ID}
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{  steps.prep.outputs.version }}"
 
@@ -170,9 +171,10 @@ jobs:
           $tagName = $selectedRelease.tag_name
           $releaseId = $selectedRelease.id
           $assetId = $selectedAsset.id
-          Write-Output "::set-output name=version::$tagName"
-          Write-Output "::set-output name=release_id::$releaseId"
-          Write-Output "::set-output name=asset_id::$assetId"
+
+          echo "version=$tagName" >> $GITHUB_OUTPUT
+          echo "release_id=$releaseId" >> $GITHUB_OUTPUT
+          echo "asset_id=$assetId" >> $GITHUB_OUTPUT
 
       - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
@@ -246,9 +248,9 @@ jobs:
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-testcafe-macos.zip\") | .id | select(. != null)")
 
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=release_id::${RELEASE_ID}
-          echo ::set-output name=asset_id::${ASSET_ID}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
+          echo "asset_id=${ASSET_ID}" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
@@ -317,7 +319,8 @@ jobs:
               echo "No draft version found"
               exit 1
           fi
-          echo ::set-output name=release_id::${RELEASE_ID}
+
+          echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
 
       - name: Publish Release
         run: |
@@ -345,7 +348,8 @@ jobs:
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
-          echo ::set-output name=version::${VERSION}
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Cloud Tests (Windows)
         working-directory: ./tests/fixtures/post-release
@@ -373,7 +377,8 @@ jobs:
           VERSION=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
                       jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .tag_name")
-          echo ::set-output name=version::${VERSION}
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Cloud Tests (MacOS)
         working-directory: ./tests/fixtures/post-release
