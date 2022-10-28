@@ -172,9 +172,9 @@ jobs:
           $releaseId = $selectedRelease.id
           $assetId = $selectedAsset.id
 
-          echo "version=$tagName" >> $GITHUB_OUTPUT
-          echo "release_id=$releaseId" >> $GITHUB_OUTPUT
-          echo "asset_id=$assetId" >> $GITHUB_OUTPUT
+          echo "version=$tagName" >> $Env:GITHUB_OUTPUT
+          echo "release_id=$releaseId" >> $Env:GITHUB_OUTPUT
+          echo "asset_id=$assetId" >> $Env:GITHUB_OUTPUT
 
       - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
