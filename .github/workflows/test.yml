@@ -58,6 +58,7 @@ jobs:
         with:
           cache-from: saucelabs/stt-testcafe-node:latest
           push: false
+          load: true
           tags: saucelabs/stt-testcafe-node:local
           build-args: |
             BUILD_TAG=${{ github.ref }}
