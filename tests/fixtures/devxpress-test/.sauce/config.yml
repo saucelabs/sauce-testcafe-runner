@@ -12,17 +12,17 @@ sauce:
       - other tag
     build: Release $CI_COMMIT_SHORT_SHA
 suites:
-  - name: "saucy test"
+  - name: "saucy test #1"
     browserName: "chrome"
     src:
       - "**/*.test.js"
     speed: 1
-  - name: "saucy test"
+  - name: "saucy test #2"
     browserName: "firefox"
     src:
       - "**/*.test.js"
     speed: 1
-  - name: "saucy test"
+  - name: "saucy test #3"
     browserName: "microsoftedge"
     src:
       - "**/*.test.js"
