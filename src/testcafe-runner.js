@@ -99,10 +99,10 @@ async function runReporter ({ suiteName, results, metrics, assetsPath, browserNa
 function buildCompilerOptions (compilerOptions) {
   const args = [];
   if (compilerOptions?.typescript?.configPath) {
-    args.push(`typescript.configPath='${compilerOptions?.typescript?.configPath}'`);
+    args.push(`typescript.configPath=${compilerOptions?.typescript?.configPath}`);
   }
   if (compilerOptions?.typescript?.customCompilerModulePath) {
-    args.push(`typescript.customCompilerModulePath='${compilerOptions?.typescript?.customCompilerModulePath}'`);
+    args.push(`typescript.customCompilerModulePath=${compilerOptions?.typescript?.customCompilerModulePath}`);
   }
   for (const key in compilerOptions?.typescript?.options) {
     args.push(`typescript.options.${key}=${compilerOptions?.typescript?.options[key]}`);
