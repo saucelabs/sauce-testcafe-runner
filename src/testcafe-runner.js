@@ -107,7 +107,7 @@ function buildCompilerOptions (compilerOptions) {
   for (const key in compilerOptions?.typescript?.options) {
     args.push(`typescript.options.${key}=${compilerOptions?.typescript?.options[key]}`);
   }
-  return args.join(',');
+  return args.join(';');
 }
 
 // Buid the command line to invoke TestCafe with all required parameters
