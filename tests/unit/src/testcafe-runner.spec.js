@@ -33,7 +33,7 @@ describe('.buildCommandLine', function () {
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
-      '--compiler-options', 'typescript.configPath=\'tsconfig.json\',typescript.customCompilerModulePath=\'/compiler/path\'',
+      '--compiler-options', 'typescript.configPath=tsconfig.json;typescript.customCompilerModulePath=/compiler/path',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
@@ -257,7 +257,7 @@ describe('.buildCompilerOptions', function () {
         configPath: './tsconfig.json',
       },
     };
-    const expected = `typescript.configPath='./tsconfig.json'`;
+    const expected = `typescript.configPath=./tsconfig.json`;
     expect(buildCompilerOptions(input)).toEqual(expected);
   });
   it('CustomCompilerPath set', function () {
@@ -266,7 +266,7 @@ describe('.buildCompilerOptions', function () {
         customCompilerModulePath: '/path/to/custom/compiler',
       },
     };
-    const expected = `typescript.customCompilerModulePath='/path/to/custom/compiler'`;
+    const expected = `typescript.customCompilerModulePath=/path/to/custom/compiler`;
     expect(buildCompilerOptions(input)).toEqual(expected);
   });
   it('With options', function () {
@@ -279,7 +279,7 @@ describe('.buildCompilerOptions', function () {
         },
       },
     };
-    const expected = 'typescript.options.allowUnusedLabels=true,typescript.options.noFallthroughCasesInSwitch=true,typescript.options.allowUmdGlobalAccess=true';
+    const expected = 'typescript.options.allowUnusedLabels=true;typescript.options.noFallthroughCasesInSwitch=true;typescript.options.allowUmdGlobalAccess=true';
     expect(buildCompilerOptions(input)).toEqual(expected);
   });
   it('All with options', function () {
@@ -294,7 +294,7 @@ describe('.buildCompilerOptions', function () {
         },
       },
     };
-    const expected = `typescript.configPath='./tsconfig.json',typescript.customCompilerModulePath='/path/to/custom/compiler',typescript.options.allowUnusedLabels=true,typescript.options.noFallthroughCasesInSwitch=true,typescript.options.allowUmdGlobalAccess=true`;
+    const expected = `typescript.configPath=./tsconfig.json;typescript.customCompilerModulePath=/path/to/custom/compiler;typescript.options.allowUnusedLabels=true;typescript.options.noFallthroughCasesInSwitch=true;typescript.options.allowUmdGlobalAccess=true`;
     expect(buildCompilerOptions(input)).toEqual(expected);
   });
 });
