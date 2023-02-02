@@ -339,7 +339,9 @@ async function run (runCfgPath, suiteName) {
 }
 
 if (require.main === module) {
-  console.log(`Sauce TestCafe Runner ${require(path.join(__dirname, '..', 'package.json')).version}`);
+  const packageInfo = require(path.join(__dirname, '..', 'package.json'));
+  console.log(`Sauce TestCafe Runner ${packageInfo.version}`);
+  console.log(`Running TestCafe ${packageInfo.dependencies?.testcafe || ''}`);
   const {runCfgPath, suiteName} = getArgs();
 
   run(runCfgPath, suiteName)
