@@ -18,11 +18,9 @@ async function prepareConfiguration (nodeBin, runCfgPath, suiteName) {
     const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
 
     // Set env vars
-    console.log('Pre-env');
     for (const key in suite.env) {
       process.env[key] = suite.env[key];
     }
-    console.log('Post-env');
 
     // Define node/npm path for execution
     const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
