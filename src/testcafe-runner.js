@@ -6,7 +6,7 @@ const { spawn } = require('child_process');
 const _ = require('lodash');
 const stream = require('stream');
 
-async function prepareConfiguration (runCfgPath, suiteName) {
+async function prepareConfiguration (nodeBin, runCfgPath, suiteName) {
   try {
     runCfgPath = getAbsolutePath(runCfgPath);
     const runCfg = await loadRunConfig(runCfgPath);
@@ -22,9 +22,13 @@ async function prepareConfiguration (runCfgPath, suiteName) {
       process.env[key] = suite.env[key];
     }
 
+    // Define node/npm path for execution
+    const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+    const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
+
     // Install NPM dependencies
     let metrics = [];
-    let npmMetrics = await prepareNpmEnv(runCfg);
+    let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
     metrics.push(npmMetrics);
 
     return { runCfg, projectPath, assetsPath, suite, metrics, metadata, saucectlVersion };
@@ -290,10 +294,10 @@ async function runTestCafe (tcCommandLine, projectPath) {
   return { startTime, endTime, hasPassed };
 }
 
-async function run (runCfgPath, suiteName) {
+async function run (nodeBin, runCfgPath, suiteName) {
   const preExecTimeout = 300;
 
-  const cfg = await prepareConfiguration(runCfgPath, suiteName);
+  const cfg = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
   if (!cfg) {
     return false;
   }
@@ -342,9 +346,9 @@ if (require.main === module) {
   const packageInfo = require(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce TestCafe Runner ${packageInfo.version}`);
   console.log(`Running TestCafe ${packageInfo.dependencies?.testcafe || ''}`);
-  const {runCfgPath, suiteName} = getArgs();
+  const { nodeBin, runCfgPath, suiteName} = getArgs();
 
-  run(runCfgPath, suiteName)
+  run(nodeBin, runCfgPath, suiteName)
     // eslint-disable-next-line promise/prefer-await-to-then
     .then((passed) => {
       process.exit(passed ? 0 : 1);
