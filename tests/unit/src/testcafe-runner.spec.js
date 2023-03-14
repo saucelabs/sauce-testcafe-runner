@@ -24,7 +24,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -47,7 +47,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -83,7 +83,7 @@ describe('.buildCommandLine', function () {
       '--test-meta', 'my-key=my-val,2nd-key=2nd-val',
       '--fixture-meta', 'my-key=my-val,2nd-key=2nd-val',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -104,7 +104,7 @@ describe('.buildCommandLine', function () {
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${FILE_INDEX} - ${FIXTURE} - ${TEST}.png,thumbnails=false',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -125,7 +125,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -159,7 +159,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -179,7 +179,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -197,7 +197,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -213,7 +213,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -230,7 +230,7 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
@@ -267,7 +267,7 @@ describe('.buildCommandLine', function () {
         '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
         '--proxy', 'localhost:8080',
         '--reporter',
-        'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json,list',
+        'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
       ]);
       expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
       expect(process.env.SAUCE_DISABLE_SAUCE_UPLOAD).toBe('true');
