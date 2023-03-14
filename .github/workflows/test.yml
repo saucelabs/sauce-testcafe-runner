@@ -147,7 +147,7 @@ jobs:
           cache: 'npm'
 
       - name: Setup saucectl
-        run: npm install saucectl -g
+        run: npm install  --legacy-peer-deps -g saucectl
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/post-release
@@ -218,7 +218,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup saucectl
-        run: npm i saucectl
+        run: npm i --legacy-peer-deps saucectl
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/post-release
@@ -243,7 +243,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup saucectl
-        run: npm install -g saucectl
+        run: npm install --legacy-peer-deps -g saucectl
 
       - name: Run web-page
         run: |
