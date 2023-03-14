@@ -268,7 +268,7 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   cli.push('--reporter', `xunit:${xmlReportPath},json:${jsonReportPath},saucelabs,list`);
 
   // Configure reporters
-  process.env.SAUCE_DISABLE_SAUCE_UPLOAD = 'true';
+  process.env.SAUCE_DISABLE_UPLOAD = 'true';
   process.env.SAUCE_REPORT_JSON_PATH = sauceReportPath;
 
   return cli;
