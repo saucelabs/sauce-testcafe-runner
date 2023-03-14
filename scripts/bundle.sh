@@ -5,6 +5,7 @@ cp -r ./src/ ./bundle/src/
 cp -r ./bin/ bundle/bin/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
+cp testcafe-reporter-saucelabs-1.0.0.tgz bundle/testcafe-reporter-saucelabs-1.0.0.tgz
 cp "$(which node)" bundle/
 
 pushd bundle/

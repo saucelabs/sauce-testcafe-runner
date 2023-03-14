@@ -25,7 +25,7 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Unit Test
         run: npm run unit-test
@@ -110,7 +110,7 @@ jobs:
       - name: Update Release version
         run: npm version --no-git-tag-version 1.0.0
 
-      - run: npm ci --production --legacy-peer-deps
+      - run: npm ci --production
 
       - name: Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v2
@@ -147,7 +147,7 @@ jobs:
           cache: 'npm'
 
       - name: Setup saucectl
-        run: npm install  --legacy-peer-deps -g saucectl
+        run: npm install -g saucectl
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/post-release
@@ -187,7 +187,7 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Install Dependencies
-        run: npm ci --production --legacy-peer-deps
+        run: npm ci --production
 
       - uses: FedericoCarboni/setup-ffmpeg@v2
         if: ${{ steps.prep.outputs.asset_id == '' }}
@@ -218,12 +218,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup saucectl
-        run: npm i --legacy-peer-deps saucectl
+        run: npm i -g saucectl
 
       - name: Test on Sauce
         working-directory: ./tests/fixtures/post-release
         run: |
-          npx saucectl run --config .sauce/config_mac.yml --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-macos-${{ github.run_id }}.zip"
+          saucectl run --config .sauce/config_mac.yml --runner-version "url: https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-macos-${{ github.run_id }}.zip"
 
   run-bundles-with-sauce-connect:
     runs-on: ubuntu-latest
@@ -243,7 +243,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup saucectl
-        run: npm install --legacy-peer-deps -g saucectl
+        run: npm install -g saucectl
 
       - name: Run web-page
         run: |
