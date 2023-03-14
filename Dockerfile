@@ -21,7 +21,6 @@ ENV TESTCAFE_VERSION=${TESTCAFE_VERSION}
 
 COPY package.json .
 COPY package-lock.json .
-COPY testcafe-reporter-saucelabs-1.0.0.tgz .
 RUN npm ci --production
 
 COPY --chown=seluser:seluser . .

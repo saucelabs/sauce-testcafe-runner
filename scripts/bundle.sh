@@ -5,12 +5,11 @@ cp -r ./src/ ./bundle/src/
 cp -r ./bin/ bundle/bin/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
-cp testcafe-reporter-saucelabs-1.0.0.tgz bundle/testcafe-reporter-saucelabs-1.0.0.tgz
 cp "$(which node)" bundle/
 
 pushd bundle/
 npm cache clean --force
-npm ci --production --legacy-peer-deps
+npm ci --production
 
 # Sanity tests
 ./node ./node_modules/testcafe/lib/cli/cli.js --version
