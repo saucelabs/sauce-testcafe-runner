@@ -265,7 +265,11 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   const xmlReportPath = path.join(assetsPath, 'report.xml');
   const jsonReportPath = path.join(assetsPath, 'report.json');
   const sauceReportPath = path.join(assetsPath, 'sauce-test-report.json');
-  cli.push('--reporter', `xunit:${xmlReportPath},json:${jsonReportPath},sauce-json:${sauceReportPath},list`);
+  cli.push('--reporter', `xunit:${xmlReportPath},json:${jsonReportPath},sauce-json,list`);
+
+  // Configure reporters
+  process.env.SAUCE_DISABLE_SAUCE_UPLOAD = 'true';
+  process.env.SAUCE_REPORT_JSON_PATH = sauceReportPath;
 
   return cli;
 }
