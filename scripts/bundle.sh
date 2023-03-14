@@ -9,7 +9,7 @@ cp "$(which node)" bundle/
 
 pushd bundle/
 npm cache clean --force
-npm ci --production
+npm ci --production --legacy-peer-deps
 
 # Sanity tests
 ./node ./node_modules/testcafe/lib/cli/cli.js --version

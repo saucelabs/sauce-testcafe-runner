@@ -21,7 +21,7 @@ ENV TESTCAFE_VERSION=${TESTCAFE_VERSION}
 
 COPY package.json .
 COPY package-lock.json .
-RUN npm ci --production
+RUN npm ci --production --legacy-peer-deps
 
 COPY --chown=seluser:seluser . .
 
