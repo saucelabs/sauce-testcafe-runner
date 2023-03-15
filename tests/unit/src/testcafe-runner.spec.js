@@ -5,6 +5,14 @@ const { buildCommandLine, buildCompilerOptions } = require('../../../src/testcaf
 
 
 describe('.buildCommandLine', function () {
+  let OLD_ENV;
+  beforeEach(function () {
+    OLD_ENV = process.env;
+  });
+  afterEach(function () {
+    process.env = OLD_ENV;
+  });
+
   it('most basic config', function () {
     const cli = buildCommandLine({
       browserName: 'firefox',
@@ -16,8 +24,10 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('most basic config with typescript options', function () {
     const cli = buildCommandLine({
@@ -37,8 +47,10 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with filters', function () {
     const cli = buildCommandLine({
@@ -71,8 +83,10 @@ describe('.buildCommandLine', function () {
       '--test-meta', 'my-key=my-val,2nd-key=2nd-val',
       '--fixture-meta', 'my-key=my-val,2nd-key=2nd-val',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with screenshots', function () {
     const cli = buildCommandLine({
@@ -90,8 +104,10 @@ describe('.buildCommandLine', function () {
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${FILE_INDEX} - ${FIXTURE} - ${TEST}.png,thumbnails=false',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with quarantineMode', function () {
     const cli = buildCommandLine({
@@ -109,8 +125,10 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with different flags', function () {
     const cli = buildCommandLine({
@@ -141,8 +159,10 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with client scripts', function () {
     const cli = buildCommandLine({
@@ -159,8 +179,10 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with tsConfigPath', function () {
     const cli = buildCommandLine({
@@ -175,8 +197,10 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with no-array src', function () {
     const cli = buildCommandLine({
@@ -189,8 +213,10 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with browserArgs', function () {
     const cli = buildCommandLine({
@@ -204,8 +230,10 @@ describe('.buildCommandLine', function () {
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
+    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
   it('basic with invalid browser', function () {
     const t = () => {
@@ -239,8 +267,10 @@ describe('.buildCommandLine', function () {
         '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
         '--proxy', 'localhost:8080',
         '--reporter',
-        'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,sauce-json:/fake/assets/path/sauce-test-report.json,list',
+        'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
       ]);
+      expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
+      expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
     });
   });
 });
