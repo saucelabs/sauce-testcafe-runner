@@ -256,7 +256,7 @@ jobs:
       - name: Run web-page
         run: |
           python -m http.server 8000 &
-        working-directory: ./tests/cloud/
+        working-directory: ./tests/cloud/www/
 
       - name: Start sauce-connect
         uses: saucelabs/sauce-connect-action@v2
