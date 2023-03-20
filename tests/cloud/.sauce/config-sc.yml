@@ -1,0 +1,82 @@
+apiVersion: v1alpha
+rootDir: ./
+kind: testcafe
+sauce:
+  region: us-west-1
+  concurrency: 1
+  metadata:
+    tags:
+      - e2e
+      - release team
+      - other tag
+    build: Release $CI_COMMIT_SHORT_SHA
+
+testcafe:
+  version: 1.16.1
+
+suites:
+  - name: "Win10 - Chrome"
+    platformName: "Windows 10"
+    browserName: "chrome"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+  - name: "Win10 - Firefox"
+    platformName: "Windows 10"
+    browserName: "firefox"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+
+  - name: "Win11 - Chrome"
+    platformName: "Windows 11"
+    browserName: "chrome"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+  - name: "Win11 - Firefox"
+    platformName: "Windows 11"
+    browserName: "firefox"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+
+  - name: "macOS11 - Chrome"
+    platformName: "macOS 11.00"
+    browserName: "chrome"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+  - name: "macOS11 - Firefox"
+    platformName: "macOS 11.00"
+    browserName: "firefox"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+  - name: "macOS11 - Safari"
+    platformName: "macOS 11.00"
+    browserName: "safari"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+
+  - name: "macOS12 - Chrome"
+    platformName: "macOS 12"
+    browserName: "chrome"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+  - name: "macOS12 - Firefox"
+    platformName: "macOS 12"
+    browserName: "firefox"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+  - name: "macOS12 - Safari"
+    platformName: "macOS 12"
+    browserName: "safari"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+
+
