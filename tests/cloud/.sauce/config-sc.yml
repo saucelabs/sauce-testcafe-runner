@@ -79,4 +79,23 @@ suites:
       - "tests/**/*.test.js"
     speed: 1
 
+  - name: "iPhone14 - Safari"
+    browserName: "safari"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+    simulators:
+      - name: iPhone 14 Pro Simulator
+        platformName: iOS
+        platformVersions:
+          - "16.2"
 
+  - name: "iPhone12 - Safari"
+    browserName: "safari"
+    src:
+      - "tests/**/*.test.js"
+    simulators:
+      - name: iPhone 12 Pro Simulator
+        platformName: iOS
+        platformVersions:
+          - "15.4"

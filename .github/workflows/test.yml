@@ -195,6 +195,11 @@ jobs:
             browser: Safari
           - os: Win11
             browser: Safari
+        include:
+          - os: iPhone14
+            browser: Safari
+          - os: iPhone12
+            browser: Safari
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
@@ -233,6 +238,11 @@ jobs:
           - os: Win10
             browser: Safari
           - os: Win11
+            browser: Safari
+        include:
+          - os: iPhone14
+            browser: Safari
+          - os: iPhone12
             browser: Safari
     timeout-minutes: 15
     runs-on: ubuntu-latest
