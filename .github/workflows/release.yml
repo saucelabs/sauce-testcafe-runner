@@ -352,7 +352,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Cloud Tests (Windows)
-        working-directory: ./tests/fixtures/post-release
+        working-directory: ./tests/post-release
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
@@ -381,7 +381,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Cloud Tests (MacOS)
-        working-directory: ./tests/fixtures/post-release
+        working-directory: ./tests/post-release
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
