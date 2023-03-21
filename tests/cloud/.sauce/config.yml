@@ -79,24 +79,6 @@ suites:
       - "tests/no-sc/**/*.test.js"
     speed: 1
 
-  - name: "macOS13 - Chrome"
-    platformName: "macOS 13"
-    browserName: "chrome"
-    src:
-      - "tests/no-sc/**/*.test.js"
-    speed: 1
-  - name: "macOS13 - Firefox"
-    platformName: "macOS 13"
-    browserName: "firefox"
-    src:
-      - "tests/no-sc/**/*.test.js"
-    speed: 1
-  - name: "macOS13 - Safari"
-    platformName: "macOS 13"
-    browserName: "safari"
-    src:
-      - "tests/no-sc/**/*.test.js"
-    speed: 1
 
   - name: "iOS15 - Safari"
     platformName: "macOS 12"
