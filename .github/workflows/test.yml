@@ -276,7 +276,7 @@ jobs:
           tunnelIdentifier: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
           scVersion: 4.8.1
 
-      - name: run saucectl (Windows)
+      - name: Test on Sauce
         working-directory: ./tests/cloud/
         run: |
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-runner-${{ github.run_id }}.zip
