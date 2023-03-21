@@ -188,7 +188,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [Win10, Win11, macOS11, macOS12]
+        os: [Win10, Win11, macOS11, macOS12, macOS13]
         browser: [Chrome, Firefox, Safari]
         exclude:
           - os: Win10
@@ -232,7 +232,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [Win10, Win11, macOS11, macOS12]
+        os: [Win10, Win11, macOS11, macOS12, macOS13]
         browser: [Chrome, Firefox, Safari]
         exclude:
           - os: Win10
