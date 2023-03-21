@@ -218,7 +218,7 @@ jobs:
         working-directory: ./tests/cloud/
         run: |
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-runner-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} =~ ^mac ]];then
+          if [[ ${{ matrix.os }} =~ ^mac ]] || [[ ${{ matrix.os }} =~ ^iPhone ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-macos-${{ github.run_id }}.zip
           fi
 
@@ -280,7 +280,7 @@ jobs:
         working-directory: ./tests/cloud/
         run: |
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-runner-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} =~ ^mac ]];then
+          if [[ ${{ matrix.os }} =~ ^mac ]] || [[ ${{ matrix.os }} =~ ^iPhone ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/sauce-testcafe-macos-${{ github.run_id }}.zip
           fi
 
