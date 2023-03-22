@@ -190,6 +190,7 @@ jobs:
   bundle-test:
     needs: [build-windows-bundle, build-mac-bundle]
     strategy:
+      max-parallel: 3
       fail-fast: false
       matrix:
         os: [Win10, Win11, macOS11, macOS12, macOS13]
@@ -234,6 +235,7 @@ jobs:
   bundle-test-with-sc:
     needs: [build-windows-bundle, build-mac-bundle]
     strategy:
+      max-parallel: 3
       fail-fast: false
       matrix:
         os: [Win10, Win11, macOS11, macOS12, macOS13]
