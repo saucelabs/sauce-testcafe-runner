@@ -69,7 +69,7 @@ jobs:
             TESTCAFE_VERSION=${{ env.testcafe_version }}
 
       - name: Setup saucectl
-        uses: saucelabs/saucectl-run-action@v2
+        uses: saucelabs/saucectl-run-action@v3
         with:
           skip-run: true
 
