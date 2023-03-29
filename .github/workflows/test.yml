@@ -6,6 +6,7 @@ on:
       - main
 
 env:
+  GITHUB_TOKEN: ${{ github.token }}
   SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
   NODE_VERSION: 18
