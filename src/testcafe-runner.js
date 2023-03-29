@@ -172,6 +172,21 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   if (suite.pageLoadTimeout) {
     cli.push('--page-load-timeout', suite.pageLoadTimeout);
   }
+  if (suite.ajaxRequestTimeout) {
+    cli.push('--ajax-request-timeout', suite.ajaxRequestTimeout);
+  }
+  if (suite.pageRequestTimeout) {
+    cli.push('--page-request-timeout', suite.pageRequestTimeout);
+  }
+  if (suite.browserInitTimeout) {
+    cli.push('--browser-init-timeout', suite.browserInitTimeout);
+  }
+  if (suite.testExecutionTimeout) {
+    cli.push('--test-execution-timeout', suite.testExecutionTimeout);
+  }
+  if (suite.runExecutionTimeout) {
+    cli.push('--run-execution-timeout', suite.runExecutionTimeout);
+  }
   if (suite.speed) {
     cli.push('--speed', suite.speed);
   }
