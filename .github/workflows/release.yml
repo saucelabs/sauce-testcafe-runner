@@ -163,7 +163,7 @@ jobs:
 
           $selectedAsset = $null
           Foreach ($asset in $selectedRelease.assets) {
-            if ($asset.name -eq "sauce-testcafe-runner.zip") {
+            if ($asset.name -eq "testcafe-windows-amd64.zip") {
               $selectedAsset = $asset
             }
           }
@@ -212,7 +212,7 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
-            Compress-Archive bundle/ sauce-testcafe-runner-win-amd64.zip
+            Compress-Archive bundle/ testcafe-windows-amd64.zip
           azPSVersion: '3.1.0'
 
       - name: Upload Release Asset
@@ -220,10 +220,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ steps.prep.outputs.version }} sauce-testcafe-runner-win-amd64.zip
-          mv sauce-testcafe-runner-win-amd64.zip sauce-testcafe-runner.zip
-          # Legacy Filename
-          gh release upload ${{ steps.prep.outputs.version }} sauce-testcafe-runner.zip
+          gh release upload ${{ steps.prep.outputs.version }} testcafe-windows-amd64.zip
 
   release-macos-bundle:
     runs-on: macos-latest
@@ -246,7 +243,7 @@ jobs:
 
           ASSET_ID=$(curl -s -H "Authorization: token ${{ github.token }}" \
                       https://api.github.com/repos/${{ github.repository }}/releases | \
-                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"sauce-testcafe-macos.zip\") | .id | select(. != null)")
+                      jq -r "[.[] | select(.body | contains(\"- jobId: ${{ github.run_id }}\\n\"))] | first | .assets | .[] | select(.name == \"testcafe-macos-amd64.zip\") | .id | select(. != null)")
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "release_id=${RELEASE_ID}" >> $GITHUB_OUTPUT
@@ -292,17 +289,14 @@ jobs:
 
       - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: zip -r sauce-testcafe-macos-amd64.zip bundle/
+        run: zip -r testcafe-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ steps.prep.outputs.version }} sauce-testcafe-macos-amd64.zip
-          mv sauce-testcafe-macos-amd64.zip sauce-testcafe-macos.zip
-          # Legacy Filename
-          gh release upload ${{ steps.prep.outputs.version }} sauce-testcafe-macos.zip
+          gh release upload ${{ steps.prep.outputs.version }} testcafe-macos-amd64.zip
 
   publish-release:
     runs-on: ubuntu-latest
@@ -356,7 +350,7 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run --config ./.sauce/config_win.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-testcafe-runner-win-amd64.zip"
+          npx saucectl run --config ./.sauce/config_win.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/testcafe-windows-amd64.zip"
 
   post-release-macos-tests:
     runs-on: ubuntu-latest
@@ -385,4 +379,4 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run --config ./.sauce/config_mac.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/sauce-testcafe-macos-amd64.zip"
+          npx saucectl run --config ./.sauce/config_mac.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/testcafe-macos-amd64.zip"
