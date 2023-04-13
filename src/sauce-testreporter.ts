@@ -1,14 +1,26 @@
-const fs = require('fs');
-const path = require('path');
-const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
-const { escapeXML } = require('sauce-testrunner-utils');
-const convert = require('xml-js');
-const {TestComposer} = require('@saucelabs/testcomposer');
+//const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
+import fs from 'fs';
+import path from 'path';
+import * as utils from 'sauce-testrunner-utils';
+//const { escapeXML } = require('sauce-testrunner-utils');
+import convert from 'xml-js';
+//const convert = require('xml-js');
+//const {TestComposer} = require('@saucelabs/testcomposer');
+import { TestComposer, Region, Asset } from '@saucelabs/testcomposer';
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !
 const SAUCECTL_OUTPUT_FILE = '/tmp/output.json';
 
-const createJob = async (testComposer, browserName, suiteName, tags, build, passed, startTime, endTime) => {
+const createJob = async (
+  testComposer: any,
+  browserName: string,
+  suiteName: string,
+  tags: string[],
+  build: string,
+  passed: boolean,
+  startTime: string,
+  endTime: string) => {
+
   let browserVersion;
   switch (browserName.toLowerCase()) {
     case 'firefox':
@@ -43,7 +55,15 @@ const createJob = async (testComposer, browserName, suiteName, tags, build, pass
   return job;
 };
 
-exports.sauceReporter = async ({suiteName, browserName, assets, results, startTime, endTime, region, metadata}) => {
+export async function sauceReporter (
+  suiteName: string,
+  browserName: string,
+  assets: any[],
+  results: number,
+  startTime: string,
+  endTime: string,
+  region: string,
+  metadata: any) {
   const tags = metadata.tags || [];
   const build = metadata.build || '';
 
@@ -56,9 +76,9 @@ exports.sauceReporter = async ({suiteName, browserName, assets, results, startTi
   }
 
   const testComposer = new TestComposer({
-    region,
-    username: process.env.SAUCE_USERNAME,
-    accessKey: process.env.SAUCE_ACCESS_KEY,
+    region: region as Region,
+    username: process.env.SAUCE_USERNAME || '',
+    accessKey: process.env.SAUCE_ACCESS_KEY || '',
     headers: {'User-Agent': `testcafe-runner/${pkgVersion}`}
   });
 
@@ -66,31 +86,31 @@ exports.sauceReporter = async ({suiteName, browserName, assets, results, startTi
 
   if (!job) {
     console.error('Unable to create job. Assets won\'t be uploaded.');
-    updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
+    utils.saucectl.updateExportedValue(SAUCECTL_OUTPUT_FILE, { reportingSucceeded: false });
     return false;
   }
 
   await testComposer.uploadAssets(
     job.id,
-    assets
+    assets as unknown as Asset[],
   ).then(
-    (resp) => {
+    (resp: any) => {
       if (resp.errors) {
         for (const err of resp.errors) {
           console.error('Failed to upload asset:', err);
         }
       }
     },
-    (e) => console.error('Failed to upload assets:', e.message)
+    (e: Error) => console.error('Failed to upload assets:', e.message)
   );
 
   console.log(`\nOpen job details page: ${job.url}\n`);
 
-  updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl: job.url, reportingSucceeded: true });
+  utils.saucectl.updateExportedValue(SAUCECTL_OUTPUT_FILE, { jobDetailsUrl: job.url, reportingSucceeded: true });
   return true;
-};
+}
 
-const getPlatformName = (platform) => {
+const getPlatformName = (platform: string) => {
   if (process.platform.toLowerCase() === 'linux') {
     platform = 'Linux';
   }
@@ -98,10 +118,10 @@ const getPlatformName = (platform) => {
   return platform;
 };
 
-exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
-  const opts = {compact: true, spaces: 4};
+export function generateJunitFile (assetsPath: string, suiteName: string, browserName: string, platform: string) {
+  const opts = {compact: true, spaces: 4, textFn: (val: string) => val};
   const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
-  let result = convert.xml2js(xmlData, opts);
+  let result : any = convert.xml2js(xmlData, opts);
 
   if (!result.testsuite) {
     return;
@@ -116,7 +136,7 @@ exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
     const testcase = testsuites.testcase[i];
     if (testcase.failure && testcase.failure._cdata) {
       testsuites.testcase[i].failure._attributes = testcase.failure._attributes || {};
-      testsuites.testcase[i].failure._attributes.message = escapeXML(testcase.failure._attributes.message || '');
+      testsuites.testcase[i].failure._attributes.message = utils.escapeXML(testcase.failure._attributes.message || '');
       testsuites.testcase[i].failure._attributes.type = testcase.failure._attributes.type || '';
       testsuites.testcase[i].failure._cdata = testcase.failure._cdata || '';
     }
@@ -143,7 +163,7 @@ exports.generateJunitFile = (assetsPath, suiteName, browserName, platform) => {
   };
   delete result.testsuite;
 
-  opts.textFn = escapeXML;
+  opts.textFn = utils.escapeXML;
   let xmlResult = convert.js2xml(result, opts);
   fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
-};
+}

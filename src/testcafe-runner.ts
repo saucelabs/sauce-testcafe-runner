@@ -1,15 +1,26 @@
-const path = require('path');
-const fs = require('fs');
-const {getArgs, loadRunConfig, getSuite, getAbsolutePath, prepareNpmEnv, preExec} = require('sauce-testrunner-utils');
-const {sauceReporter, generateJunitFile} = require('./sauce-testreporter');
-const { spawn } = require('child_process');
-const _ = require('lodash');
-const stream = require('stream');
+import { spawn } from 'child_process';
+import _ from 'lodash';
+import stream from 'stream';
+import path from 'path';
+import fs from 'fs';
 
-async function prepareConfiguration (nodeBin, runCfgPath, suiteName) {
+import {
+  getArgs,
+  loadRunConfig,
+  getSuite,
+  getAbsolutePath,
+  prepareNpmEnv,
+  preExec,
+} from 'sauce-testrunner-utils';
+import {
+  sauceReporter,
+  generateJunitFile
+} from './sauce-testreporter';
+
+async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteName: string) {
   try {
     runCfgPath = getAbsolutePath(runCfgPath);
-    const runCfg = await loadRunConfig(runCfgPath);
+    const runCfg: any = await loadRunConfig(runCfgPath);
     runCfg.path = runCfgPath;
     const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
@@ -18,8 +29,8 @@ async function prepareConfiguration (nodeBin, runCfgPath, suiteName) {
     const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
 
     // Set env vars
-    for (const key in suite.env) {
-      process.env[key] = suite.env[key];
+    for (const key in suite?.env) {
+      process.env[key] = suite?.env[key];
     }
 
     // Define node/npm path for execution
@@ -32,16 +43,25 @@ async function prepareConfiguration (nodeBin, runCfgPath, suiteName) {
     metrics.push(npmMetrics);
 
     return { runCfg, projectPath, assetsPath, suite, metrics, metadata, saucectlVersion };
-  } catch (e) {
-    console.error(`failed to prepare testcafe. Reason: ${e.message}`);
+  } catch (e: any) {
+    console.error(`failed to prepare testcafe. Reason: ${e?.message}`);
   }
 }
 
-async function runReporter ({ suiteName, results, metrics, assetsPath, browserName, startTime, endTime, region, metadata }) {
+async function runReporter (
+  suiteName: string,
+  results: number,
+  metrics: any,
+  assetsPath: string,
+  browserName: string,
+  startTime: string,
+  endTime: string,
+  region: string,
+  metadata: any) {
   try {
     console.log('Preparing assets');
 
-    const streamAssets = function (files) {
+    const streamAssets = function (files: string[]) {
       const assets = [];
       for (const f of files) {
         if (fs.existsSync(path.join(assetsPath, f))) {
@@ -68,39 +88,41 @@ async function runReporter ({ suiteName, results, metrics, assetsPath, browserNa
 
     // Upload metrics
     for (let [, mt] of Object.entries(metrics)) {
-      if (_.isEmpty(mt.data)) {
+      const val = mt as any;
+      if (_.isEmpty(val?.data)) {
         continue;
       }
 
       const r = new stream.Readable();
-      r.push(JSON.stringify(mt.data, ' ', 2));
+      //r.push(JSON.stringify(val?.data, ' ', 2));
+      r.push(JSON.stringify(val?.data));
       r.push(null);
 
       assets.push({
-        filename: mt.name,
-        data: r
+        filename: val?.name,
+        data: r as fs.ReadStream,
       });
     }
 
-    await sauceReporter({
+    await sauceReporter(
       suiteName,
       browserName,
-      assetsPath,
-      results,
-      metrics,
       assets,
+      results,
+      //assetsPath,
+      //metrics,
       startTime,
       endTime,
       region,
       metadata,
-    });
+    );
   } catch (e) {
     console.error(`Reporting to Sauce Labs failed:`, e);
   }
 }
 
 // Build --compiler-options argument
-function buildCompilerOptions (compilerOptions) {
+function buildCompilerOptions (compilerOptions: any) {
   const args = [];
   if (compilerOptions?.typescript?.configPath) {
     args.push(`typescript.configPath=${compilerOptions?.typescript?.configPath}`);
@@ -114,17 +136,22 @@ function buildCompilerOptions (compilerOptions) {
   return args.join(';');
 }
 
+function getBrowserNameInDocker (browserName: string) {
+  if (browserName === 'chrome') {
+    return 'chrome:headless';
+  }
+  if (browserName === 'firefox') {
+    return 'firefox:headless:marionettePort=9223';
+  }
+  return '';
+}
+
 // Buid the command line to invoke TestCafe with all required parameters
-function buildCommandLine (suite, projectPath, assetsPath) {
+function buildCommandLine (suite: any, projectPath: string, assetsPath: string) {
   const cli = [];
 
-  // Browser support
-  const supportedBrowsers = {
-    'chrome': 'chrome:headless',
-    'firefox': 'firefox:headless:marionettePort=9223'
-  };
   const browserName = suite.browserName;
-  let testCafeBrowserName = process.env.SAUCE_VM ? browserName : supportedBrowsers[browserName.toLowerCase()];
+  let testCafeBrowserName = process.env.SAUCE_VM ? browserName : getBrowserNameInDocker(browserName.toLowerCase());
   if (process.env.SAUCE_VM) {
     if (process.env.SAUCE_BROWSER_PATH) {
       testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
@@ -154,7 +181,7 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   }
   if (suite.clientScripts) {
     let clientScriptsPaths = Array.isArray(suite.clientScripts) ? suite.clientScripts : [suite.clientScripts];
-    clientScriptsPaths = clientScriptsPaths.map((clientScriptPath) => path.join(projectPath, clientScriptPath));
+    clientScriptsPaths = clientScriptsPaths.map((clientScriptPath: string) => path.join(projectPath, clientScriptPath));
     cli.push('--client-scripts', clientScriptsPaths.join(','));
   }
   if (suite.skipJsErrors) {
@@ -289,13 +316,13 @@ function buildCommandLine (suite, projectPath, assetsPath) {
   return cli;
 }
 
-async function runTestCafe (tcCommandLine, projectPath) {
+async function runTestCafe (tcCommandLine: string[], projectPath: string) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
   const testcafeProc = spawn(nodeBin, [testcafeBin, ...tcCommandLine], {stdio: 'inherit', cwd: projectPath, env: process.env});
 
-  const testcafePromise = new Promise((resolve) => {
+  const testcafePromise = new Promise<boolean>((resolve) => {
     testcafeProc.on('close', (code /*, ...args*/) => {
       const hasPassed = code === 0;
       resolve(hasPassed);
@@ -313,15 +340,18 @@ async function runTestCafe (tcCommandLine, projectPath) {
   return { startTime, endTime, hasPassed };
 }
 
-async function run (nodeBin, runCfgPath, suiteName) {
+async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
 
   const cfg = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
   if (!cfg) {
     return false;
   }
+  const suite = {
+    preExec: (cfg.suite as any).preExec
+  };
 
-  if (!await preExec.run(cfg.suite, preExecTimeout)) {
+  if (!await preExec.run(suite, preExecTimeout)) {
     return false;
   }
   process.env.SAUCE_SUITE_NAME = suiteName;
@@ -330,7 +360,7 @@ async function run (nodeBin, runCfgPath, suiteName) {
   const tcCommandLine = buildCommandLine(cfg.suite, cfg.projectPath, cfg.assetsPath);
   const { startTime, endTime, hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
-    generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName);
+    generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as any).browserName, (cfg.suite as any).platformName);
   } catch (err) {
     console.error(`Failed to generate junit file: ${err}`);
   }
@@ -346,18 +376,17 @@ async function run (nodeBin, runCfgPath, suiteName) {
   }
 
   const region = cfg.runCfg.sauce.region || 'us-west-1';
-  await runReporter({
+  await runReporter(
     suiteName,
-    assetsPath: cfg.assetsPath,
+    hasPassed ? 0 : 1,
+    cfg.metrics,
+    cfg.assetsPath,
+    (cfg.suite as any).browserName,
+    startTime || '',
+    endTime || '',
     region,
-    metadata: cfg.metadata,
-    startTime,
-    endTime,
-    results: hasPassed ? 0 : 1,
-    metrics: cfg.metrics,
-    browserName: cfg.suite.browserName,
-    platformName: cfg.platformName
-  });
+    cfg.metadata,
+  );
   return passed;
 }
 

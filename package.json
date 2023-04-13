@@ -2,14 +2,15 @@
   "name": "sauce-testcafe-runner",
   "version": "0.0.0",
   "description": "Sauce Labs Testcafe runner",
-  "author": "<dev@saucelabs.com>",
+  "author": "<devx@saucelabs.com>",
   "license": "MIT",
   "private": true,
   "bin": "./bin/testcafe",
   "main": "src/console-wrapper.js",
   "scripts": {
+    "build": "tsc",
     "test": "node src/console-wrapper.js",
-    "lint": "eslint tests/ src/",
+    "lint": "eslint tests/ src/**/*.ts",
     "unit-test": "jest --env node"
   },
   "keywords": [
@@ -35,6 +36,8 @@
     "@types/jquery": "^3.5.1",
     "@types/mocha": "^8.0.3",
     "@types/node": "^18.15.7",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
     "babel-jest": "^29.1.2",
     "eslint": "^7.9.0",
     "eslint-config-appium": "^4.5.0",
