@@ -1,11 +1,7 @@
-//const { updateExportedValue } = require('sauce-testrunner-utils').saucectl;
 import fs from 'fs';
 import path from 'path';
 import * as utils from 'sauce-testrunner-utils';
-//const { escapeXML } = require('sauce-testrunner-utils');
 import convert from 'xml-js';
-//const convert = require('xml-js');
-//const {TestComposer} = require('@saucelabs/testcomposer');
 import { TestComposer, Region, Asset } from '@saucelabs/testcomposer';
 
 // Path has to match the value of the Dockerfile label com.saucelabs.job-info !

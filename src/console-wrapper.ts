@@ -4,7 +4,6 @@ import path from 'path';
 import * as stream from 'stream';
 import child_process from 'child_process';
 import * as utils from 'sauce-testrunner-utils';
-//const { getArgs, loadRunConfig, getAbsolutePath } = require('sauce-testrunner-utils');
 
 async function testCafeRunner () {
   const { runCfgPath } = utils.getArgs();
