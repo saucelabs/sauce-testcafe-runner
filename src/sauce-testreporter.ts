@@ -88,7 +88,7 @@ export async function sauceReporter (
 
   await testComposer.uploadAssets(
     job.id,
-    assets as unknown as Asset[],
+    assets as Asset[],
   ).then(
     (resp: any) => {
       if (resp.errors) {
