@@ -6,10 +6,10 @@
   "license": "MIT",
   "private": true,
   "bin": "./bin/testcafe",
-  "main": "src/console-wrapper.js",
+  "main": "lib/console-wrapper.js",
   "scripts": {
     "build": "tsc",
-    "test": "node src/console-wrapper.js",
+    "test": "tsc; node lib/console-wrapper.js",
     "lint": "eslint tests/ src/**/*.ts",
     "unit-test": "jest --env node"
   },
@@ -18,7 +18,7 @@
   ],
   "dependencies": {
     "@saucelabs/testcomposer": "^1.0.0",
-    "@tsconfig/node14": "^1.0.3",
+    "@tsconfig/node18": "^1.0.1",
     "dotenv": "16.0.3",
     "mocha-junit-reporter": "^2.2.0",
     "sauce-testrunner-utils": "1.0.0",

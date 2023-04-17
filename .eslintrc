@@ -14,7 +14,7 @@
     "env": {
         "jest/globals": true
     },
-    "ignorePatterns": ["src/*.d.ts", "src/*.js"],
+    "ignorePatterns": ["lib/"],
     "parser": "@typescript-eslint/parser",
     "settings": {
         "import/resolver": {

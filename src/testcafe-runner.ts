@@ -38,7 +38,7 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
     // Install NPM dependencies
-    let metrics = [];
+    let metrics: any[] = [];
     let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
     metrics.push(npmMetrics);
 
@@ -62,7 +62,7 @@ async function runReporter (
     console.log('Preparing assets');
 
     const streamAssets = function (files: string[]) {
-      const assets = [];
+      const assets: any[] = [];
       for (const f of files) {
         if (fs.existsSync(path.join(assetsPath, f))) {
           assets.push({
@@ -94,7 +94,6 @@ async function runReporter (
       }
 
       const r = new stream.Readable();
-      //r.push(JSON.stringify(val?.data, ' ', 2));
       r.push(JSON.stringify(val?.data));
       r.push(null);
 
@@ -109,8 +108,6 @@ async function runReporter (
       browserName,
       assets,
       results,
-      //assetsPath,
-      //metrics,
       startTime,
       endTime,
       region,
@@ -123,7 +120,7 @@ async function runReporter (
 
 // Build --compiler-options argument
 function buildCompilerOptions (compilerOptions: any) {
-  const args = [];
+  const args: string[] = [];
   if (compilerOptions?.typescript?.configPath) {
     args.push(`typescript.configPath=${compilerOptions?.typescript?.configPath}`);
   }
@@ -148,7 +145,7 @@ function getBrowserNameInDocker (browserName: string) {
 
 // Buid the command line to invoke TestCafe with all required parameters
 function buildCommandLine (suite: any, projectPath: string, assetsPath: string) {
-  const cli = [];
+  const cli: string[] = [];
 
   const browserName = suite.browserName;
   let testCafeBrowserName = process.env.SAUCE_VM ? browserName : getBrowserNameInDocker(browserName.toLowerCase());
@@ -227,7 +224,7 @@ function buildCommandLine (suite: any, projectPath: string, assetsPath: string) 
     cli.push('--disable-screenshots');
   }
   if (suite.quarantineMode) {
-    const flags = [];
+    const flags: string[] = [];
     if (suite.quarantineMode.attemptLimit) {
       flags.push(`attemptLimit=${suite.quarantineMode.attemptLimit}`);
     }
@@ -289,14 +286,14 @@ function buildCommandLine (suite: any, projectPath: string, assetsPath: string) 
     cli.push('--fixture-grep', suite.filter.fixtureGrep);
   }
   if (suite.filter && suite.filter.testMeta) {
-    const filters = [];
+    const filters: string[] = [];
     for (const key of Object.keys(suite.filter.testMeta)) {
       filters.push(`${key}=${suite.filter.testMeta[key]}`);
     }
     cli.push('--test-meta', filters.join(','));
   }
   if (suite.filter && suite.filter.fixtureMeta) {
-    const filters = [];
+    const filters: string[] = [];
     for (const key of Object.keys(suite.filter.fixtureMeta)) {
       filters.push(`${key}=${suite.filter.fixtureMeta[key]}`);
     }

@@ -1,7 +1,7 @@
 jest.mock('testcafe');
 jest.mock('sauce-testrunner-utils');
-jest.mock('../../../src/sauce-testreporter');
-const { buildCommandLine, buildCompilerOptions } = require('../../../src/testcafe-runner');
+jest.mock('../../../lib/sauce-testreporter');
+const { buildCommandLine, buildCompilerOptions } = require('../../../lib/testcafe-runner');
 
 
 describe('.buildCommandLine', function () {
