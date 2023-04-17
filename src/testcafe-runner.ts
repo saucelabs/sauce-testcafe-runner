@@ -3,6 +3,7 @@ import _ from 'lodash';
 import stream from 'stream';
 import path from 'path';
 import fs from 'fs';
+import { TestCafeConfig, Suite, CompilerOptions } from './type';
 
 import {
   getArgs,
@@ -20,12 +21,13 @@ import {
 async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteName: string) {
   try {
     runCfgPath = getAbsolutePath(runCfgPath);
-    const runCfg: any = await loadRunConfig(runCfgPath);
+    const cfg: any = await loadRunConfig(runCfgPath);
+    const runCfg: TestCafeConfig = cfg;
     runCfg.path = runCfgPath;
     const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
     const suite = getSuite(runCfg, suiteName);
-    const metadata = runCfg.sauce.metadata || {};
+    const metadata = runCfg?.sauce?.metadata || {};
     const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
 
     // Set env vars
@@ -119,7 +121,7 @@ async function runReporter (
 }
 
 // Build --compiler-options argument
-function buildCompilerOptions (compilerOptions: any) {
+export function buildCompilerOptions (compilerOptions: CompilerOptions) {
   const args: string[] = [];
   if (compilerOptions?.typescript?.configPath) {
     args.push(`typescript.configPath=${compilerOptions?.typescript?.configPath}`);
@@ -144,8 +146,11 @@ function getBrowserNameInDocker (browserName: string) {
 }
 
 // Buid the command line to invoke TestCafe with all required parameters
-function buildCommandLine (suite: any, projectPath: string, assetsPath: string) {
-  const cli: string[] = [];
+export function buildCommandLine (suite: Suite|undefined, projectPath: string, assetsPath: string) {
+  const cli: (string|number)[] = [];
+  if (suite === undefined) {
+    return cli;
+  }
 
   const browserName = suite.browserName;
   let testCafeBrowserName = process.env.SAUCE_VM ? browserName : getBrowserNameInDocker(browserName.toLowerCase());
@@ -313,11 +318,11 @@ function buildCommandLine (suite: any, projectPath: string, assetsPath: string) 
   return cli;
 }
 
-async function runTestCafe (tcCommandLine: string[], projectPath: string) {
+async function runTestCafe (tcCommandLine: (string|number)[], projectPath: string) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
-  const testcafeProc = spawn(nodeBin, [testcafeBin, ...tcCommandLine], {stdio: 'inherit', cwd: projectPath, env: process.env});
+  const testcafeProc = spawn(nodeBin, [testcafeBin, ...(tcCommandLine as string[])], {stdio: 'inherit', cwd: projectPath, env: process.env});
 
   const testcafePromise = new Promise<boolean>((resolve) => {
     testcafeProc.on('close', (code /*, ...args*/) => {
@@ -344,6 +349,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   if (!cfg) {
     return false;
   }
+
   const suite = {
     preExec: (cfg.suite as any).preExec
   };
@@ -354,7 +360,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   process.env.SAUCE_SUITE_NAME = suiteName;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.assetsPath;
 
-  const tcCommandLine = buildCommandLine(cfg.suite, cfg.projectPath, cfg.assetsPath);
+  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath);
   const { startTime, endTime, hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
     generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as any).browserName, (cfg.suite as any).platformName);
@@ -372,7 +378,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
     return passed;
   }
 
-  const region = cfg.runCfg.sauce.region || 'us-west-1';
+  const region = cfg.runCfg?.sauce?.region || 'us-west-1';
   await runReporter(
     suiteName,
     hasPassed ? 0 : 1,
