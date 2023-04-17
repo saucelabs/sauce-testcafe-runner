@@ -104,6 +104,7 @@ async function runReporter (
         data: r as fs.ReadStream,
       });
     }
+    console.log('assets: ', assets);
 
     await sauceReporter(
       suiteName,
@@ -351,7 +352,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   }
 
   const suite = {
-    preExec: (cfg.suite as any).preExec
+    preExec: (cfg.suite as Suite).preExec,
   };
 
   if (!await preExec.run(suite, preExecTimeout)) {
@@ -363,7 +364,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath);
   const { startTime, endTime, hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
-    generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as any).browserName, (cfg.suite as any).platformName);
+    generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as Suite).browserName, (cfg.suite as Suite).platformName || '');
   } catch (err) {
     console.error(`Failed to generate junit file: ${err}`);
   }
@@ -384,7 +385,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
     hasPassed ? 0 : 1,
     cfg.metrics,
     cfg.assetsPath,
-    (cfg.suite as any).browserName,
+    (cfg.suite as Suite).browserName,
     startTime || '',
     endTime || '',
     region,

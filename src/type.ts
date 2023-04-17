@@ -57,6 +57,7 @@ export type Suite = {
     };
   },
   browserName: string,
+	platformName?: string,
   src: string[] | string,
   headless?: boolean,
   browserArgs?: string[],

@@ -4,14 +4,15 @@ import path from 'path';
 import * as stream from 'stream';
 import child_process from 'child_process';
 import * as utils from 'sauce-testrunner-utils';
+import { TestCafeConfig } from './type';
 
 async function testCafeRunner () {
   const { runCfgPath } = utils.getArgs();
   const runCfgAbsolutePath = utils.getAbsolutePath(runCfgPath);
   const runCfg = await utils.loadRunConfig(runCfgAbsolutePath);
   const p = new Promise<void>((resolve, reject) => {
-    (runCfg as any).path = runCfgPath;
-    const assetsPath = path.join(path.dirname(runCfgAbsolutePath), (runCfg as any).projectPath || '.', '__assets__');
+    (runCfg as TestCafeConfig).path = runCfgPath;
+    const assetsPath = path.join(path.dirname(runCfgAbsolutePath), (runCfg as TestCafeConfig).projectPath || '.', '__assets__');
     if (!fs.existsSync(assetsPath)) {
       fs.mkdirSync(assetsPath);
     }
