@@ -21,9 +21,12 @@ ENV TESTCAFE_VERSION=${TESTCAFE_VERSION}
 
 COPY package.json .
 COPY package-lock.json .
+COPY tsconfig.json .
 RUN npm ci --omit=dev
 
 COPY --chown=seluser:seluser . .
+
+RUN npm run build
 
 RUN mkdir -p reports
 RUN mkdir -p tests

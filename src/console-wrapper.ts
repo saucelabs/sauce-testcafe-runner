@@ -1,23 +1,24 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
-const stream = require('stream');
-const child_process = require('child_process');
-const { getArgs, loadRunConfig, getAbsolutePath } = require('sauce-testrunner-utils');
+import fs from 'fs';
+import path from 'path';
+import * as stream from 'stream';
+import child_process from 'child_process';
+import * as utils from 'sauce-testrunner-utils';
+import { TestCafeConfig } from './type';
 
 async function testCafeRunner () {
-  const { runCfgPath } = getArgs();
-  const runCfgAbsolutePath = getAbsolutePath(runCfgPath);
-  const runCfg = await loadRunConfig(runCfgAbsolutePath);
-  const p = new Promise((resolve, reject) => {
-    runCfg.path = runCfgPath;
-    const assetsPath = path.join(path.dirname(runCfgAbsolutePath), runCfg.projectPath || '.', '__assets__');
+  const { runCfgPath } = utils.getArgs();
+  const runCfgAbsolutePath = utils.getAbsolutePath(runCfgPath);
+  const runCfg = await utils.loadRunConfig(runCfgAbsolutePath);
+  const p = new Promise<void>((resolve, reject) => {
+    (runCfg as TestCafeConfig).path = runCfgPath;
+    const assetsPath = path.join(path.dirname(runCfgAbsolutePath), (runCfg as TestCafeConfig).projectPath || '.', '__assets__');
     if (!fs.existsSync(assetsPath)) {
       fs.mkdirSync(assetsPath);
     }
     const fd = fs.openSync(path.join(assetsPath, 'console.log'), 'w+', 0o644);
-    const ws = stream.Writable({
-      write (data, encoding, cb) { fs.write(fd, data, undefined, encoding, cb); },
+    const ws = new stream.Writable({
+      write (data: any, encoding: any, cb: any) { fs.write(fd, data, undefined, encoding, cb); },
     });
 
     const [nodeBin] = process.argv;
@@ -29,7 +30,7 @@ async function testCafeRunner () {
     child.stdout.pipe(ws);
     child.stderr.pipe(ws);
 
-    child.on('exit', (exitCode) => {
+    child.on('exit', (exitCode: number) => {
       fs.closeSync(fd);
       if (exitCode === 0) {
         resolve();
@@ -42,9 +43,7 @@ async function testCafeRunner () {
 }
 
 if (require.main === module) {
-  const { runCfgPath, suiteName } = getArgs();
-
-  testCafeRunner(runCfgPath, suiteName)
+  testCafeRunner()
       // eslint-disable-next-line promise/prefer-await-to-then
       .then(() => {
         process.exit(0);

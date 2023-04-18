@@ -3,7 +3,7 @@
         "eslint-config-appium",
         "plugin:testcafe/recommended"
     ],
-    "plugins": ["jest", "testcafe"],
+    "plugins": ["jest", "testcafe", "@typescript-eslint"],
     "rules": {
         "no-console": "off",
         "promise/no-native": "off",
@@ -13,5 +13,14 @@
     },
     "env": {
         "jest/globals": true
+    },
+    "ignorePatterns": ["lib/"],
+    "parser": "@typescript-eslint/parser",
+    "settings": {
+        "import/resolver": {
+            "node": {
+                "extensions": [".js", ".jsx", ".ts", ".tsx"]
+            }
+        }
     }
 }

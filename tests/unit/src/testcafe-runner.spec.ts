@@ -1,11 +1,15 @@
 jest.mock('testcafe');
 jest.mock('sauce-testrunner-utils');
-jest.mock('../../../src/sauce-testreporter');
-const { buildCommandLine, buildCompilerOptions } = require('../../../src/testcafe-runner');
+jest.mock('../../../lib/sauce-testreporter');
+import { buildCommandLine, buildCompilerOptions } from '../../../src/testcafe-runner';
+import { Suite, CompilerOptions } from '../../../src/type';
 
+export interface ProcessEnv {
+  [key: string]: string | undefined
+}
 
 describe('.buildCommandLine', function () {
-  let OLD_ENV;
+  let OLD_ENV: ProcessEnv;
   beforeEach(function () {
     OLD_ENV = process.env;
   });
@@ -14,10 +18,12 @@ describe('.buildCommandLine', function () {
   });
 
   it('most basic config', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
       browserName: 'firefox',
       src: ['**/*.test.js'],
-    }, '/fake/project/path', '/fake/assets/path');
+      name: 'unit test'
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -29,8 +35,10 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('most basic config with typescript options', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit test',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       compilerOptions: {
@@ -39,7 +47,8 @@ describe('.buildCommandLine', function () {
           configPath: 'tsconfig.json',
         },
       },
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -52,8 +61,10 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with filters', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit test',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       filter: {
@@ -70,7 +81,8 @@ describe('.buildCommandLine', function () {
           '2nd-key': '2nd-val',
         },
       }
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -88,15 +100,18 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with screenshots', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit test',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       screenshots: {
         fullPage: true,
         takeOnFails: true,
       },
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -109,15 +124,18 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with quarantineMode', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit test',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       quarantineMode: {
         attemptLimit: 10,
         successThreshold: 3,
       },
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -130,8 +148,10 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with different flags', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit test',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       skipJsErrors: true,
@@ -148,7 +168,8 @@ describe('.buildCommandLine', function () {
       stopOnFirstFail: true,
       disablePageCaching: true,
       disableScreenshots: true,
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -174,14 +195,17 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with client scripts', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit test',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       clientScripts: [
         'script.js',
       ],
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -194,12 +218,15 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with tsConfigPath', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit tset',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       tsConfigPath: 'tsconfig.json',
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -212,11 +239,14 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with no-array src', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit test',
       browserName: 'firefox',
       src: '**/*.test.js',
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223',
       '**/*.test.js',
@@ -228,12 +258,15 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with browserArgs', function () {
-    const cli = buildCommandLine({
+    const suite: Suite = {
+      name: 'unit test',
       browserName: 'firefox',
       src: '**/*.test.js',
       browserArgs: ['--chrome-fake-param'],
-    }, '/fake/project/path', '/fake/assets/path');
+    };
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
       'firefox:headless:marionettePort=9223 --chrome-fake-param',
       '**/*.test.js',
@@ -245,15 +278,19 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
+
   it('basic with invalid browser', function () {
+    const suite: Suite = {
+      name: 'unit test',
+      browserName: 'invalid',
+      src: '**/*.test.js',
+    };
     const t = () => {
-      buildCommandLine({
-        browserName: 'invalid',
-        src: '**/*.test.js',
-      }, '/fake/project/path', '/fake/assets/path');
+      buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     };
     expect(t).toThrow('Unsupported browser: invalid.');
   });
+
   describe('with env + inside VM', function () {
     const OLD_ENV = process.env;
 
@@ -266,10 +303,12 @@ describe('.buildCommandLine', function () {
       process.env.SAUCE_VIDEO_RECORD = 'truthy';
       process.env.SAUCE_BROWSER_PATH = 'D:\\chrome99\\chrome.exe';
       process.env.HTTP_PROXY = 'http://localhost:8080';
-      const cli = buildCommandLine({
+      const suite: Suite = {
+        name: 'unit test',
         browserName: 'firefox',
         src: '**/*.test.js',
-      }, '/fake/project/path', '/fake/assets/path');
+      };
+      const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
       expect(cli).toMatchObject([
         'D:\\chrome99\\chrome.exe',
         '**/*.test.js',
@@ -310,7 +349,7 @@ describe('.buildCompilerOptions', function () {
     expect(buildCompilerOptions(input)).toEqual(expected);
   });
   it('With options', function () {
-    const input = {
+    const input: CompilerOptions = {
       typescript: {
         options: {
           allowUnusedLabels: true,
