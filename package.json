@@ -9,7 +9,7 @@
   "main": "lib/console-wrapper.js",
   "scripts": {
     "build": "tsc",
-    "test": "tsc; node lib/console-wrapper.js",
+    "test": "node lib/console-wrapper.js",
     "lint": "eslint tests/ src/**/*.ts",
     "unit-test": "jest --env node"
   },

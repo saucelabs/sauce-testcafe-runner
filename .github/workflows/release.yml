@@ -61,7 +61,7 @@ jobs:
 
       - name: Build Bundle
         if: ${{ steps.prep.outputs.tag_name == '' }}
-        run: npm run buld
+        run: npm run build
 
       - name: Generate (Pre-)Release Draft
         if: ${{ steps.prep.outputs.tag_name == '' }}

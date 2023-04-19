@@ -19,8 +19,8 @@ export type TypeScriptConfig = {
   configPath?: string,
   customCompilerModulePath?: string,
   options?: {
-		[key: string]: any,
-	},
+    [key: string]: any,
+  },
 }
 
 export type CompilerOptions = {
@@ -38,11 +38,11 @@ export type Filter = {
   fixture?: string,
   fixtureGrep?: string,
   testMeta?: {
-		[key: string]: string,
-	},
-	fixtureMeta?: {
-		[key: string]: string,
-	},
+    [key: string]: string,
+  },
+  fixtureMeta?: {
+    [key: string]: string,
+  },
 }
 
 
@@ -57,7 +57,7 @@ export type Suite = {
     };
   },
   browserName: string,
-	platformName?: string,
+  platformName?: string,
   src: string[] | string,
   headless?: boolean,
   browserArgs?: string[],
