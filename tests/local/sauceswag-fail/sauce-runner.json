@@ -1,9 +1,5 @@
 {
   "apiVersion": "v1alpha",
-  "docker": {
-    "fileTransfer": "copy",
-    "image": "saucelabs/stt-testcafe-node:local"
-  },
   "kind": "testcafe",
   "sauce": {
     "concurrency": 1,
