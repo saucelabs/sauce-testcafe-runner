@@ -18,6 +18,7 @@
     {
       "browserName": "chrome",
       "name": "saucy test",
+      "headless": true,
       "speed": 1,
       "src": [
         "**/*.test.js"
