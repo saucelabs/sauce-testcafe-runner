@@ -25,7 +25,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
@@ -50,7 +50,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--compiler-options', 'typescript.configPath=tsconfig.json;typescript.customCompilerModulePath=/compiler/path',
       '--video', '/fake/assets/path',
@@ -84,7 +84,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
@@ -113,7 +113,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
@@ -137,7 +137,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--quarantine-mode', 'attemptLimit=10,successThreshold=3',
       '--video', '/fake/assets/path',
@@ -171,7 +171,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--skip-js-errors',
       '--skip-uncaught-errors',
@@ -207,7 +207,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--client-scripts', '/fake/project/path/script.js',
       '--video', '/fake/assets/path',
@@ -228,7 +228,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--ts-config-path', 'tsconfig.json',
       '--video', '/fake/assets/path',
@@ -248,7 +248,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223',
+      'firefox',
       '**/*.test.js',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
@@ -268,7 +268,7 @@ describe('.buildCommandLine', function () {
     };
     const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
     expect(cli).toMatchObject([
-      'firefox:headless:marionettePort=9223 --chrome-fake-param',
+      'firefox --chrome-fake-param',
       '**/*.test.js',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
@@ -279,18 +279,6 @@ describe('.buildCommandLine', function () {
     expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
-  it('basic with invalid browser', function () {
-    const suite: Suite = {
-      name: 'unit test',
-      browserName: 'invalid',
-      src: '**/*.test.js',
-    };
-    const t = () => {
-      buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
-    };
-    expect(t).toThrow('Unsupported browser: invalid.');
-  });
-
   describe('with env + inside VM', function () {
     const OLD_ENV = process.env;
 
@@ -299,7 +287,6 @@ describe('.buildCommandLine', function () {
     });
 
     it('should use http_proxy', function () {
-      process.env.SAUCE_VM = 'truthy';
       process.env.SAUCE_VIDEO_RECORD = 'truthy';
       process.env.SAUCE_BROWSER_PATH = 'D:\\chrome99\\chrome.exe';
       process.env.HTTP_PROXY = 'http://localhost:8080';
