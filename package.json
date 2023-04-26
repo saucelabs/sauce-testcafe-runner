@@ -11,7 +11,8 @@
     "build": "tsc",
     "test": "node lib/console-wrapper.js",
     "lint": "eslint tests/ src/**/*.ts",
-    "unit-test": "jest --env node"
+    "unit-test": "jest --env node",
+    "integration-test": "bash ./tests/run.sh"
   },
   "keywords": [
     "testcafe"
