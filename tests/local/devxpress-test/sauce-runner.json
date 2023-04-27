@@ -1,9 +1,5 @@
 {
   "apiVersion": "v1alpha",
-  "docker": {
-    "fileTransfer": "copy",
-    "image": "saucelabs/stt-testcafe-node:local"
-  },
   "kind": "testcafe",
   "sauce": {
     "concurrency": 1,
@@ -22,6 +18,7 @@
     {
       "browserName": "chrome",
       "name": "saucy test",
+      "headless": true,
       "speed": 1,
       "src": [
         "**/*.test.js"

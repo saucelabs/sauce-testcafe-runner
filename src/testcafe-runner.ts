@@ -1,8 +1,5 @@
 import { spawn } from 'child_process';
-import _ from 'lodash';
-import stream from 'stream';
 import path from 'path';
-import fs from 'fs';
 import { TestCafeConfig, Suite, CompilerOptions } from './type';
 
 import {
@@ -14,7 +11,6 @@ import {
   preExec,
 } from 'sauce-testrunner-utils';
 import {
-  sauceReporter,
   generateJunitFile
 } from './sauce-testreporter';
 
@@ -50,77 +46,6 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
   }
 }
 
-async function runReporter (
-  suiteName: string,
-  results: number,
-  metrics: any,
-  assetsPath: string,
-  browserName: string,
-  startTime: string,
-  endTime: string,
-  region: string,
-  metadata: any) {
-  try {
-    console.log('Preparing assets');
-
-    const streamAssets = function (files: string[]) {
-      const assets: any[] = [];
-      for (const f of files) {
-        if (fs.existsSync(path.join(assetsPath, f))) {
-          assets.push({
-            filename: f,
-            data: fs.createReadStream(path.join(assetsPath, f))
-          });
-        }
-      }
-
-      return assets;
-    };
-
-    let assets = streamAssets(
-      [
-        'report.xml',
-        'report.json',
-        'console.log',
-        'video.mp4',
-        'junit.xml',
-        'sauce-test-report.json'
-      ]
-    );
-
-    // Upload metrics
-    for (let [, mt] of Object.entries(metrics)) {
-      const val = mt as any;
-      if (_.isEmpty(val?.data)) {
-        continue;
-      }
-
-      const r = new stream.Readable();
-      r.push(JSON.stringify(val?.data));
-      r.push(null);
-
-      assets.push({
-        filename: val?.name,
-        data: r as fs.ReadStream,
-      });
-    }
-    console.log('assets: ', assets);
-
-    await sauceReporter(
-      suiteName,
-      browserName,
-      assets,
-      results,
-      startTime,
-      endTime,
-      region,
-      metadata,
-    );
-  } catch (e) {
-    console.error(`Reporting to Sauce Labs failed:`, e);
-  }
-}
-
 // Build --compiler-options argument
 export function buildCompilerOptions (compilerOptions: CompilerOptions) {
   const args: string[] = [];
@@ -136,16 +61,6 @@ export function buildCompilerOptions (compilerOptions: CompilerOptions) {
   return args.join(';');
 }
 
-function getBrowserNameInDocker (browserName: string) {
-  if (browserName === 'chrome') {
-    return 'chrome:headless';
-  }
-  if (browserName === 'firefox') {
-    return 'firefox:headless:marionettePort=9223';
-  }
-  return '';
-}
-
 // Buid the command line to invoke TestCafe with all required parameters
 export function buildCommandLine (suite: Suite|undefined, projectPath: string, assetsPath: string) {
   const cli: (string|number)[] = [];
@@ -154,14 +69,12 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
   }
 
   const browserName = suite.browserName;
-  let testCafeBrowserName = process.env.SAUCE_VM ? browserName : getBrowserNameInDocker(browserName.toLowerCase());
-  if (process.env.SAUCE_VM) {
-    if (process.env.SAUCE_BROWSER_PATH) {
-      testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
-    }
-    if (suite.headless) {
-      testCafeBrowserName = `${testCafeBrowserName}:headless`;
-    }
+  let testCafeBrowserName = browserName;
+  if (process.env.SAUCE_BROWSER_PATH) {
+    testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
+  }
+  if (suite.headless) {
+    testCafeBrowserName = `${testCafeBrowserName}:headless`;
   }
   if (!testCafeBrowserName) {
     throw new Error(`Unsupported browser: ${browserName}.`);
@@ -249,7 +162,7 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
   }
 
   // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
-  const shouldRecordVideo = !suite.disableVideo && (!process.env.SAUCE_VM || process.env.SAUCE_VIDEO_RECORD);
+  const shouldRecordVideo = !suite.disableVideo;
   if (shouldRecordVideo) {
     cli.push(
       '--video', assetsPath,
@@ -362,36 +275,14 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.assetsPath;
 
   const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath);
-  const { startTime, endTime, hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
+  const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
     generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as Suite).browserName, (cfg.suite as Suite).platformName || '');
   } catch (err) {
     console.error(`Failed to generate junit file: ${err}`);
   }
 
-  // Publish results
-  const passed = hasPassed;
-  if (process.env.SAUCE_VM) {
-    return passed;
-  }
-  if (!process.env.SAUCE_USERNAME && !process.env.SAUCE_ACCESS_KEY) {
-    console.log('Skipping asset uploads! Remember to setup your SAUCE_USERNAME/SAUCE_ACCESS_KEY');
-    return passed;
-  }
-
-  const region = cfg.runCfg?.sauce?.region || 'us-west-1';
-  await runReporter(
-    suiteName,
-    hasPassed ? 0 : 1,
-    cfg.metrics,
-    cfg.assetsPath,
-    (cfg.suite as Suite).browserName,
-    startTime || '',
-    endTime || '',
-    region,
-    cfg.metadata,
-  );
-  return passed;
+  return hasPassed;
 }
 
 if (require.main === module) {

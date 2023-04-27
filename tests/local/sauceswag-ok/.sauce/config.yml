@@ -17,10 +17,6 @@ suites:
     src:
       - "**/*.test.js"
     speed: 1
-docker:
-  image: "saucelabs/stt-testcafe-node:local"
-  fileTransfer: copy
-
 testcafe:
   projectPath: tests/
   version: 1.18.5
