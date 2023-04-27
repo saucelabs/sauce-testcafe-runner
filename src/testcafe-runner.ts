@@ -282,9 +282,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
     console.error(`Failed to generate junit file: ${err}`);
   }
 
-  // Publish results
-  const passed = hasPassed;
-  return passed;
+  return hasPassed;
 }
 
 if (require.main === module) {
