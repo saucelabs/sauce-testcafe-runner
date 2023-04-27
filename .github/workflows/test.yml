@@ -9,14 +9,25 @@ env:
   GITHUB_TOKEN: ${{ github.token }}
   SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
   SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
-  NODE_VERSION: 18
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  vars:
+    runs-on: ubuntu-latest
+    outputs:
+      nodeVersion: ${{ steps.nodeVersion.outputs.nodeVersion }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - id: nodeVersion
+        run: echo "nodeVersion=`cat .nvmrc | tr -d 'v'`" >> "$GITHUB_OUTPUT"
+
   test:
+    needs: [vars]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,7 +36,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - uses: FedericoCarboni/setup-ffmpeg@v2
@@ -48,7 +59,7 @@ jobs:
 
   build-windows-bundle:
     runs-on: windows-latest
-    needs: [test]
+    needs: [vars, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -56,7 +67,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - name: Setup Python
@@ -106,7 +117,7 @@ jobs:
 
   build-mac-bundle:
     runs-on: macos-latest
-    needs: [test]
+    needs: [vars, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -114,7 +125,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.vars.outputs.nodeVersion }}
           cache: 'npm'
 
       - name: Setup Python
@@ -182,13 +193,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup saucectl
-        run: npm i -g saucectl
+          skip-run: true
 
       - name: Test on Sauce
         working-directory: ./tests/cloud/
@@ -232,13 +241,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - uses: saucelabs/saucectl-run-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup saucectl
-        run: npm install -g saucectl
+          skip-run: true
 
       - name: Run web-page
         run: |

@@ -5,7 +5,7 @@ CHANGELOG=$(git --no-pager log --no-notes --no-decorate --oneline  v${1}...HEAD)
 
 ## Gather Framework version
 TESTCAFE_VER=$(< package-lock.json jq -r '.dependencies["testcafe"].version')
-NODEJS_VER=$(grep NODE_VERSION: .github/workflows/release.yml | cut -d ':' -f 2 | tr -d ' ')
+NODEJS_VER=$(cat .nvmrc | tr -d "v")
 
 ## Generate everything
 cat <<EOF
