@@ -13,19 +13,7 @@ on:
         default: ''
 
 jobs:
-  vars:
-    runs-on: ubuntu-latest
-    outputs:
-      nodeVersion: ${{ steps.nodeVersion.outputs.nodeVersion }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - id: nodeVersion
-        run: echo "nodeVersion=`cat .nvmrc | tr -d 'v'`" >> "$GITHUB_OUTPUT"
-
   create-release-draft:
-    needs: [vars]
     runs-on: ubuntu-latest
     steps:
       - name: Check Tag
@@ -55,8 +43,7 @@ jobs:
         uses: actions/setup-node@v3
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
-          cache: 'npm'
+          node-version-file: '.nvmrc'
 
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -90,7 +77,7 @@ jobs:
 
   release-windows-bundle:
     runs-on: windows-latest
-    needs: [vars, create-release-draft]
+    needs: [create-release-draft]
     steps:
       - name: Find matching draft tag
         id: prep
@@ -142,7 +129,7 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
+          node-version-file: '.nvmrc'
 
       - name: Update Release Version
         if: ${{ steps.prep.outputs.asset_id == '' }}
@@ -178,7 +165,7 @@ jobs:
 
   release-macos-bundle:
     runs-on: macos-latest
-    needs: [vars, create-release-draft]
+    needs: [create-release-draft]
     steps:
       - name: Find matching draft tag
         id: prep
@@ -215,7 +202,7 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.vars.outputs.nodeVersion }}
+          node-version-file: '.nvmrc'
 
       - name: Update Release version
         if: ${{ steps.prep.outputs.asset_id == '' }}
@@ -308,7 +295,7 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run --config ./.sauce/config_win.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/testcafe-windows-amd64.zip"
+          saucectl run --config ./.sauce/config_win.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/testcafe-windows-amd64.zip"
 
   post-release-macos-tests:
     runs-on: ubuntu-latest
@@ -341,4 +328,4 @@ jobs:
         env:
           BUILD_ID: Github RUN ID ${{ env.GITHUB_RUN_ID }}
         run: |
-          npx saucectl run --config ./.sauce/config_mac.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/testcafe-macos-amd64.zip"
+          saucectl run --config ./.sauce/config_mac.yml --runner-version "url: https://github.com/saucelabs/sauce-testcafe-runner/releases/download/${{ steps.parse_version.outputs.version }}/testcafe-macos-amd64.zip"
