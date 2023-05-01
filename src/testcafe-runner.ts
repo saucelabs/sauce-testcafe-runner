@@ -160,6 +160,12 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
       cli.push('--compiler-options', options);
     }
   }
+  if (suite.nativeAutomation) {
+    cli.push('--native-automation');
+  }
+  if (suite.esm) {
+    cli.push('--esm');
+  }
 
   // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
   const shouldRecordVideo = !suite.disableVideo;
