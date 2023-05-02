@@ -24,6 +24,7 @@ suites:
   - name: "Win10 - Firefox"
     platformName: "Windows 10"
     browserName: "firefox"
+    browserVersion: "111"
     src:
       - "tests/no-sc/**/*.test.js"
     speed: 1
@@ -37,6 +38,7 @@ suites:
   - name: "Win11 - Firefox"
     platformName: "Windows 11"
     browserName: "firefox"
+    browserVersion: "111"
     src:
       - "tests/no-sc/**/*.test.js"
     speed: 1
@@ -50,6 +52,7 @@ suites:
   - name: "macOS11 - Firefox"
     platformName: "macOS 11.00"
     browserName: "firefox"
+    browserVersion: "111"
     src:
       - "tests/no-sc/**/*.test.js"
     speed: 1
@@ -69,6 +72,7 @@ suites:
   - name: "macOS12 - Firefox"
     platformName: "macOS 12"
     browserName: "firefox"
+    browserVersion: "111"
     src:
       - "tests/no-sc/**/*.test.js"
     speed: 1
@@ -88,6 +92,7 @@ suites:
   - name: "macOS13 - Firefox"
     platformName: "macOS 13"
     browserName: "firefox"
+    browserVersion: "111"
     src:
       - "tests/no-sc/**/*.test.js"
     speed: 1
