@@ -4,7 +4,7 @@
 CHANGELOG=$(git --no-pager log --no-notes --no-decorate --oneline  v${1}...HEAD)
 
 ## Gather Framework version
-TESTCAFE_VER=$(< package-lock.json jq -r '.dependencies["testcafe"].version')
+TESTCAFE_VER=$(< package-lock.json jq -r '.packages[""].dependencies["testcafe"]')
 NODEJS_VER=$(cat .nvmrc | tr -d "v")
 
 ## Generate everything
