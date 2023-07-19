@@ -7,7 +7,6 @@ import {
   loadRunConfig,
   getSuite,
   getAbsolutePath,
-  prepareNpmEnv,
   preExec,
 } from 'sauce-testrunner-utils';
 import {
@@ -32,8 +31,8 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     }
 
     // Define node/npm path for execution
-    const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
-    const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
+    // const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+    // const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
     // Install NPM dependencies
     let metrics: any[] = [];
