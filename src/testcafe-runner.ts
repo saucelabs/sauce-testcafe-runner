@@ -37,8 +37,8 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
 
     // Install NPM dependencies
     let metrics: any[] = [];
-    let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
-    metrics.push(npmMetrics);
+    // let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
+    // metrics.push(npmMetrics);
 
     return { runCfg, projectPath, assetsPath, suite, metrics, metadata, saucectlVersion };
   } catch (e: any) {
