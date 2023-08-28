@@ -42,6 +42,7 @@
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
     "babel-jest": "^29.5.0",
+    "callsite-record": "^4.1.5",
     "eslint": "^7.9.0",
     "eslint-config-appium": "^4.5.0",
     "eslint-plugin-jest": "^24.7.0",
