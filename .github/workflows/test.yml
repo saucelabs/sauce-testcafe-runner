@@ -39,6 +39,9 @@ jobs:
       - name: Unit Test
         run: npm run unit-test
 
+      - name: Get NPM path
+        run: echo "NPM_CLI_PATH=`which npm | sed 's/bin\/npm/lib\/node_modules\/npm\/bin\/npm-cli.js/'`" >> $GITHUB_ENV
+
       - name: Integration Test
         run: npm run integration-test
 
