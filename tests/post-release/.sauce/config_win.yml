@@ -11,27 +11,46 @@ sauce:
 testcafe:
   # CAUTION: This has to be an already deployed framework version in the cloud. Not necessarily the one you want to test.
   # Then use --runner-version to specify the release you actually want to use.
-  version: 1.18.5
+  version: 3.0.1
 rootDir: ./
 
 suites:
 #########################
 # All the windows tests #
 #########################
-  - name: "test chrome on windows"
+  - name: "test chrome on windows 10"
     browserName: "chrome"
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
 
-  - name: "test firefox on windows"
+  - name: "test firefox on windows 10"
     browserName: "firefox"
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
 
-  - name: "test edge on windows"
+  - name: "test edge on windows 10"
     browserName: "microsoftedge"
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
+
+  - name: "test chrome on windows 11"
+    browserName: "chrome"
+    platformName: "Windows 11"
+    src:
+      - "**/*.test.js"
+
+  - name: "test firefox on windows 11"
+    browserName: "firefox"
+    platformName: "Windows 11"
+    src:
+      - "**/*.test.js"
+
+  - name: "test edge on windows 11"
+    browserName: "microsoftedge"
+    platformName: "Windows 11"
+    src:
+      - "**/*.test.js"
+
