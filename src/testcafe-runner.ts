@@ -242,7 +242,14 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
 }
 
 async function runTestCafe (tcCommandLine: (string|number)[], projectPath: string) {
-  const nodeBin = process.argv[0];
+  // nodeBin is collected from cmd argv. It should be updated to the downloaded bin.
+  let nodeBin = process.argv[0];
+  const nodeDir = path.resolve(path.dirname(nodeBin));
+  if (os.platform() === 'win32') {
+    nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
+  } else {
+    nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
+  }
 
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
