@@ -47,7 +47,6 @@ jobs:
 
   build-windows-bundle:
     runs-on: windows-latest
-    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -90,7 +89,7 @@ jobs:
           token: ${{ github.token }}
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle-win.sh
 
       - name: Archive bundle
         uses: azure/powershell@v1
@@ -105,7 +104,6 @@ jobs:
 
   build-mac-bundle:
     runs-on: macos-latest
-    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -148,10 +146,10 @@ jobs:
           token: ${{ github.token }}
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle-mac.sh
 
       - name: Archive Bundle
-        run: zip -r testcafe-macos-amd64.zip bundle/
+        run: zip --symlinks -r testcafe-macos-amd64.zip bundle/
 
       - name: Upload to GCS
         run: |

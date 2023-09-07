@@ -142,7 +142,7 @@ jobs:
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle-win.sh
 
       - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
@@ -222,7 +222,7 @@ jobs:
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle-mac.sh
 
       - name: List Bundle Contents
         if: ${{ steps.prep.outputs.asset_id == '' }}
@@ -230,7 +230,7 @@ jobs:
 
       - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: zip -r testcafe-macos-amd64.zip bundle/
+        run: zip --symlinks -r testcafe-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}

@@ -1,4 +1,9 @@
 set -e
+NODE_VERSION=$(node --version)
+NODE_URL="https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-darwin-x64.tar.gz"
+NODE_TAR_FILE="node-$NODE_VERSION-darwin-x64.tar.gz"
+NODE_DIR="node-$NODE_VERSION-darwin-x64"
+
 rm -rf ./bundle/
 mkdir ./bundle/
 cp -r ./src/ ./bundle/src/
@@ -7,6 +12,10 @@ cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
 cp tsconfig.json bundle/tsconfig.json
 cp "$(which node)" bundle/
+
+curl -o $NODE_TAR_FILE $NODE_URL
+tar xf $NODE_TAR_FILE
+mv $NODE_DIR bundle/node_dir
 
 pushd bundle/
 npm cache clean --force
