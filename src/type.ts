@@ -85,6 +85,7 @@ export type Suite = {
   preExec?: string[],
   nativeAutomation?: boolean;
   esm?: boolean;
+  reporters?: string[];
 }
 
 export type TestCafeConfig = {

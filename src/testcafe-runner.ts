@@ -229,7 +229,14 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
   const xmlReportPath = path.join(assetsPath, 'report.xml');
   const jsonReportPath = path.join(assetsPath, 'report.json');
   const sauceReportPath = path.join(assetsPath, 'sauce-test-report.json');
-  cli.push('--reporter', `xunit:${xmlReportPath},json:${jsonReportPath},saucelabs,list`);
+  const reporters = [
+    `xunit:${xmlReportPath}`,
+    `json:${jsonReportPath}`,
+    'saucelabs',
+    'list',
+    ...(suite.reporters || []),
+  ];
+  cli.push('--reporter', reporters.join(','));
 
   // Configure reporters
   process.env.SAUCE_DISABLE_UPLOAD = 'true';
