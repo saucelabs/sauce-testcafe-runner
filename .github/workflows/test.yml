@@ -47,7 +47,6 @@ jobs:
 
   build-windows-bundle:
     runs-on: windows-latest
-    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -105,7 +104,6 @@ jobs:
 
   build-mac-bundle:
     runs-on: macos-latest
-    needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
