@@ -1,5 +1,8 @@
 import { spawn } from 'child_process';
 import path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
+
 import { TestCafeConfig, Suite, CompilerOptions } from './type';
 
 import {
@@ -32,7 +35,7 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     }
 
     // Define node/npm path for execution
-    const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+    const npmBin = path.join(__dirname, '..', 'node_modules', 'npm', 'bin', 'npm-cli.js');
     const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
     // Install NPM dependencies
@@ -239,7 +242,24 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
 }
 
 async function runTestCafe (tcCommandLine: (string|number)[], projectPath: string) {
-  const nodeBin = process.argv[0];
+  let nodeBin = process.argv[0];
+
+  // Modify nodeBin location to downloaded node binaries.
+  const nodeDir = path.resolve(path.dirname(nodeBin));
+  if (os.platform() === 'win32') {
+    nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
+  } else {
+    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be removed on Mac platform.
+    // Otherwise, `npx` would be point to `/Users/chef/payload/bundle/lib/` according to the `node` path, which is wrong.
+    fs.unlink(nodeBin, (err) => {
+      if (err) {throw err;}
+      console.log('previous bundled nodeBin was deleted');
+    });
+    nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
+  }
+  const currentPATH = process.env.PATH || '';
+  process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`;
+
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
   const testcafeProc = spawn(nodeBin, [testcafeBin, ...(tcCommandLine as string[])], {stdio: 'inherit', cwd: projectPath, env: process.env});

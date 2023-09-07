@@ -90,7 +90,7 @@ jobs:
           token: ${{ github.token }}
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle-win.sh
 
       - name: Archive bundle
         uses: azure/powershell@v1
@@ -148,7 +148,7 @@ jobs:
           token: ${{ github.token }}
 
       - name: Bundle Directory
-        run: bash ./scripts/bundle.sh
+        run: bash ./scripts/bundle-mac.sh
 
       - name: Archive Bundle
         run: zip -r testcafe-macos-amd64.zip bundle/
