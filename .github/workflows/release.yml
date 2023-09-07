@@ -230,7 +230,7 @@ jobs:
 
       - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        run: zip -r testcafe-macos-amd64.zip bundle/
+        run: zip --symlinks -r testcafe-macos-amd64.zip bundle/
 
       - name: Upload Release Asset
         if: ${{ steps.prep.outputs.asset_id == '' }}

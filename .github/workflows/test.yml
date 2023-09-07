@@ -149,7 +149,7 @@ jobs:
         run: bash ./scripts/bundle-mac.sh
 
       - name: Archive Bundle
-        run: zip -r testcafe-macos-amd64.zip bundle/
+        run: zip --symlinks -r testcafe-macos-amd64.zip bundle/
 
       - name: Upload to GCS
         run: |
