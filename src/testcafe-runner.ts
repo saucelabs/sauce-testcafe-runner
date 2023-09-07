@@ -257,8 +257,10 @@ async function runTestCafe (tcCommandLine: (string|number)[], projectPath: strin
     });
     nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
   }
+  console.log('nodeBin: ', nodeBin);
   const currentPATH = process.env.PATH || '';
   process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`;
+  console.log('process.env.PATH: ', process.env.PATH);
 
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
