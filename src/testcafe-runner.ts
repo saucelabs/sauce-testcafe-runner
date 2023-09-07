@@ -242,25 +242,7 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
 }
 
 async function runTestCafe (tcCommandLine: (string|number)[], projectPath: string) {
-  let nodeBin = process.argv[0];
-
-  // Modify nodeBin location to downloaded node binaries.
-  const nodeDir = path.resolve(path.dirname(nodeBin));
-  if (os.platform() === 'win32') {
-    nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
-  } else {
-    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be removed on Mac platform.
-    // Otherwise, `npx` would be point to `/Users/chef/payload/bundle/lib/` according to the `node` path, which is wrong.
-    fs.unlink(nodeBin, (err) => {
-      if (err) {throw err;}
-      console.log('previous bundled nodeBin was deleted');
-    });
-    nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
-  }
-  console.log('nodeBin: ', nodeBin);
-  const currentPATH = process.env.PATH || '';
-  process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`;
-  console.log('process.env.PATH: ', process.env.PATH);
+  const nodeBin = process.argv[0];
 
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
@@ -286,6 +268,21 @@ async function runTestCafe (tcCommandLine: (string|number)[], projectPath: strin
 
 async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
+  // Modify nodeBin location to downloaded node binaries.
+  const nodeDir = path.resolve(path.dirname(nodeBin));
+  if (os.platform() === 'win32') {
+    nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
+  } else {
+    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be removed on Mac platform.
+    // Otherwise, `npx` would be point to `/Users/chef/payload/bundle/lib/` according to the `node` path, which is wrong.
+    fs.unlink(nodeBin, (err) => {
+      if (err) {throw err;}
+      console.log('previous bundled nodeBin was deleted');
+    });
+    nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
+  }
+  const currentPATH = process.env.PATH || '';
+  process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`;
 
   const cfg = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
   if (!cfg) {
