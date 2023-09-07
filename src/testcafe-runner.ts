@@ -268,21 +268,6 @@ async function runTestCafe (tcCommandLine: (string|number)[], projectPath: strin
 
 async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
-  // Modify nodeBin location to downloaded node binaries.
-  const nodeDir = path.resolve(path.dirname(nodeBin));
-  if (os.platform() === 'win32') {
-    nodeBin = path.join(nodeDir, 'node_dir', 'node.exe');
-  } else {
-    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be removed on Mac platform.
-    // Otherwise, `npx` would be point to `/Users/chef/payload/bundle/lib/` according to the `node` path, which is wrong.
-    fs.unlink(nodeBin, (err) => {
-      if (err) {throw err;}
-      console.log('previous bundled nodeBin was deleted');
-    });
-    nodeBin = path.join(nodeDir, 'node_dir', 'bin', 'node');
-  }
-  const currentPATH = process.env.PATH || '';
-  process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(nodeBin))}`;
 
   const cfg = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
   if (!cfg) {
@@ -316,7 +301,24 @@ if (require.main === module) {
   console.log(`Running TestCafe ${packageInfo.dependencies?.testcafe || ''}`);
   const { nodeBin, runCfgPath, suiteName} = getArgs();
 
-  run(nodeBin, runCfgPath, suiteName)
+  let tmpNode = nodeBin;
+  // Modify nodeBin location to downloaded node binaries.
+  const nodeDir = path.resolve(path.dirname(tmpNode));
+  if (os.platform() === 'win32') {
+    tmpNode = path.join(nodeDir, 'node_dir', 'node.exe');
+  } else {
+    // The previous bundled nodeBin(/Users/chef/payload/bundle/bundle/node) should be removed on Mac platform.
+    // Otherwise, `npx` would be point to `/Users/chef/payload/bundle/lib/` according to the `node` path, which is wrong.
+    fs.unlink(tmpNode, (err) => {
+      if (err) {throw err;}
+      console.log('previous bundled nodeBin was deleted');
+    });
+    tmpNode = path.join(nodeDir, 'node_dir', 'bin', 'node');
+  }
+  const currentPATH = process.env.PATH || '';
+  process.env.PATH = `${currentPATH}${path.delimiter}${path.resolve(path.dirname(tmpNode))}`;
+
+  run(tmpNode, runCfgPath, suiteName)
     // eslint-disable-next-line promise/prefer-await-to-then
     .then((passed) => {
       process.exit(passed ? 0 : 1);
