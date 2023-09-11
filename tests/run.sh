@@ -8,9 +8,12 @@ for i in ${tests[@]}; do
     key=$(echo ${i} | cut -d '=' -f 1)
     result=$(echo ${i} | cut -d '=' -f 2)
     tmpfile=$(mktemp)
+    echo $key
+    target_folder="./tests/local/$key"
+    cp ./lib/sauce-testcafe-config.js $target_folder
 
     echo "Running ${key}:"
-    pushd ./tests/local/${key}/ > /dev/null
+    pushd $target_folder > /dev/null
     node ../../../ -r ./sauce-runner.json -s "saucy test" > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
