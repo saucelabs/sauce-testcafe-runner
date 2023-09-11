@@ -5,26 +5,27 @@
 tests=(devxpress-test=success sauceswag-ok=success sauceswag-fail=failure)
 
 for i in ${tests[@]}; do
-    key=$(echo ${i} | cut -d '=' -f 1)
-    result=$(echo ${i} | cut -d '=' -f 2)
+    suite=$(echo ${i} | cut -d '=' -f 1)
+    expected_result=$(echo ${i} | cut -d '=' -f 2)
     tmpfile=$(mktemp)
-    echo $key
-    target_folder="./tests/local/$key"
-    cp ./lib/sauce-testcafe-config.js $target_folder
+    echo $suite
 
-    echo "Running ${key}:"
-    pushd $target_folder > /dev/null
+    current_suite_folder="./tests/local/$suite"
+    cp ./lib/sauce-testcafe-config.js $current_suite_folder
+
+    echo "Running ${suite}:"
+    pushd $current_suite_folder > /dev/null
     node ../../../ -r ./sauce-runner.json -s "saucy test" > ${tmpfile} 2>&1
     RETURN_CODE=${?}
     popd > /dev/null
 
-    echo "Result: ${RETURN_CODE}"
-    if ([ "${result}" == "success" ] && [ "${RETURN_CODE}" -ne 0 ]) ||
-         ([ "${result}" == "failure" ] && [ "${RETURN_CODE}" -eq 0 ]);then
+    echo "expected_result: ${RETURN_CODE}"
+    if ([ "${expected_result}" == "success" ] && [ "${RETURN_CODE}" -ne 0 ]) ||
+         ([ "${expected_result}" == "failure" ] && [ "${RETURN_CODE}" -eq 0 ]);then
         cat ${tmpfile}
         rm -f ${tmpfile}
 
-        echo "TEST FAILURE: Result expected is ${result}, and exitCode is ${RETURN_CODE}"
+        echo "TEST FAILURE: expected_result expected is ${expected_result}, and exitCode is ${RETURN_CODE}"
         exit 1
     fi
     rm -f ${tmpfile}
