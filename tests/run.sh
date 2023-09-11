@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# SAUCECTL=$(realpath ${SAUCE_CTL_BINARY})
 # suite=result
 tests=(devxpress-test=success sauceswag-ok=success sauceswag-fail=failure)
 

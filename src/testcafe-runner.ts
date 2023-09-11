@@ -288,8 +288,11 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   process.env.SAUCE_SUITE_NAME = suiteName;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.assetsPath;
 
-  // Set the TestCafe config file path. We merge it with the user-defined config file.
+  // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
+  // configuration, which may be needed for future use.
   const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.js');
+  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.js'), configFile);
+
   const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, configFile);
   const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
