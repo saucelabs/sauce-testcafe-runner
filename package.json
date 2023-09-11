@@ -8,7 +8,7 @@
   "bin": "./bin/testcafe",
   "main": "lib/console-wrapper.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/sauce-testcafe-config.js lib/",
     "test": "node lib/console-wrapper.js",
     "lint": "eslint tests/ src/**/*.ts",
     "unit-test": "jest --env node",

@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 import { TestCafeConfig, Suite, CompilerOptions } from './type';
 
 import {
@@ -22,13 +23,26 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     runCfg.path = runCfgPath;
     const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
-    const suite = getSuite(runCfg, suiteName);
+    const suite: Partial<Suite|undefined> = getSuite(runCfg, suiteName);
     const metadata = runCfg?.sauce?.metadata || {};
     const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
 
     // Set env vars
     for (const key in suite?.env) {
       process.env[key] = suite?.env[key];
+    }
+    // Config reporters
+    process.env.ASSETS_PATH = assetsPath;
+    process.env.SAUCE_REPORT_JSON_PATH = path.join(assetsPath, 'sauce-test-report.json');
+    process.env.SAUCE_DISABLE_UPLOAD = 'true';
+
+    if (runCfg.testcafe.configFile) {
+      const cfgFile = path.join(projectPath, runCfg.testcafe.configFile);
+      if (fs.existsSync(cfgFile)) {
+        process.env.TESTCAFE_CFG_FILE = cfgFile;
+      } else {
+        throw new Error(`Could not find Testcafe config file: '${cfgFile}'`);
+      }
     }
 
     // Define node/npm path for execution
@@ -229,23 +243,6 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
     cli.push('--fixture-meta', filters.join(','));
   }
 
-  // Reporters
-  const xmlReportPath = path.join(assetsPath, 'report.xml');
-  const jsonReportPath = path.join(assetsPath, 'report.json');
-  const sauceReportPath = path.join(assetsPath, 'sauce-test-report.json');
-  const reporters = [
-    `xunit:${xmlReportPath}`,
-    `json:${jsonReportPath}`,
-    'saucelabs',
-    'list',
-    ...(suite.reporters || []),
-  ];
-  cli.push('--reporter', reporters.join(','));
-
-  // Configure reporters
-  process.env.SAUCE_DISABLE_UPLOAD = 'true';
-  process.env.SAUCE_REPORT_JSON_PATH = sauceReportPath;
-
   return cli;
 }
 
@@ -291,7 +288,9 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   process.env.SAUCE_SUITE_NAME = suiteName;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.assetsPath;
 
-  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, cfg.runCfg.testcafe.configFile);
+  // Set the TestCafe config file path. We merge it with the user-defined config file.
+  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.js');
+  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, configFile);
   const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
     generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as Suite).browserName, (cfg.suite as Suite).platformName || '');
