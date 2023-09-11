@@ -160,8 +160,8 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
       cli.push('--compiler-options', options);
     }
   }
-  if (suite.nativeAutomation) {
-    cli.push('--native-automation');
+  if (suite.disableNativeAutomation) {
+    cli.push('--disable-native-automation');
   }
   if (suite.esm) {
     cli.push('--esm');

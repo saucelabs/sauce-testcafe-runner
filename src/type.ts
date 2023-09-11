@@ -83,7 +83,7 @@ export type Suite = {
   screenshots?: Screenshots,
   filter?: Filter,
   preExec?: string[],
-  nativeAutomation?: boolean;
+  disableNativeAutomation?: boolean;
   esm?: boolean;
 }
 
