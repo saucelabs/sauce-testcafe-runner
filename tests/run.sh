@@ -7,7 +7,6 @@ for i in ${tests[@]}; do
     suite=$(echo ${i} | cut -d '=' -f 1)
     expected_result=$(echo ${i} | cut -d '=' -f 2)
     tmpfile=$(mktemp)
-    echo $suite
 
     current_suite_folder="./tests/local/$suite"
     cp ./lib/sauce-testcafe-config.js $current_suite_folder
@@ -24,7 +23,7 @@ for i in ${tests[@]}; do
         cat ${tmpfile}
         rm -f ${tmpfile}
 
-        echo "TEST FAILURE: expected_result expected is ${expected_result}, and exitCode is ${RETURN_CODE}"
+        echo "TEST FAILURE: Result expected is ${expected_result}, and exitCode is ${RETURN_CODE}"
         exit 1
     fi
     rm -f ${tmpfile}

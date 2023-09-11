@@ -35,11 +35,11 @@ const overrides = {
   reporter: [
     {
       name: 'xunit',
-      output: path.join(process.env.ASSETS_PATH || '', 'report.xml'),
+      output: path.join(process.env.ASSETS_PATH || '__assets__', 'report.xml'),
     },
     {
       name: 'json',
-      output: path.join(process.env.ASSETS_PATH || '', 'report.json'),
+      output: path.join(process.env.ASSETS_PATH || '__assets__', 'report.json'),
     },
     {
       name: 'saucelabs',
