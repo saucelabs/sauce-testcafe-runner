@@ -62,7 +62,7 @@ export function buildCompilerOptions (compilerOptions: CompilerOptions) {
 }
 
 // Buid the command line to invoke TestCafe with all required parameters
-export function buildCommandLine (suite: Suite|undefined, projectPath: string, assetsPath: string) {
+export function buildCommandLine (suite: Suite|undefined, projectPath: string, assetsPath: string, configFile: string|undefined) {
   const cli: (string|number)[] = [];
   if (suite === undefined) {
     return cli;
@@ -90,6 +90,10 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
     cli.push(...suite.src);
   } else {
     cli.push(suite.src);
+  }
+
+  if (configFile) {
+    cli.push('--config-file', configFile);
   }
 
   if (suite.tsConfigPath) {
@@ -287,7 +291,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   process.env.SAUCE_SUITE_NAME = suiteName;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.assetsPath;
 
-  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath);
+  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, cfg.runCfg.testcafe.configFile);
   const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
     generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as Suite).browserName, (cfg.suite as Suite).platformName || '');

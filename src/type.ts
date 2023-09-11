@@ -93,6 +93,10 @@ export type TestCafeConfig = {
   path: string,
   projectPath?: string,
   suites: Suite[],
-  assetsPath: string;
+  assetsPath: string,
   suite: Suite,
+  testcafe: {
+    version: string,
+    configFile?: string,
+  }
 }
