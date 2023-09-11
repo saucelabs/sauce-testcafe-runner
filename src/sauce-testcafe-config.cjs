@@ -6,18 +6,17 @@ let userConfig = {};
 
 const configFiles = process.env.TESTCAFE_CFG_FILE ?
   [process.env.TESTCAFE_CFG_FILE] :
-  ['./testcaferc.json', '.testcaferc.js', '.testcaferc.cjs'];
-
+  ['.testcaferc.json', '.testcaferc.js', '.testcaferc.cjs'];
 
 for (const file of configFiles) {
   if (fs.existsSync(file)) {
     try {
       const extname = path.extname(file);
-      if (extname === 'json') {
+      if (extname === '.json') {
         const content = fs.readFileSync(file);
         userConfig = JSON.parse(content.toString());
       }
-      if (extname === 'js' || extname === 'cjs') {
+      if (extname === '.js' || extname === '.cjs') {
         const config = require(file);
         if (config.default) {
           userConfig = config.default;
@@ -63,4 +62,6 @@ function arrMerger (objValue, srcValue) {
   }
 }
 
-module.exports = _.mergeWith(userConfig, overrides, arrMerger);
+const config = _.mergeWith(userConfig, overrides, arrMerger);
+console.log('final config: ', config);
+module.exports = config;

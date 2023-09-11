@@ -23,7 +23,7 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     runCfg.path = runCfgPath;
     const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
-    const suite: Partial<Suite|undefined> = getSuite(runCfg, suiteName);
+    const suite = getSuite(runCfg, suiteName);
     const metadata = runCfg?.sauce?.metadata || {};
     const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
 
@@ -290,8 +290,8 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
 
   // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
   // configuration, which may be needed for future use.
-  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.js');
-  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.js'), configFile);
+  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.cjs');
+  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
   const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, configFile);
   const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
