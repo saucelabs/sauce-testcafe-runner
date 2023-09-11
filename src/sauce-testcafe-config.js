@@ -62,6 +62,4 @@ function arrMerger (objValue, srcValue) {
   }
 }
 
-const config = _.mergeWith(userConfig, overrides, arrMerger);
-console.log('final config: ', config);
-module.exports = config;
+module.exports = _.mergeWith(userConfig, overrides, arrMerger);

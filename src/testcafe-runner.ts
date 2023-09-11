@@ -178,12 +178,6 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
       cli.push('--compiler-options', options);
     }
   }
-  if (suite.nativeAutomation) {
-    cli.push('--native-automation');
-  }
-  if (suite.esm) {
-    cli.push('--esm');
-  }
 
   // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
   const shouldRecordVideo = !suite.disableVideo;
@@ -290,8 +284,8 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
 
   // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
   // configuration, which may be needed for future use.
-  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.cjs');
-  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
+  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.js');
+  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.js'), configFile);
 
   const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, configFile);
   const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
