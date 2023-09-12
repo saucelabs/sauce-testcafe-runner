@@ -17,11 +17,9 @@ for (const file of configFiles) {
         userConfig = JSON.parse(content.toString());
       }
       if (extname === '.js' || extname === '.cjs') {
-        const config = require(file);
+        userConfig = require(file);
         if (config.default) {
-          userConfig = config.default;
-        } else {
-          userConfig = config;
+          userConfig = userConfig.default;
         }
       }
       break;
