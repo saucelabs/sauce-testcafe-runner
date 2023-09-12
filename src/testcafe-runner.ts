@@ -283,7 +283,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.assetsPath;
 
   // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
-  // configuration, which will be needed for future use.
+  // configuration, which will be loaded during TestCafe setup step.
   const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.js');
   fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.js'), configFile);
 
