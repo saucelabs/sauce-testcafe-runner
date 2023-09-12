@@ -23,17 +23,15 @@ describe('.buildCommandLine', function () {
       src: ['**/*.test.js'],
       name: 'unit test'
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('most basic config with typescript options', function () {
@@ -48,18 +46,16 @@ describe('.buildCommandLine', function () {
         },
       },
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--compiler-options', 'typescript.configPath=tsconfig.json;typescript.customCompilerModulePath=/compiler/path',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('basic with filters', function () {
@@ -82,10 +78,12 @@ describe('.buildCommandLine', function () {
         },
       }
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--test', 'fixed-test-name',
@@ -94,11 +92,7 @@ describe('.buildCommandLine', function () {
       '--fixture-grep', '.*fixture-name.*',
       '--test-meta', 'my-key=my-val,2nd-key=2nd-val',
       '--fixture-meta', 'my-key=my-val,2nd-key=2nd-val',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('basic with screenshots', function () {
@@ -111,18 +105,16 @@ describe('.buildCommandLine', function () {
         takeOnFails: true,
       },
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${FILE_INDEX} - ${FIXTURE} - ${TEST}.png,thumbnails=false',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('basic with quarantineMode', function () {
@@ -135,18 +127,16 @@ describe('.buildCommandLine', function () {
         successThreshold: 3,
       },
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--quarantine-mode', 'attemptLimit=10,successThreshold=3',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('basic with different flags', function () {
@@ -169,10 +159,12 @@ describe('.buildCommandLine', function () {
       disablePageCaching: true,
       disableScreenshots: true,
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--skip-js-errors',
       '--skip-uncaught-errors',
       '--selector-timeout', 1000,
@@ -189,11 +181,7 @@ describe('.buildCommandLine', function () {
       '--disable-screenshots',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('basic with client scripts', function () {
@@ -205,18 +193,16 @@ describe('.buildCommandLine', function () {
         'script.js',
       ],
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--client-scripts', '/fake/project/path/script.js',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('basic with tsConfigPath', function () {
@@ -226,18 +212,16 @@ describe('.buildCommandLine', function () {
       src: ['**/*.test.js'],
       tsConfigPath: 'tsconfig.json',
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--ts-config-path', 'tsconfig.json',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('basic with no-array src', function () {
@@ -246,17 +230,15 @@ describe('.buildCommandLine', function () {
       browserName: 'firefox',
       src: '**/*.test.js',
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   it('basic with browserArgs', function () {
@@ -266,17 +248,15 @@ describe('.buildCommandLine', function () {
       src: '**/*.test.js',
       browserArgs: ['--chrome-fake-param'],
     };
-    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+    const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
     expect(cli).toMatchObject([
       'firefox --chrome-fake-param',
       '**/*.test.js',
+      '--config-file',
+      '/fake/configFile/path',
       '--video', '/fake/assets/path',
       '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-      '--reporter',
-      'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
     ]);
-    expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-    expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
   });
 
   describe('with env + inside VM', function () {
@@ -295,18 +275,16 @@ describe('.buildCommandLine', function () {
         browserName: 'firefox',
         src: '**/*.test.js',
       };
-      const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path');
+      const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
       expect(cli).toMatchObject([
         'D:\\chrome99\\chrome.exe',
         '**/*.test.js',
+        '--config-file',
+        '/fake/configFile/path',
         '--video', '/fake/assets/path',
         '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
         '--proxy', 'localhost:8080',
-        '--reporter',
-        'xunit:/fake/assets/path/report.xml,json:/fake/assets/path/report.json,saucelabs,list',
       ]);
-      expect(process.env.SAUCE_REPORT_JSON_PATH).toBe('/fake/assets/path/sauce-test-report.json');
-      expect(process.env.SAUCE_DISABLE_UPLOAD).toBe('true');
     });
   });
 });

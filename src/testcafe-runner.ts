@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 import { TestCafeConfig, Suite, CompilerOptions } from './type';
 
 import {
@@ -29,6 +30,19 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     // Set env vars
     for (const key in suite?.env) {
       process.env[key] = suite?.env[key];
+    }
+    // Config reporters
+    process.env.ASSETS_PATH = assetsPath;
+    process.env.SAUCE_REPORT_JSON_PATH = path.join(assetsPath, 'sauce-test-report.json');
+    process.env.SAUCE_DISABLE_UPLOAD = 'true';
+
+    if (runCfg.testcafe.configFile) {
+      const cfgFile = path.join(projectPath, runCfg.testcafe.configFile);
+      if (fs.existsSync(cfgFile)) {
+        process.env.TESTCAFE_CFG_FILE = cfgFile;
+      } else {
+        throw new Error(`Could not find Testcafe config file: '${cfgFile}'`);
+      }
     }
 
     // Define node/npm path for execution
@@ -62,7 +76,7 @@ export function buildCompilerOptions (compilerOptions: CompilerOptions) {
 }
 
 // Buid the command line to invoke TestCafe with all required parameters
-export function buildCommandLine (suite: Suite|undefined, projectPath: string, assetsPath: string) {
+export function buildCommandLine (suite: Suite|undefined, projectPath: string, assetsPath: string, configFile: string|undefined) {
   const cli: (string|number)[] = [];
   if (suite === undefined) {
     return cli;
@@ -90,6 +104,10 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
     cli.push(...suite.src);
   } else {
     cli.push(suite.src);
+  }
+
+  if (configFile) {
+    cli.push('--config-file', configFile);
   }
 
   if (suite.tsConfigPath) {
@@ -160,12 +178,6 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
       cli.push('--compiler-options', options);
     }
   }
-  if (suite.nativeAutomation) {
-    cli.push('--native-automation');
-  }
-  if (suite.esm) {
-    cli.push('--esm');
-  }
 
   // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
   const shouldRecordVideo = !suite.disableVideo;
@@ -225,16 +237,6 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
     cli.push('--fixture-meta', filters.join(','));
   }
 
-  // Reporters
-  const xmlReportPath = path.join(assetsPath, 'report.xml');
-  const jsonReportPath = path.join(assetsPath, 'report.json');
-  const sauceReportPath = path.join(assetsPath, 'sauce-test-report.json');
-  cli.push('--reporter', `xunit:${xmlReportPath},json:${jsonReportPath},saucelabs,list`);
-
-  // Configure reporters
-  process.env.SAUCE_DISABLE_UPLOAD = 'true';
-  process.env.SAUCE_REPORT_JSON_PATH = sauceReportPath;
-
   return cli;
 }
 
@@ -280,7 +282,12 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   process.env.SAUCE_SUITE_NAME = suiteName;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.assetsPath;
 
-  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath);
+  // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
+  // configuration, which will be loaded during TestCafe setup step.
+  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.cjs');
+  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
+
+  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, configFile);
   const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
     generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as Suite).browserName, (cfg.suite as Suite).platformName || '');

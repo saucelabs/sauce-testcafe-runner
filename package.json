@@ -8,7 +8,7 @@
   "bin": "./bin/testcafe",
   "main": "lib/console-wrapper.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/sauce-testcafe-config.cjs lib/",
     "test": "node lib/console-wrapper.js",
     "lint": "eslint tests/ src/**/*.ts",
     "unit-test": "jest --env node",
@@ -21,6 +21,7 @@
     "@saucelabs/testcomposer": "^1.0.0",
     "@tsconfig/node18": "^1.0.1",
     "dotenv": "16.0.3",
+    "lodash": "^4.17.21",
     "mocha-junit-reporter": "^2.2.0",
     "sauce-testrunner-utils": "1.3.0",
     "testcafe": "3.2.0",
