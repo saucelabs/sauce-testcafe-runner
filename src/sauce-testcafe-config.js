@@ -26,7 +26,7 @@ for (const file of configFiles) {
       }
       break;
     } catch (e) {
-      console.error(`failed to read TestCafe config file(${file}), err: ${e}`);
+      console.error(`failed to read TestCafe config file(${file}):`, e);
     }
   }
 }
