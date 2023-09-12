@@ -6,7 +6,7 @@ let userConfig = {};
 
 const configFiles = process.env.TESTCAFE_CFG_FILE ?
   [process.env.TESTCAFE_CFG_FILE] :
-  ['.testcaferc.json', '.testcaferc.js', '.testcaferc.cjs'];
+  ['./.testcaferc.json', './.testcaferc.js', './.testcaferc.cjs'];
 
 for (const file of configFiles) {
   if (fs.existsSync(file)) {
