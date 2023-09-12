@@ -18,7 +18,7 @@ for (const file of configFiles) {
       }
       if (extname === '.js' || extname === '.cjs') {
         userConfig = require(file);
-        if (config.default) {
+        if (userConfig.default) {
           userConfig = userConfig.default;
         }
       }

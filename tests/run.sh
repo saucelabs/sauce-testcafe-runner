@@ -9,7 +9,7 @@ for i in ${tests[@]}; do
     tmpfile=$(mktemp)
 
     current_suite_folder="./tests/local/$suite"
-    cp ./lib/sauce-testcafe-config.js $current_suite_folder
+    cp ./lib/sauce-testcafe-config.cjs $current_suite_folder
 
     echo "Running ${suite}:"
     pushd $current_suite_folder > /dev/null

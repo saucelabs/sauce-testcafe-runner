@@ -284,8 +284,8 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
 
   // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
   // configuration, which will be loaded during TestCafe setup step.
-  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.js');
-  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.js'), configFile);
+  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.cjs');
+  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
   const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, configFile);
   const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
