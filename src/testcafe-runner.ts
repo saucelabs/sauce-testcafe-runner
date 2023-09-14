@@ -204,11 +204,11 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
     );
   }
 
-  // if (process.env.HTTP_PROXY) {
-  //   const proxyURL = new URL(process.env.HTTP_PROXY);
-  //   cli.push('--proxy', proxyURL.host);
-  // }
-  //
+  if (process.env.HTTP_PROXY) {
+    const proxyURL = new URL(process.env.HTTP_PROXY);
+    cli.push('--proxy', proxyURL.host);
+  }
+
   cli.push('--disable-native-automation');
 
   // Filters
