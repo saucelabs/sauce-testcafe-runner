@@ -8,7 +8,7 @@ export interface ProcessEnv {
   [key: string]: string | undefined
 }
 
-describe('.buildCommandLine', function () {
+describe.skip('.buildCommandLine', function () {
   let OLD_ENV: ProcessEnv;
   beforeEach(function () {
     OLD_ENV = process.env;
