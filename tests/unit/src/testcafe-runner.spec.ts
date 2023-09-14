@@ -259,34 +259,34 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  describe('with env + inside VM', function () {
-    const OLD_ENV = process.env;
+  // describe('with env + inside VM', function () {
+  //   const OLD_ENV = process.env;
 
-    afterAll(function () {
-      process.env = OLD_ENV;
-    });
+  //   afterAll(function () {
+  //     process.env = OLD_ENV;
+  //   });
 
-    // it('should use http_proxy', function () {
-    //   process.env.SAUCE_VIDEO_RECORD = 'truthy';
-    //   process.env.SAUCE_BROWSER_PATH = 'D:\\chrome99\\chrome.exe';
-    //   process.env.HTTP_PROXY = 'http://localhost:8080';
-    //   const suite: Suite = {
-    //     name: 'unit test',
-    //     browserName: 'firefox',
-    //     src: '**/*.test.js',
-    //   };
-    //   const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
-    //   expect(cli).toMatchObject([
-    //     'D:\\chrome99\\chrome.exe',
-    //     '**/*.test.js',
-    //     '--config-file',
-    //     '/fake/configFile/path',
-    //     '--video', '/fake/assets/path',
-    //     '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-    //     '--proxy', 'localhost:8080',
-    //   ]);
-    // });
-  });
+  //   // it('should use http_proxy', function () {
+  //   //   process.env.SAUCE_VIDEO_RECORD = 'truthy';
+  //   //   process.env.SAUCE_BROWSER_PATH = 'D:\\chrome99\\chrome.exe';
+  //   //   process.env.HTTP_PROXY = 'http://localhost:8080';
+  //   //   const suite: Suite = {
+  //   //     name: 'unit test',
+  //   //     browserName: 'firefox',
+  //   //     src: '**/*.test.js',
+  //   //   };
+  //   //   const cli = buildCommandLine(suite, '/fake/project/path', '/fake/assets/path', '/fake/configFile/path');
+  //   //   expect(cli).toMatchObject([
+  //   //     'D:\\chrome99\\chrome.exe',
+  //   //     '**/*.test.js',
+  //   //     '--config-file',
+  //   //     '/fake/configFile/path',
+  //   //     '--video', '/fake/assets/path',
+  //   //     '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
+  //   //     '--proxy', 'localhost:8080',
+  //   //   ]);
+  //   // });
+  // });
 });
 
 describe('.buildCompilerOptions', function () {
