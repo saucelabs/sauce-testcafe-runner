@@ -208,6 +208,8 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
   //   const proxyURL = new URL(process.env.HTTP_PROXY);
   //   cli.push('--proxy', proxyURL.host);
   // }
+  //
+  cli.push('--disable-native-automation');
 
   // Filters
   if (suite.filter && suite.filter.test) {
