@@ -23,7 +23,7 @@
     "dotenv": "16.0.3",
     "lodash": "^4.17.21",
     "mocha-junit-reporter": "^2.2.0",
-    "sauce-testrunner-utils": "1.3.0",
+    "sauce-testrunner-utils": "1.1.2",
     "testcafe": "3.2.0",
     "testcafe-browser-provider-ios": "0.5.0",
     "testcafe-reporter-saucelabs": "3.0.0",
