@@ -247,7 +247,7 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          tunnelIdentifier: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
+          tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
           scVersion: 4.8.1
 
       - name: Test on Sauce
