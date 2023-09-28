@@ -45,7 +45,7 @@ const overrides = {
     {
       name: 'list',
     }
-  ]
+  ],
 };
 
 // Values that are arrays are merged at the very end (see arrMerger()), but primitives are not.
@@ -60,4 +60,13 @@ function arrMerger (objValue, srcValue) {
   }
 }
 
-module.exports = _.mergeWith(userConfig, overrides, arrMerger);
+const mergedConfig = _.mergeWith(userConfig, overrides, arrMerger);
+
+// Remove video related options from the merged config.
+// We'll handle them separately, because `_.mergeWith()` can't merge fields
+// with `undefined` values.
+mergedConfig.videoPath = undefined;
+mergedConfig.videoOptions = undefined;
+mergedConfig.videoEncodingOptions = undefined;
+
+module.exports = mergedConfig;
