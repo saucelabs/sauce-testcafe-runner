@@ -179,15 +179,6 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
     }
   }
 
-  // Record a video if it's not a VM or if SAUCE_VIDEO_RECORD is set
-  const shouldRecordVideo = !suite.disableVideo;
-  if (shouldRecordVideo) {
-    cli.push(
-      '--video', assetsPath,
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
-    );
-  }
-
   // Screenshots
   if (suite.screenshots) {
     // Set screenshot pattern as fixture name, test name and screenshot #

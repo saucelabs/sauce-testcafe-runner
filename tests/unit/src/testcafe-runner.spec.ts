@@ -29,8 +29,6 @@ describe('.buildCommandLine', function () {
       '**/*.test.js',
       '--config-file',
       '/fake/configFile/path',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     ]);
   });
 
@@ -53,8 +51,6 @@ describe('.buildCommandLine', function () {
       '--config-file',
       '/fake/configFile/path',
       '--compiler-options', 'typescript.configPath=tsconfig.json;typescript.customCompilerModulePath=/compiler/path',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     ]);
   });
 
@@ -84,8 +80,6 @@ describe('.buildCommandLine', function () {
       '**/*.test.js',
       '--config-file',
       '/fake/configFile/path',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--test', 'fixed-test-name',
       '--fixture', 'fixed-fixture-name',
       '--test-grep', '.*test-name.*',
@@ -111,8 +105,6 @@ describe('.buildCommandLine', function () {
       '**/*.test.js',
       '--config-file',
       '/fake/configFile/path',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
       '--screenshots', 'takeOnFails=true,fullPage=true,path=/fake/assets/path,pathPattern=${FILE_INDEX} - ${FIXTURE} - ${TEST}.png,thumbnails=false',
     ]);
   });
@@ -134,8 +126,6 @@ describe('.buildCommandLine', function () {
       '--config-file',
       '/fake/configFile/path',
       '--quarantine-mode', 'attemptLimit=10,successThreshold=3',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     ]);
   });
 
@@ -179,8 +169,6 @@ describe('.buildCommandLine', function () {
       '--stop-on-first-fail',
       '--disable-page-caching',
       '--disable-screenshots',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     ]);
   });
 
@@ -200,8 +188,6 @@ describe('.buildCommandLine', function () {
       '--config-file',
       '/fake/configFile/path',
       '--client-scripts', '/fake/project/path/script.js',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     ]);
   });
 
@@ -219,8 +205,6 @@ describe('.buildCommandLine', function () {
       '--config-file',
       '/fake/configFile/path',
       '--ts-config-path', 'tsconfig.json',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     ]);
   });
 
@@ -236,8 +220,6 @@ describe('.buildCommandLine', function () {
       '**/*.test.js',
       '--config-file',
       '/fake/configFile/path',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     ]);
   });
 
@@ -254,8 +236,6 @@ describe('.buildCommandLine', function () {
       '**/*.test.js',
       '--config-file',
       '/fake/configFile/path',
-      '--video', '/fake/assets/path',
-      '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
     ]);
   });
 
@@ -281,8 +261,6 @@ describe('.buildCommandLine', function () {
         '**/*.test.js',
         '--config-file',
         '/fake/configFile/path',
-        '--video', '/fake/assets/path',
-        '--video-options', 'singleFile=true,failedOnly=false,pathPattern=video.mp4',
         '--proxy', 'localhost:8080',
       ]);
     });
