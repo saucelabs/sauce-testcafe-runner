@@ -289,11 +289,9 @@ if (require.main === module) {
   const { nodeBin, runCfgPath, suiteName} = getArgs();
 
   run(nodeBin, runCfgPath, suiteName)
-    // eslint-disable-next-line promise/prefer-await-to-then
     .then((passed) => {
       process.exit(passed ? 0 : 1);
     })
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
     .catch((err) => {
       console.error(`Failed to setup or run TestCafe: ${err.message}`);
       process.exit(1);

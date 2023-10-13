@@ -1,20 +1,15 @@
 {
     "extends": [
-        "eslint-config-appium",
-        "plugin:testcafe/recommended"
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
     ],
-    "plugins": ["jest", "testcafe", "@typescript-eslint"],
+    "plugins": [
+        "jest",
+        "testcafe",
+        "@typescript-eslint"
+    ],
     "rules": {
-        "no-console": "off",
-        "promise/no-native": "off",
-        "promise/prefer-await-to-callbacks": "off",
-        "promise/prefer-await-to-then": "off",
-        "promise/catch-or-return": "off",
-        "space-before-function-paren": ["error", {
-            "anonymous": "never",
-            "named": "never",
-            "asyncArrow": "always"
-        }]
+        "@typescript-eslint/no-var-requires": "off"
     },
     "env": {
         "jest/globals": true

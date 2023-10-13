@@ -14,13 +14,13 @@ const getPlatformName = (platform: string) => {
 export function generateJunitFile(assetsPath: string, suiteName: string, browserName: string, platform: string) {
   const opts = {compact: true, spaces: 4, textFn: (val: string) => val};
   const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
-  let result : any = convert.xml2js(xmlData, opts);
+  const result : any = convert.xml2js(xmlData, opts);
 
   if (!result.testsuite) {
     return;
   }
 
-  let testsuites = result.testsuite;
+  const testsuites = result.testsuite;
   testsuites._attributes = testsuites._attributes || {};
   testsuites._attributes.id = 0;
   testsuites._attributes.name = suiteName;
@@ -57,6 +57,6 @@ export function generateJunitFile(assetsPath: string, suiteName: string, browser
   delete result.testsuite;
 
   opts.textFn = utils.escapeXML;
-  let xmlResult = convert.js2xml(result, opts);
+  const xmlResult = convert.js2xml(result, opts);
   fs.writeFileSync(path.join(assetsPath, 'junit.xml'), xmlResult);
 }
