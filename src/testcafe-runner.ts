@@ -22,11 +22,14 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     runCfg.path = runCfgPath;
     const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
-    const suite = getSuite(runCfg, suiteName);
+    const suite = getSuite(runCfg, suiteName) as Suite | undefined;
+    if (!suite) {
+      throw new Error(`Could not find suite '${suiteName}'`);
+    }
 
     // Set env vars
-    for (const key in suite?.env) {
-      process.env[key] = suite?.env[key];
+    for (const key in suite.env) {
+      process.env[key] = suite.env[key];
     }
     // Config reporters
     process.env.ASSETS_PATH = assetsPath;
@@ -258,7 +261,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
     return false;
   }
 
-  if (!await preExec.run({preExec: (cfg.suite as Suite).preExec}, preExecTimeout)) {
+  if (!await preExec.run({preExec: cfg.suite.preExec}, preExecTimeout)) {
     return false;
   }
   process.env.SAUCE_SUITE_NAME = suiteName;
@@ -269,10 +272,10 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.cjs');
   fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
-  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, configFile);
+  const tcCommandLine = buildCommandLine(cfg.suite, cfg.projectPath, cfg.assetsPath, configFile);
   const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
   try {
-    generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as Suite).browserName, (cfg.suite as Suite).platformName || '');
+    generateJunitFile(cfg.assetsPath, suiteName, cfg.suite.browserName, cfg.suite.platformName || '');
   } catch (err) {
     console.error(`Failed to generate junit file: ${err}`);
   }
