@@ -23,8 +23,6 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
     const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
     const suite = getSuite(runCfg, suiteName);
-    const metadata = runCfg?.sauce?.metadata || {};
-    const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
 
     // Set env vars
     for (const key in suite?.env) {
@@ -49,11 +47,9 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
     // Install NPM dependencies
-    let metrics: any[] = [];
-    let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
-    metrics.push(npmMetrics);
+    await prepareNpmEnv(runCfg, nodeCtx);
 
-    return { runCfg, projectPath, assetsPath, suite, metrics, metadata, saucectlVersion };
+    return { runCfg, projectPath, assetsPath, suite };
   } catch (e: any) {
     console.error(`failed to prepare testcafe. Reason: ${e?.message}`);
   }
