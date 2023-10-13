@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe';
+import { Selector, fixture, test } from 'testcafe';
 
 fixture `Sauce-Connect`.page `http://localhost:8000/index.html`;
 

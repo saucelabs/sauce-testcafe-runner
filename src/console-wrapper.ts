@@ -44,11 +44,9 @@ async function testCafeRunner() {
 
 if (require.main === module) {
   testCafeRunner()
-      // eslint-disable-next-line promise/prefer-await-to-then
       .then(() => {
         process.exit(0);
       })
-      // eslint-disable-next-line promise/prefer-await-to-callbacks
       .catch((err) => {
         console.error(err);
         process.exit(err);

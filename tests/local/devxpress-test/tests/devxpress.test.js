@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe';
+import { Selector, fixture, test } from 'testcafe';
 
 fixture `Getting Started`
   .page `http://devexpress.github.io/testcafe/example`;
