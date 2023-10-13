@@ -9,7 +9,12 @@
         "promise/no-native": "off",
         "promise/prefer-await-to-callbacks": "off",
         "promise/prefer-await-to-then": "off",
-        "promise/catch-or-return": "off"
+        "promise/catch-or-return": "off",
+        "space-before-function-paren": ["error", {
+            "anonymous": "never",
+            "named": "never",
+            "asyncArrow": "always"
+        }]
     },
     "env": {
         "jest/globals": true

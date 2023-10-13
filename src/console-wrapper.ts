@@ -6,7 +6,7 @@ import child_process from 'child_process';
 import * as utils from 'sauce-testrunner-utils';
 import { TestCafeConfig } from './type';
 
-async function testCafeRunner () {
+async function testCafeRunner() {
   const { runCfgPath } = utils.getArgs();
   const runCfgAbsolutePath = utils.getAbsolutePath(runCfgPath);
   const runCfg = await utils.loadRunConfig(runCfgAbsolutePath);
@@ -18,7 +18,7 @@ async function testCafeRunner () {
     }
     const fd = fs.openSync(path.join(assetsPath, 'console.log'), 'w+', 0o644);
     const ws = new stream.Writable({
-      write (data: any, encoding: any, cb: any) { fs.write(fd, data, undefined, encoding, cb); },
+      write(data: any, encoding: any, cb: any) { fs.write(fd, data, undefined, encoding, cb); },
     });
 
     const [nodeBin] = process.argv;

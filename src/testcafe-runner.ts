@@ -15,53 +15,47 @@ import {
   generateJunitFile
 } from './sauce-testreporter';
 
-async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteName: string) {
-  try {
-    runCfgPath = getAbsolutePath(runCfgPath);
-    const cfg: any = await loadRunConfig(runCfgPath);
-    const runCfg: TestCafeConfig = cfg;
-    runCfg.path = runCfgPath;
-    const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
-    const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
-    const suite = getSuite(runCfg, suiteName);
-    const metadata = runCfg?.sauce?.metadata || {};
-    const saucectlVersion = process.env.SAUCE_SAUCECTL_VERSION;
-
-    // Set env vars
-    for (const key in suite?.env) {
-      process.env[key] = suite?.env[key];
-    }
-    // Config reporters
-    process.env.ASSETS_PATH = assetsPath;
-    process.env.SAUCE_REPORT_JSON_PATH = path.join(assetsPath, 'sauce-test-report.json');
-    process.env.SAUCE_DISABLE_UPLOAD = 'true';
-
-    if (runCfg.testcafe.configFile) {
-      const cfgFile = path.join(projectPath, runCfg.testcafe.configFile);
-      if (fs.existsSync(cfgFile)) {
-        process.env.TESTCAFE_CFG_FILE = cfgFile;
-      } else {
-        throw new Error(`Could not find Testcafe config file: '${cfgFile}'`);
-      }
-    }
-
-    // Define node/npm path for execution
-    const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
-    const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
-
-    // Install NPM dependencies
-    let metrics: any[] = [];
-    let npmMetrics = await prepareNpmEnv(runCfg, nodeCtx);
-    metrics.push(npmMetrics);
-
-    return { runCfg, projectPath, assetsPath, suite, metrics, metadata, saucectlVersion };
-  } catch (e: any) {
-    console.error(`failed to prepare testcafe. Reason: ${e?.message}`);
+async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteName: string) {
+  runCfgPath = getAbsolutePath(runCfgPath);
+  const runCfg = loadRunConfig(runCfgPath) as TestCafeConfig;
+  runCfg.path = runCfgPath;
+  const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
+  const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
+  const suite = getSuite(runCfg, suiteName) as Suite | undefined;
+  if (!suite) {
+    throw new Error(`Could not find suite '${suiteName}'`);
   }
+
+  // Set env vars
+  for (const key in suite.env) {
+    process.env[key] = suite.env[key];
+  }
+  // Config reporters
+  process.env.ASSETS_PATH = assetsPath;
+  process.env.SAUCE_REPORT_JSON_PATH = path.join(assetsPath, 'sauce-test-report.json');
+  process.env.SAUCE_DISABLE_UPLOAD = 'true';
+
+  if (runCfg.testcafe.configFile) {
+    const nativeCfg = path.join(projectPath, runCfg.testcafe.configFile);
+    if (!fs.existsSync(nativeCfg)) {
+      throw new Error(`Could not find Testcafe config file: '${nativeCfg}'`);
+    }
+
+    process.env.TESTCAFE_CFG_FILE = nativeCfg;
+  }
+
+  // Define node/npm path for execution
+  const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const nodeCtx = {nodePath: nodeBin, npmPath: npmBin};
+
+  // Install NPM dependencies
+  await prepareNpmEnv(runCfg, nodeCtx);
+
+  return {projectPath, assetsPath, suite};
 }
 
 // Build --compiler-options argument
-export function buildCompilerOptions (compilerOptions: CompilerOptions) {
+export function buildCompilerOptions(compilerOptions: CompilerOptions) {
   const args: string[] = [];
   if (compilerOptions?.typescript?.configPath) {
     args.push(`typescript.configPath=${compilerOptions?.typescript?.configPath}`);
@@ -76,7 +70,7 @@ export function buildCompilerOptions (compilerOptions: CompilerOptions) {
 }
 
 // Buid the command line to invoke TestCafe with all required parameters
-export function buildCommandLine (suite: Suite|undefined, projectPath: string, assetsPath: string, configFile: string|undefined) {
+export function buildCommandLine(suite: Suite|undefined, projectPath: string, assetsPath: string, configFile: string|undefined) {
   const cli: (string|number)[] = [];
   if (suite === undefined) {
     return cli;
@@ -231,7 +225,7 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
   return cli;
 }
 
-async function runTestCafe (tcCommandLine: (string|number)[], projectPath: string) {
+async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
@@ -255,33 +249,32 @@ async function runTestCafe (tcCommandLine: (string|number)[], projectPath: strin
   return { startTime, endTime, hasPassed };
 }
 
-async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
+async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
 
-  const cfg = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
-  if (!cfg) {
+  const {
+    projectPath,
+    assetsPath,
+    suite
+  } = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
+
+  if (!await preExec.run({preExec: suite.preExec}, preExecTimeout)) {
     return false;
   }
 
-  const suite = {
-    preExec: (cfg.suite as Suite).preExec,
-  };
-
-  if (!await preExec.run(suite, preExecTimeout)) {
-    return false;
-  }
   process.env.SAUCE_SUITE_NAME = suiteName;
-  process.env.SAUCE_ARTIFACTS_DIRECTORY = cfg.assetsPath;
+  process.env.SAUCE_ARTIFACTS_DIRECTORY = assetsPath;
 
   // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
   // configuration, which will be loaded during TestCafe setup step.
-  const configFile = path.join(cfg.projectPath, 'sauce-testcafe-config.cjs');
+  const configFile = path.join(projectPath, 'sauce-testcafe-config.cjs');
   fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
-  const tcCommandLine = buildCommandLine(cfg.suite as Suite, cfg.projectPath, cfg.assetsPath, configFile);
-  const { hasPassed } = await runTestCafe(tcCommandLine, cfg.projectPath);
+  const tcCommandLine = buildCommandLine(suite, projectPath, assetsPath, configFile);
+  const {hasPassed} = await runTestCafe(tcCommandLine, projectPath);
+
   try {
-    generateJunitFile(cfg.assetsPath, suiteName, (cfg.suite as Suite).browserName, (cfg.suite as Suite).platformName || '');
+    generateJunitFile(assetsPath, suiteName, suite.browserName, suite.platformName || '');
   } catch (err) {
     console.error(`Failed to generate junit file: ${err}`);
   }
@@ -302,7 +295,7 @@ if (require.main === module) {
     })
     // eslint-disable-next-line promise/prefer-await-to-callbacks
     .catch((err) => {
-      console.error(err);
+      console.error(`Failed to setup or run TestCafe: ${err.message}`);
       process.exit(1);
     });
 }
