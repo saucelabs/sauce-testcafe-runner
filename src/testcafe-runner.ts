@@ -261,6 +261,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   if (!await preExec.run({preExec: suite.preExec}, preExecTimeout)) {
     return false;
   }
+
   process.env.SAUCE_SUITE_NAME = suiteName;
   process.env.SAUCE_ARTIFACTS_DIRECTORY = assetsPath;
 
