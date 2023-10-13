@@ -17,7 +17,7 @@ import {
 
 async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteName: string) {
   runCfgPath = getAbsolutePath(runCfgPath);
-  const runCfg: any = loadRunConfig(runCfgPath) as TestCafeConfig;
+  const runCfg = loadRunConfig(runCfgPath) as TestCafeConfig;
   runCfg.path = runCfgPath;
   const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
   const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
@@ -51,7 +51,7 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
   // Install NPM dependencies
   await prepareNpmEnv(runCfg, nodeCtx);
 
-  return {runCfg, projectPath, assetsPath, suite};
+  return {projectPath, assetsPath, suite};
 }
 
 // Build --compiler-options argument
@@ -253,7 +253,6 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
 
   const {
-    runCfg,
     projectPath,
     assetsPath,
     suite
@@ -263,11 +262,11 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
     return false;
   }
   process.env.SAUCE_SUITE_NAME = suiteName;
-  process.env.SAUCE_ARTIFACTS_DIRECTORY = runCfg.assetsPath;
+  process.env.SAUCE_ARTIFACTS_DIRECTORY = assetsPath;
 
   // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
   // configuration, which will be loaded during TestCafe setup step.
-  const configFile = path.join(runCfg.projectPath, 'sauce-testcafe-config.cjs');
+  const configFile = path.join(projectPath, 'sauce-testcafe-config.cjs');
   fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
   const tcCommandLine = buildCommandLine(suite, projectPath, assetsPath, configFile);
