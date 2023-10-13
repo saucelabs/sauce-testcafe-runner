@@ -37,11 +37,11 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
 
     if (runCfg.testcafe.configFile) {
       const nativeCfg = path.join(projectPath, runCfg.testcafe.configFile);
-      if (fs.existsSync(nativeCfg)) {
-        process.env.TESTCAFE_CFG_FILE = nativeCfg;
-      } else {
+      if (!fs.existsSync(nativeCfg)) {
         throw new Error(`Could not find Testcafe config file: '${nativeCfg}'`);
       }
+
+      process.env.TESTCAFE_CFG_FILE = nativeCfg;
     }
 
     // Define node/npm path for execution
