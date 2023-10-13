@@ -258,11 +258,7 @@ async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
     return false;
   }
 
-  const suite = {
-    preExec: (cfg.suite as Suite).preExec,
-  };
-
-  if (!await preExec.run(suite, preExecTimeout)) {
+  if (!await preExec.run({preExec: (cfg.suite as Suite).preExec}, preExecTimeout)) {
     return false;
   }
   process.env.SAUCE_SUITE_NAME = suiteName;
