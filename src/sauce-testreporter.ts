@@ -11,7 +11,7 @@ const getPlatformName = (platform: string) => {
   return platform;
 };
 
-export function generateJunitFile (assetsPath: string, suiteName: string, browserName: string, platform: string) {
+export function generateJunitFile(assetsPath: string, suiteName: string, browserName: string, platform: string) {
   const opts = {compact: true, spaces: 4, textFn: (val: string) => val};
   const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
   let result : any = convert.xml2js(xmlData, opts);

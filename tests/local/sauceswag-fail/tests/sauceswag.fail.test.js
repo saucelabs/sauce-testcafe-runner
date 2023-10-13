@@ -11,7 +11,7 @@ const Users = {
 };
 
 class Login {
-  constructor () {
+  constructor() {
     this.usernameEl = Selector('#user-name');
     this.passwordEl = Selector('#password');
   }
@@ -19,7 +19,7 @@ class Login {
 
 const login = new Login();
 
-test('SwagLabs locked user login should fail', async function (t) {
+test('SwagLabs locked user login should fail', async function(t) {
   await t
     .typeText(login.usernameEl, Users.locked)
     .typeText(login.passwordEl, Users.password)

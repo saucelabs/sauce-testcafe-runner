@@ -4,7 +4,7 @@ fixture `Getting Started`
   .page `http://devexpress.github.io/testcafe/example`;
 
 const testName = 'testcafe test';
-test(testName, async function (t) {
+test(testName, async function(t) {
   await t
     .typeText('#developer-name', 'devx')
     .click('#submit-button')

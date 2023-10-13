@@ -11,7 +11,7 @@ const Users = {
 };
 
 class Login {
-  constructor () {
+  constructor() {
     this.usernameEl = Selector('#user-name');
     this.passwordEl = Selector('#password');
   }
@@ -19,7 +19,7 @@ class Login {
 
 const login = new Login();
 
-test('SwagLabs username not set', async function (t) {
+test('SwagLabs username not set', async function(t) {
   await t
     .click('.btn_action')
     // Use the assertion to check if the actual header text is equal to the expected one
@@ -27,7 +27,7 @@ test('SwagLabs username not set', async function (t) {
     .expect(Selector('.error-button').visible).eql(true);
 });
 
-test('SwagLabs locked user login', async function (t) {
+test('SwagLabs locked user login', async function(t) {
   await t
     .typeText(login.usernameEl, Users.locked)
     .typeText(login.passwordEl, Users.password)
@@ -37,7 +37,7 @@ test('SwagLabs locked user login', async function (t) {
     .expect(Selector('.error-button').visible).eql(true);
 });
 
-test('SwagLabs standard user login', async function (t) {
+test('SwagLabs standard user login', async function(t) {
   await t
     .typeText(login.usernameEl, Users.standard)
     .typeText(login.passwordEl, Users.password)

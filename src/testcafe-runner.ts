@@ -15,7 +15,7 @@ import {
   generateJunitFile
 } from './sauce-testreporter';
 
-async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteName: string) {
+async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteName: string) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = loadRunConfig(runCfgPath) as TestCafeConfig;
   runCfg.path = runCfgPath;
@@ -55,7 +55,7 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
 }
 
 // Build --compiler-options argument
-export function buildCompilerOptions (compilerOptions: CompilerOptions) {
+export function buildCompilerOptions(compilerOptions: CompilerOptions) {
   const args: string[] = [];
   if (compilerOptions?.typescript?.configPath) {
     args.push(`typescript.configPath=${compilerOptions?.typescript?.configPath}`);
@@ -70,7 +70,7 @@ export function buildCompilerOptions (compilerOptions: CompilerOptions) {
 }
 
 // Buid the command line to invoke TestCafe with all required parameters
-export function buildCommandLine (suite: Suite|undefined, projectPath: string, assetsPath: string, configFile: string|undefined) {
+export function buildCommandLine(suite: Suite|undefined, projectPath: string, assetsPath: string, configFile: string|undefined) {
   const cli: (string|number)[] = [];
   if (suite === undefined) {
     return cli;
@@ -225,7 +225,7 @@ export function buildCommandLine (suite: Suite|undefined, projectPath: string, a
   return cli;
 }
 
-async function runTestCafe (tcCommandLine: (string|number)[], projectPath: string) {
+async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
@@ -249,7 +249,7 @@ async function runTestCafe (tcCommandLine: (string|number)[], projectPath: strin
   return { startTime, endTime, hasPassed };
 }
 
-async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
+async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
 
   const {
