@@ -18,7 +18,7 @@ import {
 async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteName: string) {
   try {
     runCfgPath = getAbsolutePath(runCfgPath);
-    const cfg: any = await loadRunConfig(runCfgPath);
+    const cfg: any = loadRunConfig(runCfgPath);
     const runCfg: TestCafeConfig = cfg;
     runCfg.path = runCfgPath;
     const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
