@@ -36,11 +36,11 @@ async function prepareConfiguration (nodeBin: string, runCfgPath: string, suiteN
     process.env.SAUCE_DISABLE_UPLOAD = 'true';
 
     if (runCfg.testcafe.configFile) {
-      const cfgFile = path.join(projectPath, runCfg.testcafe.configFile);
-      if (fs.existsSync(cfgFile)) {
-        process.env.TESTCAFE_CFG_FILE = cfgFile;
+      const nativeCfg = path.join(projectPath, runCfg.testcafe.configFile);
+      if (fs.existsSync(nativeCfg)) {
+        process.env.TESTCAFE_CFG_FILE = nativeCfg;
       } else {
-        throw new Error(`Could not find Testcafe config file: '${cfgFile}'`);
+        throw new Error(`Could not find Testcafe config file: '${nativeCfg}'`);
       }
     }
 
