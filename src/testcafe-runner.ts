@@ -252,7 +252,12 @@ async function runTestCafe (tcCommandLine: (string|number)[], projectPath: strin
 async function run (nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
 
-  const {runCfg, projectPath, assetsPath, suite} = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
+  const {
+    runCfg,
+    projectPath,
+    assetsPath,
+    suite
+  } = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
 
   if (!await preExec.run({preExec: suite.preExec}, preExecTimeout)) {
     return false;
