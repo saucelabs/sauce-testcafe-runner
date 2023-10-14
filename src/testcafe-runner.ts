@@ -276,7 +276,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
   // saucectl suite.timeout is in nanoseconds
-  const timeout = suite.timeout / 1000000000 || 30 * 60 * 1000; // 30min default
+  const timeout = (suite.timeout || 0) / 1000000000 || 30 * 60 * 1000; // 30min default
 
   const tcCommandLine = buildCommandLine(suite, projectPath, assetsPath, configFile);
   const passed = await runTestCafe(tcCommandLine, projectPath, timeout);

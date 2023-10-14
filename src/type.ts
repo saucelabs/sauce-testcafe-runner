@@ -85,7 +85,7 @@ export type Suite = {
   screenshots?: Screenshots,
   filter?: Filter,
   preExec?: string[],
-  timeout: number,
+  timeout?: number,
 }
 
 export type TestCafeConfig = {
