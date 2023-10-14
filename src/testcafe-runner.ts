@@ -245,16 +245,13 @@ async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string
     });
   });
 
-  let startTime, endTime, passed = false;
   try {
-    startTime = new Date().toISOString();
-    passed = await Promise.race([timeoutPromise, testcafePromise]);
-    endTime = new Date().toISOString();
+    return Promise.race([timeoutPromise, testcafePromise]);
   } catch (e) {
     console.error(`Failed to run TestCafe: ${e}`);
   }
 
-  return { startTime, endTime, passed };
+  return false;
 }
 
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
@@ -282,7 +279,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const timeout = suite.timeout / 1000000000 || 30 * 60 * 1000; // 30min default
 
   const tcCommandLine = buildCommandLine(suite, projectPath, assetsPath, configFile);
-  const {passed} = await runTestCafe(tcCommandLine, projectPath, timeout);
+  const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
 
   try {
     generateJunitFile(assetsPath, suiteName, suite.browserName, suite.platformName || '');
