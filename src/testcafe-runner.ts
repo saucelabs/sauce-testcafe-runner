@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import { TestCafeConfig, Suite, CompilerOptions } from './type';
+import {TestCafeConfig, Suite, CompilerOptions, millisecond} from './type';
 
 import {
   getArgs,
@@ -14,6 +14,7 @@ import {
 import {
   generateJunitFile
 } from './sauce-testreporter';
+import {boolean} from 'yargs';
 
 async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteName: string) {
   runCfgPath = getAbsolutePath(runCfgPath);
@@ -225,28 +226,35 @@ export function buildCommandLine(suite: Suite|undefined, projectPath: string, as
   return cli;
 }
 
-async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string) {
+async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string, timeout: millisecond) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
   const testcafeProc = spawn(nodeBin, [testcafeBin, ...(tcCommandLine as string[])], {stdio: 'inherit', cwd: projectPath, env: process.env});
 
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    setTimeout(() => {
+      console.error(`Job timed out after ${timeout/1000} seconds`);
+      resolve(false);
+    }, timeout);
+  });
+
   const testcafePromise = new Promise<boolean>((resolve) => {
     testcafeProc.on('close', (code /*, ...args*/) => {
-      const hasPassed = code === 0;
-      resolve(hasPassed);
+      resolve(code === 0);
     });
   });
 
-  let startTime, endTime, hasPassed = false;
+  let startTime, endTime, passed = false;
   try {
     startTime = new Date().toISOString();
-    hasPassed = await testcafePromise;
+    passed = await Promise.race([timeoutPromise, testcafePromise]);
     endTime = new Date().toISOString();
   } catch (e) {
-    console.error(`Could not complete job. Reason: ${e}`);
+    console.error(`Failed to run TestCafe: ${e}`);
   }
-  return { startTime, endTime, hasPassed };
+
+  return { startTime, endTime, passed };
 }
 
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
@@ -270,8 +278,11 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const configFile = path.join(projectPath, 'sauce-testcafe-config.cjs');
   fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
+  // saucectl suite.timeout is in nanoseconds
+  const timeout = suite.timeout / 1000000000 || 30 * 60 * 1000; // 30min default
+
   const tcCommandLine = buildCommandLine(suite, projectPath, assetsPath, configFile);
-  const {hasPassed} = await runTestCafe(tcCommandLine, projectPath);
+  const {passed} = await runTestCafe(tcCommandLine, projectPath, timeout);
 
   try {
     generateJunitFile(assetsPath, suiteName, suite.browserName, suite.platformName || '');
@@ -279,7 +290,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     console.error(`Failed to generate junit file: ${err}`);
   }
 
-  return hasPassed;
+  return passed;
 }
 
 if (require.main === module) {
