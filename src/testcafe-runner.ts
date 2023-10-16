@@ -14,7 +14,6 @@ import {
 import {
   generateJunitFile
 } from './sauce-testreporter';
-import {boolean} from 'yargs';
 
 async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteName: string) {
   runCfgPath = getAbsolutePath(runCfgPath);
