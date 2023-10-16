@@ -1,5 +1,7 @@
 import { Region } from '@saucelabs/testcomposer';
 
+export type second = number;
+
 export type Metadata = {
   tags?: string[],
   build?: string,
@@ -83,6 +85,7 @@ export type Suite = {
   screenshots?: Screenshots,
   filter?: Filter,
   preExec?: string[],
+  timeout?: number,
 }
 
 export type TestCafeConfig = {

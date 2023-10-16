@@ -1,7 +1,7 @@
-import { spawn } from 'child_process';
+import {spawn} from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import { TestCafeConfig, Suite, CompilerOptions } from './type';
+import {TestCafeConfig, Suite, CompilerOptions, second} from './type';
 
 import {
   getArgs,
@@ -69,9 +69,9 @@ export function buildCompilerOptions(compilerOptions: CompilerOptions) {
   return args.join(';');
 }
 
-// Buid the command line to invoke TestCafe with all required parameters
-export function buildCommandLine(suite: Suite|undefined, projectPath: string, assetsPath: string, configFile: string|undefined) {
-  const cli: (string|number)[] = [];
+// Build the command line string to invoke TestCafe with all required parameters.
+export function buildCommandLine(suite: Suite | undefined, projectPath: string, assetsPath: string, configFile: string | undefined) {
+  const cli: (string | number)[] = [];
   if (suite === undefined) {
     return cli;
   }
@@ -225,28 +225,36 @@ export function buildCommandLine(suite: Suite|undefined, projectPath: string, as
   return cli;
 }
 
-async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string) {
+async function runTestCafe(tcCommandLine: (string | number)[], projectPath: string, timeout: second) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
-  const testcafeProc = spawn(nodeBin, [testcafeBin, ...(tcCommandLine as string[])], {stdio: 'inherit', cwd: projectPath, env: process.env});
+  const testcafeProc = spawn(nodeBin, [testcafeBin, ...(tcCommandLine as string[])], {
+    stdio: 'inherit',
+    cwd: projectPath,
+    env: process.env
+  });
+
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    setTimeout(() => {
+      console.error(`Job timed out after ${timeout} seconds`);
+      resolve(false);
+    }, timeout * 1000);
+  });
 
   const testcafePromise = new Promise<boolean>((resolve) => {
     testcafeProc.on('close', (code /*, ...args*/) => {
-      const hasPassed = code === 0;
-      resolve(hasPassed);
+      resolve(code === 0);
     });
   });
 
-  let startTime, endTime, hasPassed = false;
   try {
-    startTime = new Date().toISOString();
-    hasPassed = await testcafePromise;
-    endTime = new Date().toISOString();
+    return Promise.race([timeoutPromise, testcafePromise]);
   } catch (e) {
-    console.error(`Could not complete job. Reason: ${e}`);
+    console.error(`Failed to run TestCafe: ${e}`);
   }
-  return { startTime, endTime, hasPassed };
+
+  return false;
 }
 
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
@@ -270,8 +278,11 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const configFile = path.join(projectPath, 'sauce-testcafe-config.cjs');
   fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
+  // saucectl suite.timeout is in nanoseconds, convert to seconds
+  const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
+
   const tcCommandLine = buildCommandLine(suite, projectPath, assetsPath, configFile);
-  const {hasPassed} = await runTestCafe(tcCommandLine, projectPath);
+  const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
 
   try {
     generateJunitFile(assetsPath, suiteName, suite.browserName, suite.platformName || '');
@@ -279,14 +290,14 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     console.error(`Failed to generate junit file: ${err}`);
   }
 
-  return hasPassed;
+  return passed;
 }
 
 if (require.main === module) {
   const packageInfo = require(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce TestCafe Runner ${packageInfo.version}`);
   console.log(`Running TestCafe ${packageInfo.dependencies?.testcafe || ''}`);
-  const { nodeBin, runCfgPath, suiteName} = getArgs();
+  const {nodeBin, runCfgPath, suiteName} = getArgs();
 
   run(nodeBin, runCfgPath, suiteName)
     .then((passed) => {
