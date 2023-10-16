@@ -1,6 +1,6 @@
 import { Region } from '@saucelabs/testcomposer';
 
-export type millisecond = number;
+export type second = number;
 
 export type Metadata = {
   tags?: string[],

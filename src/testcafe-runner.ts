@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import {TestCafeConfig, Suite, CompilerOptions, millisecond} from './type';
+import {TestCafeConfig, Suite, CompilerOptions, second} from './type';
 
 import {
   getArgs,
@@ -225,7 +225,7 @@ export function buildCommandLine(suite: Suite|undefined, projectPath: string, as
   return cli;
 }
 
-async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string, timeout: millisecond) {
+async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string, timeout: second) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
@@ -233,9 +233,9 @@ async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string
 
   const timeoutPromise = new Promise<boolean>((resolve) => {
     setTimeout(() => {
-      console.error(`Job timed out after ${timeout/1000} seconds`);
+      console.error(`Job timed out after ${timeout} seconds`);
       resolve(false);
-    }, timeout);
+    }, timeout * 1000);
   });
 
   const testcafePromise = new Promise<boolean>((resolve) => {
@@ -274,8 +274,8 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const configFile = path.join(projectPath, 'sauce-testcafe-config.cjs');
   fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
 
-  // saucectl suite.timeout is in nanoseconds
-  const timeout = (suite.timeout || 0) / 1000000000 || 30 * 60 * 1000; // 30min default
+  // saucectl suite.timeout is in nanoseconds, convert to seconds
+  const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
   const tcCommandLine = buildCommandLine(suite, projectPath, assetsPath, configFile);
   const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
