@@ -14,6 +14,7 @@ const getPlatformName = (platform: string) => {
 export function generateJunitFile(assetsPath: string, suiteName: string, browserName: string, platform: string) {
   const opts = {compact: true, spaces: 4, textFn: (val: string) => val};
   const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result : any = convert.xml2js(xmlData, opts);
 
   if (!result.testsuite) {
