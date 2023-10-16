@@ -69,7 +69,7 @@ export function buildCompilerOptions(compilerOptions: CompilerOptions) {
   return args.join(';');
 }
 
-// Buid the command line to invoke TestCafe with all required parameters
+// Build the command line string to invoke TestCafe with all required parameters.
 export function buildCommandLine(suite: Suite | undefined, projectPath: string, assetsPath: string, configFile: string | undefined) {
   const cli: (string | number)[] = [];
   if (suite === undefined) {
