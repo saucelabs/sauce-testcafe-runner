@@ -70,8 +70,8 @@ export function buildCompilerOptions(compilerOptions: CompilerOptions) {
 }
 
 // Buid the command line to invoke TestCafe with all required parameters
-export function buildCommandLine(suite: Suite|undefined, projectPath: string, assetsPath: string, configFile: string|undefined) {
-  const cli: (string|number)[] = [];
+export function buildCommandLine(suite: Suite | undefined, projectPath: string, assetsPath: string, configFile: string | undefined) {
+  const cli: (string | number)[] = [];
   if (suite === undefined) {
     return cli;
   }
@@ -225,11 +225,15 @@ export function buildCommandLine(suite: Suite|undefined, projectPath: string, as
   return cli;
 }
 
-async function runTestCafe(tcCommandLine: (string|number)[], projectPath: string, timeout: second) {
+async function runTestCafe(tcCommandLine: (string | number)[], projectPath: string, timeout: second) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
 
-  const testcafeProc = spawn(nodeBin, [testcafeBin, ...(tcCommandLine as string[])], {stdio: 'inherit', cwd: projectPath, env: process.env});
+  const testcafeProc = spawn(nodeBin, [testcafeBin, ...(tcCommandLine as string[])], {
+    stdio: 'inherit',
+    cwd: projectPath,
+    env: process.env
+  });
 
   const timeoutPromise = new Promise<boolean>((resolve) => {
     setTimeout(() => {
@@ -293,7 +297,7 @@ if (require.main === module) {
   const packageInfo = require(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce TestCafe Runner ${packageInfo.version}`);
   console.log(`Running TestCafe ${packageInfo.dependencies?.testcafe || ''}`);
-  const { nodeBin, runCfgPath, suiteName} = getArgs();
+  const {nodeBin, runCfgPath, suiteName} = getArgs();
 
   run(nodeBin, runCfgPath, suiteName)
     .then((passed) => {
