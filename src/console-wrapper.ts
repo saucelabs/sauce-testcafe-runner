@@ -18,6 +18,7 @@ async function testCafeRunner() {
     }
     const fd = fs.openSync(path.join(assetsPath, 'console.log'), 'w+', 0o644);
     const ws = new stream.Writable({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       write(data: any, encoding: any, cb: any) { fs.write(fd, data, undefined, encoding, cb); },
     });
 

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       releaseType:
-        description: 'Release type - major, minor or patch'
+        description: 'Release'
         required: false
         default: ''
       preReleaseFlavor:
@@ -44,6 +44,7 @@ jobs:
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Setup Git
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -130,6 +131,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Update Release Version
         if: ${{ steps.prep.outputs.asset_id == '' }}
@@ -203,6 +205,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Update Release version
         if: ${{ steps.prep.outputs.asset_id == '' }}
