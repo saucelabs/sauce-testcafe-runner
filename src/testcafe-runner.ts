@@ -1,8 +1,6 @@
 import {spawn} from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import {TestCafeConfig, Suite, CompilerOptions, second} from './type';
-
 import {
   getArgs,
   loadRunConfig,
@@ -11,9 +9,15 @@ import {
   prepareNpmEnv,
   preExec,
 } from 'sauce-testrunner-utils';
+
+import {TestCafeConfig, Suite, CompilerOptions, second} from './type';
 import {
   generateJunitFile
 } from './sauce-testreporter';
+import {
+  setupProxy,
+  isProxyAvaliable,
+} from './network-proxy';
 
 async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteName: string) {
   runCfgPath = getAbsolutePath(runCfgPath);
@@ -225,6 +229,11 @@ export function buildCommandLine(suite: Suite | undefined, projectPath: string, 
   return cli;
 }
 
+function isCDPDisabled() {
+  const cfg = require(path.join(__dirname, 'sauce-testcafe-config.cjs'))
+  return cfg.disableNativeAutomation;
+}
+
 async function runTestCafe(tcCommandLine: (string | number)[], projectPath: string, timeout: second) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
@@ -265,6 +274,10 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     assetsPath,
     suite
   } = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
+
+  if (suite.browserName === 'chrome' && !isCDPDisabled() && isProxyAvaliable()) {
+    setupProxy();
+  }
 
   if (!await preExec.run({preExec: suite.preExec}, preExecTimeout)) {
     return false;
