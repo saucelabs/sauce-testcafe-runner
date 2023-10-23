@@ -10,7 +10,7 @@ export function isProxyAvailable() {
 }
 
 function getProxySetting() : proxyType | undefined {
-  // proxy setting is like http://host:port
+  // HTTP_PROXY is like http://host:port
   const proxy = process.env.HTTP_PROXY?.split(':') || [];
   if (proxy?.length < 3) {
     return undefined;
