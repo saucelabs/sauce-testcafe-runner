@@ -275,7 +275,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     suite
   } = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
 
-  if (suite.browserName === 'chrome' && !isCDPDisabled() && isProxyAvaliable()) {
+  if (suite.browserName === 'chrome' && !isCDPDisabled() && isProxyAvailable()) {
     setupProxy();
   }
 
