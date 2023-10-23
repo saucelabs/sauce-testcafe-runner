@@ -16,7 +16,7 @@ import {
 } from './sauce-testreporter';
 import {
   setupProxy,
-  isProxyAvaliable,
+  isProxyAvailable,
 } from './network-proxy';
 
 async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteName: string) {
