@@ -229,6 +229,12 @@ export function buildCommandLine(suite: Suite | undefined, projectPath: string, 
   return cli;
 }
 
+// isCDPDisabled checks if TestCafe has CDP disabled.
+// Starting from TestCafe version 3.0.0 and beyond, it employs Native Automation
+// to automate Chromium-based browsers using the native CDP protocol.
+// If the 'disableNativeAutomation' setting is enabled in the configuration,
+// it indicates that the CDP connection is disabled, and TestCafe uses its own
+// proxy to communicate with the browser.
 function isCDPDisabled() {
   const cfg = require(path.join(__dirname, 'sauce-testcafe-config.cjs'))
   return cfg.disableNativeAutomation;
