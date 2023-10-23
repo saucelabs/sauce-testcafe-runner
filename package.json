@@ -20,7 +20,6 @@
   "dependencies": {
     "@saucelabs/testcomposer": "^2.0.0",
     "@tsconfig/node20": "20.1.2",
-    "@types/shelljs": "^0.8.14",
     "dotenv": "16.3.1",
     "lodash": "^4.17.21",
     "mocha-junit-reporter": "^2.2.1",
@@ -42,6 +41,7 @@
     "@types/jquery": "^3.5.22",
     "@types/mocha": "^10.0.2",
     "@types/node": "^20.8.6",
+    "@types/shelljs": "^0.8.14",
     "@typescript-eslint/eslint-plugin": "^6.8.0",
     "@typescript-eslint/parser": "^6.8.0",
     "babel-jest": "^29.7.0",
