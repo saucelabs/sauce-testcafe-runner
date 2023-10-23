@@ -20,12 +20,16 @@ suites:
     browserName: "chrome"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
   - name: "Win10 - Firefox"
     platformName: "Windows 10"
     browserName: "firefox"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
 
   - name: "Win11 - Chrome"
@@ -33,12 +37,16 @@ suites:
     browserName: "chrome"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
   - name: "Win11 - Firefox"
     platformName: "Windows 11"
     browserName: "firefox"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
 
   - name: "macOS11 - Chrome"
@@ -46,18 +54,24 @@ suites:
     browserName: "chrome"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
   - name: "macOS11 - Firefox"
     platformName: "macOS 11.00"
     browserName: "firefox"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
   - name: "macOS11 - Safari"
     platformName: "macOS 11.00"
     browserName: "safari"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
 
   - name: "macOS12 - Chrome"
@@ -65,18 +79,25 @@ suites:
     browserName: "chrome"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
   - name: "macOS12 - Firefox"
     platformName: "macOS 12"
     browserName: "firefox"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
   - name: "macOS12 - Safari"
     platformName: "macOS 12"
     browserName: "safari"
     src:
+
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
 
   - name: "macOS13 - Chrome"
@@ -84,37 +105,47 @@ suites:
     browserName: "chrome"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
   - name: "macOS13 - Firefox"
     platformName: "macOS 13"
     browserName: "firefox"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
   - name: "macOS13 - Safari"
     platformName: "macOS 13"
     browserName: "safari"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
 
   - name: "iPhone14 - Safari"
     browserName: "safari"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     speed: 1
     simulators:
       - name: iPhone 14 Pro Simulator
         platformName: iOS
         platformVersions:
           - "16.2"
-
   - name: "iPhone12 - Safari"
     browserName: "safari"
     src:
       - "tests/**/*.test.js"
+    excludedTestFiles:
+      - "tests/sc/proxy*"
     simulators:
       - name: iPhone 12 Pro Simulator
         platformName: iOS
         platformVersions:
           - "15.4"
+

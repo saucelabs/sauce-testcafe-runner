@@ -1,0 +1,32 @@
+apiVersion: v1alpha
+rootDir: ./
+kind: testcafe
+sauce:
+  region: us-west-1
+  concurrency: 1
+  metadata:
+    tags:
+      - e2e
+      - release team
+      - other tag
+    build: Release $CI_COMMIT_SHORT_SHA
+
+testcafe:
+  version: 3.3.0
+
+suites:
+  - name: "Proxy - macOS13"
+    platformName: "macOS 13"
+    browserName: "chrome"
+    timeout: 2m
+    src:
+      - "tests/sc/proxy.test.js"
+    speed: 1
+  - name: "Proxy - Win11"
+    platformName: "Windows 11"
+    browserName: "chrome"
+    timeout: 2m
+    src:
+      - "tests/sc/proxy.test.js"
+    speed: 1
+
