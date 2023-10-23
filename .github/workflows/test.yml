@@ -31,7 +31,7 @@ jobs:
         id: setup-ffmpeg
 
       - name: Install Dependencies
-        run: npm ci --production
+        run: npm ci
 
       - name: Build
         run: npm run build
