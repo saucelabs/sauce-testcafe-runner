@@ -1,8 +1,6 @@
 import {spawn} from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import {TestCafeConfig, Suite, CompilerOptions, second} from './type';
-
 import {
   getArgs,
   loadRunConfig,
@@ -11,9 +9,15 @@ import {
   prepareNpmEnv,
   preExec,
 } from 'sauce-testrunner-utils';
+
+import {TestCafeConfig, Suite, CompilerOptions, second} from './type';
 import {
   generateJunitFile
 } from './sauce-testreporter';
+import {
+  setupProxy,
+  isProxyAvailable,
+} from './network-proxy';
 
 async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteName: string) {
   runCfgPath = getAbsolutePath(runCfgPath);
@@ -225,6 +229,22 @@ export function buildCommandLine(suite: Suite | undefined, projectPath: string, 
   return cli;
 }
 
+// isCDPDisabled checks if TestCafe has CDP disabled.
+// Starting from TestCafe version 3.0.0 and beyond, it employs Native Automation
+// to automate Chromium-based browsers using the native CDP protocol.
+// If the 'disableNativeAutomation' setting is enabled in the configuration,
+// it indicates that the CDP connection is disabled, and TestCafe uses its own
+// proxy to communicate with the browser.
+function isCDPDisabled() {
+  const cfg = require(path.join(__dirname, 'sauce-testcafe-config.cjs'))
+  return cfg.disableNativeAutomation;
+}
+
+// Chrome and Edge are both Chromium-based browsers.
+function isChromiumBased(browser: string) {
+  return browser === 'chrome' || browser === 'microsoftedge';
+}
+
 async function runTestCafe(tcCommandLine: (string | number)[], projectPath: string, timeout: second) {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
@@ -265,6 +285,16 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     assetsPath,
     suite
   } = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
+
+  // TestCafe used a reverse proxy for browser automation before.
+  // With TestCafe 3.0.0 and later, native automation mode was enabled by default,
+  // see https://testcafe.io/documentation/404237/guides/intermediate-guides/native-automation-mode,
+  // introducing CDP support for Chrome and Edge.
+  // This means that HTTP requests can't be routed through the reverse proxy anymore.
+  // Now, we need to set up an OS-level proxy connection.
+  if (isChromiumBased(suite.browserName) && !isCDPDisabled() && isProxyAvailable()) {
+    setupProxy();
+  }
 
   if (!await preExec.run({preExec: suite.preExec}, preExecTimeout)) {
     return false;

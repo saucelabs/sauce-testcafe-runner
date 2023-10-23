@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -50,7 +50,7 @@ jobs:
     needs: [test]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -108,7 +108,7 @@ jobs:
     needs: [test]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -179,10 +179,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup saucectl
-        uses: saucelabs/saucectl-run-action@v3
+        uses: saucelabs/saucectl-run-action@v4
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -223,7 +223,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -231,7 +231,7 @@ jobs:
           python-version: '3.11'
 
       - name: Setup saucectl
-        uses: saucelabs/saucectl-run-action@v3
+        uses: saucelabs/saucectl-run-action@v4
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -248,7 +248,7 @@ jobs:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.8.1
+          scVersion: 4.9.1
 
       - name: Test on Sauce
         working-directory: ./tests/cloud/
@@ -263,3 +263,54 @@ jobs:
             --config ./.sauce/config-sc.yml \
             --tunnel-name github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }} \
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
+
+  bundle-test-proxy:
+    needs: [build-windows-bundle, build-mac-bundle]
+    strategy:
+      max-parallel: 3
+      fail-fast: false
+      matrix:
+        os: [Win11, macOS13]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup saucectl
+        uses: saucelabs/saucectl-run-action@v4
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          skip-run: true
+
+      - name: Run web-page
+        run: |
+          python -m http.server 8000 &
+        working-directory: ./tests/cloud/www/
+
+      - name: Start sauce-connect
+        uses: saucelabs/sauce-connect-action@v2
+        with:
+          username: ${{ secrets.SAUCE_USERNAME }}
+          accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+          tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}
+          scVersion: 4.9.1
+
+      - name: Test on Sauce
+        working-directory: ./tests/cloud/
+        run: |
+          BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-windows-amd64-${{ github.run_id }}.zip
+          if [[ ${{ matrix.os }} =~ ^mac ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-amd64-${{ github.run_id }}.zip
+          fi
+
+          saucectl run \
+            --runner-version "url: ${BUNDLE_URL}" \
+            --config ./.sauce/config-proxy.yml \
+            --tunnel-name github-testcafe-sc-check-tunnel-${{ matrix.os }} \
+            --select-suite "Proxy - ${{ matrix.os }}"

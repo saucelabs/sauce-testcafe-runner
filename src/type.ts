@@ -2,6 +2,11 @@ import { Region } from '@saucelabs/testcomposer';
 
 export type second = number;
 
+export type proxy = {
+  proxyHost: string,
+  proxyPort: string,
+};
+
 export type Metadata = {
   tags?: string[],
   build?: string,
