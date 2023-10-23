@@ -3,7 +3,7 @@ import path from 'path';
 
 const networkSetup = '/usr/sbin/networksetup';
 
-export function isProxyAvaliable() {
+export function isProxyAvailable() {
   const proxy = process.env.HTTP_PROXY;
   return proxy && Array.isArray(proxy.split(':')) && proxy.split(':').length > 2;
 }
