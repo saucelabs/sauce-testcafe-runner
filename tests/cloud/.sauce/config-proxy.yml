@@ -27,6 +27,6 @@ suites:
     browserName: "chrome"
     timeout: 2m
     src:
-      - "tests/sc/proxy.test.js"
+      - "tests/**/*.test.js"
     speed: 1
 
