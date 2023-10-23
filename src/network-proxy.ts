@@ -58,7 +58,7 @@ function setupWinProxy(proxy: any) {
   } = proxy; 
   const prefix =
     'reg add "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ';
-  const opts = { async: false};
+  const opts = { async: false };
   shell.exec(`${prefix} MigrateProxy /t REG_DWORD /d 1 /f`, opts)
   shell.exec(`${prefix} ProxyEnable /t REG_DWORD /d 1 /f`, opts)
   shell.exec(`${prefix} ProxyHttp1.1 /t REG_DWORD /d 1 /f`, opts)
