@@ -1,6 +1,6 @@
 import * as shell from "shelljs";
 import path from 'path';
-import { proxy as proxyType } from './type';
+import { proxy as ProxySettings } from './type';
 
 const networkSetup = '/usr/sbin/networksetup';
 
@@ -9,7 +9,7 @@ export function isProxyAvailable() {
   return proxy && Array.isArray(proxy.split(':')) && proxy.split(':').length > 2;
 }
 
-function getProxySetting() : proxyType | undefined {
+function getProxySetting() : ProxySettings | undefined {
   // HTTP_PROXY is like http://host:port
   const proxy = process.env.HTTP_PROXY?.split(':') || [];
   if (proxy?.length < 3) {
@@ -41,7 +41,7 @@ function findNetworkServiceOnMac() : string {
   return 'Ethernet';
 }
 
-function setupMacProxy(proxy: proxyType) {
+function setupMacProxy(proxy: ProxySettings) {
   const {
     proxyHost,
     proxyPort,
@@ -51,7 +51,7 @@ function setupMacProxy(proxy: proxyType) {
   shell.exec(`sudo ${networkSetup} -setsecurewebproxy "${networkService}" ${proxyHost} ${proxyPort}`, {async: false});
 }
 
-function setupWinProxy(proxy: proxyType) {
+function setupWinProxy(proxy: ProxySettings) {
   const {
     proxyHost,
     proxyPort,

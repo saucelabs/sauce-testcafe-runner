@@ -287,7 +287,8 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   } = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
 
   // TestCafe used a reverse proxy for browser automation before.
-  // With TestCafe 3.0.0 and later, native automation was adopted,
+  // With TestCafe 3.0.0 and later, native automation mode was enabled by default,
+  // see https://testcafe.io/documentation/404237/guides/intermediate-guides/native-automation-mode,
   // introducing CDP support for Chrome and Edge.
   // This means that HTTP requests can't be routed through the reverse proxy anymore.
   // Now, we need to set up an OS-level proxy connection.

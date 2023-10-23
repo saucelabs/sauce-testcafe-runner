@@ -298,7 +298,7 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
+          tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}
           scVersion: 4.9.1
 
       - name: Test on Sauce
@@ -312,5 +312,5 @@ jobs:
           saucectl run \
             --runner-version "url: ${BUNDLE_URL}" \
             --config ./.sauce/config-proxy.yml \
-            --tunnel-name github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }} \
+            --tunnel-name github-testcafe-sc-check-tunnel-${{ matrix.os }} \
             --select-suite "Proxy - ${{ matrix.os }}"
