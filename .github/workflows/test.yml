@@ -276,12 +276,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           skip-run: true
+
+      - name: Run web-page
+        run: |
+          python -m http.server 8000 &
+        working-directory: ./tests/cloud/www/
 
       - name: Start sauce-connect
         uses: saucelabs/sauce-connect-action@v2
