@@ -289,7 +289,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // TestCafe used a reverse proxy for browser automation before.
   // With TestCafe 3.0.0 and later, native automation was adopted,
   // introducing CDP support for Chrome and Edge.
-  // This results HTTP requests can't be routed through the proxy.
+  // This means that HTTP requests can't be routed through the reverse proxy anymore.
   // Now, we need to set up an OS-level proxy connection.
   if (isChromiumBased(suite.browserName) && !isCDPDisabled() && isProxyAvailable()) {
     setupProxy();
