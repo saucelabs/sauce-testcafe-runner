@@ -1,5 +1,6 @@
 import * as shell from "shelljs";
 import path from 'path';
+import { proxy as proxyType } from './type';
 
 const networkSetup = '/usr/sbin/networksetup';
 
@@ -8,10 +9,10 @@ export function isProxyAvailable() {
   return proxy && Array.isArray(proxy.split(':')) && proxy.split(':').length > 2;
 }
 
-function getProxySetting() {
+function getProxySetting() : proxyType | undefined {
   const proxy = process.env.HTTP_PROXY?.split(':') || [];
   if (proxy?.length < 2) {
-    return;
+    return undefined;
   }
   return {
     proxyHost: proxy[1].replaceAll('/', ''),
@@ -19,7 +20,7 @@ function getProxySetting() {
   }
 }
 
-function findNetworkServiceOnMac() {
+function findNetworkServiceOnMac() : string {
   const networkInfo = shell.exec(`${networkSetup} -listnetworkserviceorder`, {async: false}).stdout;
   const lines = networkInfo.split('\n');
   for (let i = 0; i < lines.length; i++) {
@@ -39,8 +40,7 @@ function findNetworkServiceOnMac() {
   return 'Ethernet';
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function setupMacProxy(proxy: any) {
+function setupMacProxy(proxy: proxyType) {
   const {
     proxyHost,
     proxyPort,
@@ -50,8 +50,7 @@ function setupMacProxy(proxy: any) {
   shell.exec(`sudo ${networkSetup} -setsecurewebproxy "${networkService}" ${proxyHost} ${proxyPort}`, {async: false});
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function setupWinProxy(proxy: any) {
+function setupWinProxy(proxy: proxyType) {
   const {
     proxyHost,
     proxyPort,
