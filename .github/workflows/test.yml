@@ -31,7 +31,7 @@ jobs:
         id: setup-ffmpeg
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --production
 
       - name: Build
         run: npm run build
@@ -79,7 +79,7 @@ jobs:
       - name: Update Release version
         run: npm version --no-git-tag-version 1.0.0
 
-      - run: npm ci
+      - run: npm ci --production
       - run: npm run build
 
       - name: Setup ffmpeg
@@ -136,7 +136,7 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --production
 
       - name: Build
         run: npm run build
