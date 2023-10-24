@@ -12,19 +12,27 @@ async function testCafeRunner() {
   const runCfg = await utils.loadRunConfig(runCfgAbsolutePath);
   const p = new Promise<void>((resolve, reject) => {
     (runCfg as TestCafeConfig).path = runCfgPath;
-    const assetsPath = path.join(path.dirname(runCfgAbsolutePath), (runCfg as TestCafeConfig).projectPath || '.', '__assets__');
+    const assetsPath = path.join(
+      path.dirname(runCfgAbsolutePath),
+      (runCfg as TestCafeConfig).projectPath || '.',
+      '__assets__',
+    );
     if (!fs.existsSync(assetsPath)) {
       fs.mkdirSync(assetsPath);
     }
     const fd = fs.openSync(path.join(assetsPath, 'console.log'), 'w+', 0o644);
     const ws = new stream.Writable({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      write(data: any, encoding: any, cb: any) { fs.write(fd, data, undefined, encoding, cb); },
+      write(data: any, encoding: any, cb: any) {
+        fs.write(fd, data, undefined, encoding, cb);
+      },
     });
 
     const [nodeBin] = process.argv;
     const testcafeRunnerEntry = path.join(__dirname, 'testcafe-runner.js');
-    const child = child_process.spawn(nodeBin, [testcafeRunnerEntry, ...process.argv.slice(2)]);
+    const child = child_process.spawn(nodeBin, [
+      testcafeRunnerEntry,
+      ...process.argv.slice(2),
+    ]);
 
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);
@@ -45,13 +53,13 @@ async function testCafeRunner() {
 
 if (require.main === module) {
   testCafeRunner()
-      .then(() => {
-        process.exit(0);
-      })
-      .catch((err) => {
-        console.error(err);
-        process.exit(err);
-      });
+    .then(() => {
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error(err);
+      process.exit(err);
+    });
 }
 
 module.exports = { testCafeRunner };

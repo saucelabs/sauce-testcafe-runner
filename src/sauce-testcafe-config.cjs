@@ -4,9 +4,9 @@ const _ = require('lodash');
 
 let userConfig = {};
 
-const configFiles = process.env.TESTCAFE_CFG_FILE ?
-  [process.env.TESTCAFE_CFG_FILE] :
-  ['./.testcaferc.json', './.testcaferc.js', './.testcaferc.cjs'];
+const configFiles = process.env.TESTCAFE_CFG_FILE
+  ? [process.env.TESTCAFE_CFG_FILE]
+  : ['./.testcaferc.json', './.testcaferc.js', './.testcaferc.cjs'];
 
 for (const file of configFiles) {
   if (fs.existsSync(file)) {
@@ -44,7 +44,7 @@ const overrides = {
     },
     {
       name: 'list',
-    }
+    },
   ],
 };
 
@@ -54,7 +54,7 @@ if (userConfig.reporter && !(userConfig.reporter instanceof Array)) {
   overrides.reporter.push(userConfig.reporter);
 }
 
-function arrMerger (objValue, srcValue) {
+function arrMerger(objValue, srcValue) {
   if (_.isArray(objValue)) {
     return objValue.concat(srcValue);
   }
