@@ -1,4 +1,4 @@
-import {spawn} from 'child_process';
+import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import {
@@ -10,20 +10,22 @@ import {
   preExec,
 } from 'sauce-testrunner-utils';
 
-import {TestCafeConfig, Suite, CompilerOptions, second} from './type';
-import {
-  generateJunitFile
-} from './sauce-testreporter';
-import {
-  setupProxy,
-  isProxyAvailable,
-} from './network-proxy';
+import { TestCafeConfig, Suite, CompilerOptions, second } from './type';
+import { generateJunitFile } from './sauce-testreporter';
+import { setupProxy, isProxyAvailable } from './network-proxy';
 
-async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteName: string) {
+async function prepareConfiguration(
+  nodeBin: string,
+  runCfgPath: string,
+  suiteName: string,
+) {
   runCfgPath = getAbsolutePath(runCfgPath);
   const runCfg = loadRunConfig(runCfgPath) as TestCafeConfig;
   runCfg.path = runCfgPath;
-  const projectPath = path.join(path.dirname(runCfgPath), runCfg.projectPath || '.');
+  const projectPath = path.join(
+    path.dirname(runCfgPath),
+    runCfg.projectPath || '.',
+  );
   const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
   const suite = getSuite(runCfg, suiteName) as Suite | undefined;
   if (!suite) {
@@ -36,7 +38,10 @@ async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteNa
   }
   // Config reporters
   process.env.ASSETS_PATH = assetsPath;
-  process.env.SAUCE_REPORT_JSON_PATH = path.join(assetsPath, 'sauce-test-report.json');
+  process.env.SAUCE_REPORT_JSON_PATH = path.join(
+    assetsPath,
+    'sauce-test-report.json',
+  );
   process.env.SAUCE_DISABLE_UPLOAD = 'true';
 
   if (runCfg.testcafe.configFile) {
@@ -49,32 +54,49 @@ async function prepareConfiguration(nodeBin: string, runCfgPath: string, suiteNa
   }
 
   // Define node/npm path for execution
-  const npmBin = path.join(path.dirname(nodeBin), 'node_modules', 'npm', 'bin', 'npm-cli.js');
-  const nodeCtx = {nodePath: nodeBin, npmPath: npmBin};
+  const npmBin = path.join(
+    path.dirname(nodeBin),
+    'node_modules',
+    'npm',
+    'bin',
+    'npm-cli.js',
+  );
+  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
 
   // Install NPM dependencies
   await prepareNpmEnv(runCfg, nodeCtx);
 
-  return {projectPath, assetsPath, suite};
+  return { projectPath, assetsPath, suite };
 }
 
 // Build --compiler-options argument
 export function buildCompilerOptions(compilerOptions: CompilerOptions) {
   const args: string[] = [];
   if (compilerOptions?.typescript?.configPath) {
-    args.push(`typescript.configPath=${compilerOptions?.typescript?.configPath}`);
+    args.push(
+      `typescript.configPath=${compilerOptions?.typescript?.configPath}`,
+    );
   }
   if (compilerOptions?.typescript?.customCompilerModulePath) {
-    args.push(`typescript.customCompilerModulePath=${compilerOptions?.typescript?.customCompilerModulePath}`);
+    args.push(
+      `typescript.customCompilerModulePath=${compilerOptions?.typescript?.customCompilerModulePath}`,
+    );
   }
   for (const key in compilerOptions?.typescript?.options) {
-    args.push(`typescript.options.${key}=${compilerOptions?.typescript?.options[key]}`);
+    args.push(
+      `typescript.options.${key}=${compilerOptions?.typescript?.options[key]}`,
+    );
   }
   return args.join(';');
 }
 
 // Build the command line string to invoke TestCafe with all required parameters.
-export function buildCommandLine(suite: Suite | undefined, projectPath: string, assetsPath: string, configFile: string | undefined) {
+export function buildCommandLine(
+  suite: Suite | undefined,
+  projectPath: string,
+  assetsPath: string,
+  configFile: string | undefined,
+) {
   const cli: (string | number)[] = [];
   if (suite === undefined) {
     return cli;
@@ -112,8 +134,12 @@ export function buildCommandLine(suite: Suite | undefined, projectPath: string, 
     cli.push('--ts-config-path', suite.tsConfigPath);
   }
   if (suite.clientScripts) {
-    let clientScriptsPaths = Array.isArray(suite.clientScripts) ? suite.clientScripts : [suite.clientScripts];
-    clientScriptsPaths = clientScriptsPaths.map((clientScriptPath: string) => path.join(projectPath, clientScriptPath));
+    let clientScriptsPaths = Array.isArray(suite.clientScripts)
+      ? suite.clientScripts
+      : [suite.clientScripts];
+    clientScriptsPaths = clientScriptsPaths.map((clientScriptPath: string) =>
+      path.join(projectPath, clientScriptPath),
+    );
     cli.push('--client-scripts', clientScriptsPaths.join(','));
   }
   if (suite.skipJsErrors) {
@@ -189,7 +215,7 @@ export function buildCommandLine(suite: Suite | undefined, projectPath: string, 
     const fullPage = suite.screenshots.fullPage;
     cli.push(
       '--screenshots',
-      `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern},thumbnails=false`
+      `takeOnFails=${takeOnFails},fullPage=${fullPage},path=${assetsPath},pathPattern=${pathPattern},thumbnails=false`,
     );
   }
 
@@ -236,7 +262,7 @@ export function buildCommandLine(suite: Suite | undefined, projectPath: string, 
 // it indicates that the CDP connection is disabled, and TestCafe uses its own
 // proxy to communicate with the browser.
 function isCDPDisabled() {
-  const cfg = require(path.join(__dirname, 'sauce-testcafe-config.cjs'))
+  const cfg = require(path.join(__dirname, 'sauce-testcafe-config.cjs'));
   return cfg.disableNativeAutomation;
 }
 
@@ -245,15 +271,30 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
-async function runTestCafe(tcCommandLine: (string | number)[], projectPath: string, timeout: second) {
+async function runTestCafe(
+  tcCommandLine: (string | number)[],
+  projectPath: string,
+  timeout: second,
+) {
   const nodeBin = process.argv[0];
-  const testcafeBin = path.join(__dirname, '..', 'node_modules', 'testcafe', 'lib', 'cli');
+  const testcafeBin = path.join(
+    __dirname,
+    '..',
+    'node_modules',
+    'testcafe',
+    'lib',
+    'cli',
+  );
 
-  const testcafeProc = spawn(nodeBin, [testcafeBin, ...(tcCommandLine as string[])], {
-    stdio: 'inherit',
-    cwd: projectPath,
-    env: process.env
-  });
+  const testcafeProc = spawn(
+    nodeBin,
+    [testcafeBin, ...(tcCommandLine as string[])],
+    {
+      stdio: 'inherit',
+      cwd: projectPath,
+      env: process.env,
+    },
+  );
 
   const timeoutPromise = new Promise<boolean>((resolve) => {
     setTimeout(() => {
@@ -280,11 +321,11 @@ async function runTestCafe(tcCommandLine: (string | number)[], projectPath: stri
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
 
-  const {
-    projectPath,
-    assetsPath,
-    suite
-  } = await prepareConfiguration(nodeBin, runCfgPath, suiteName);
+  const { projectPath, assetsPath, suite } = await prepareConfiguration(
+    nodeBin,
+    runCfgPath,
+    suiteName,
+  );
 
   // TestCafe used a reverse proxy for browser automation before.
   // With TestCafe 3.0.0 and later, native automation mode was enabled by default,
@@ -292,11 +333,15 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // introducing CDP support for Chrome and Edge.
   // This means that HTTP requests can't be routed through the reverse proxy anymore.
   // Now, we need to set up an OS-level proxy connection.
-  if (isChromiumBased(suite.browserName) && !isCDPDisabled() && isProxyAvailable()) {
+  if (
+    isChromiumBased(suite.browserName) &&
+    !isCDPDisabled() &&
+    isProxyAvailable()
+  ) {
     setupProxy();
   }
 
-  if (!await preExec.run({preExec: suite.preExec}, preExecTimeout)) {
+  if (!(await preExec.run({ preExec: suite.preExec }, preExecTimeout))) {
     return false;
   }
 
@@ -306,16 +351,29 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
   // configuration, which will be loaded during TestCafe setup step.
   const configFile = path.join(projectPath, 'sauce-testcafe-config.cjs');
-  fs.copyFileSync(path.join(__dirname, 'sauce-testcafe-config.cjs'), configFile);
+  fs.copyFileSync(
+    path.join(__dirname, 'sauce-testcafe-config.cjs'),
+    configFile,
+  );
 
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
-  const tcCommandLine = buildCommandLine(suite, projectPath, assetsPath, configFile);
+  const tcCommandLine = buildCommandLine(
+    suite,
+    projectPath,
+    assetsPath,
+    configFile,
+  );
   const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
 
   try {
-    generateJunitFile(assetsPath, suiteName, suite.browserName, suite.platformName || '');
+    generateJunitFile(
+      assetsPath,
+      suiteName,
+      suite.browserName,
+      suite.platformName || '',
+    );
   } catch (err) {
     console.error(`Failed to generate junit file: ${err}`);
   }
@@ -327,7 +385,7 @@ if (require.main === module) {
   const packageInfo = require(path.join(__dirname, '..', 'package.json'));
   console.log(`Sauce TestCafe Runner ${packageInfo.version}`);
   console.log(`Running TestCafe ${packageInfo.dependencies?.testcafe || ''}`);
-  const {nodeBin, runCfgPath, suiteName} = getArgs();
+  const { nodeBin, runCfgPath, suiteName } = getArgs();
 
   run(nodeBin, runCfgPath, suiteName)
     .then((passed) => {
@@ -339,4 +397,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {buildCommandLine, buildCompilerOptions, run};
+module.exports = { buildCommandLine, buildCompilerOptions, run };

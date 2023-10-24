@@ -5,8 +5,8 @@ const config = {
   collectCoverage: true,
   preset: 'ts-jest',
   transformIgnorePatterns: [
-    '/node_modules/(?!(axios)/)' // Uses module import statements, which aren't supported by jest, so it has to be transformed by babel.
-  ]
+    '/node_modules/(?!(axios)/)', // Uses module import statements, which aren't supported by jest, so it has to be transformed by babel.
+  ],
 };
 
 module.exports = config;
