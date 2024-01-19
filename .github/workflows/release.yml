@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       releaseType:
-        description: 'Release'
+        description: 'Release type - major, minor or patch'
         required: false
         default: ''
       preReleaseFlavor:
