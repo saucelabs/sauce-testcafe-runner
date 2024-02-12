@@ -20,7 +20,7 @@ export function generateJUnitFile(
   const junitPath = path.join(assetsPath, `report.xml`);
   if (!fs.existsSync(junitPath)) {
     console.warn(
-      `JUnit file generation skipped as the original JUnit file (${junitPath}) from TestCafe was not located.`,
+      `JUnit file generation skipped: the original JUnit file (${junitPath}) from TestCafe was not located.`,
     );
     return;
   }
@@ -29,6 +29,7 @@ export function generateJUnitFile(
   const result: any = convert.xml2js(xmlData, opts);
 
   if (!result.testsuite) {
+    console.warn('JUnit file generation skipped: no test suites detected.');
     return;
   }
 
