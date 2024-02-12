@@ -19,7 +19,9 @@ export function generateJUnitFile(
 ) {
   const junitPath = path.join(assetsPath, `report.xml`);
   if (!fs.existsSync(junitPath)) {
-    console.warn(`JUnit file(${junitPath}) not found`);
+    console.warn(
+      `JUnit file generation skipped as the original JUnit file (${junitPath}) from TestCafe was not located.`,
+    );
     return;
   }
   const opts = { compact: true, spaces: 4, textFn: (val: string) => val };
