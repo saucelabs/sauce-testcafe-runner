@@ -11,7 +11,7 @@ import {
 } from 'sauce-testrunner-utils';
 
 import { TestCafeConfig, Suite, CompilerOptions, second } from './type';
-import { generateJunitFile } from './sauce-testreporter';
+import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 
 async function prepareConfiguration(
@@ -368,14 +368,14 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
 
   try {
-    generateJunitFile(
+    generateJUnitFile(
       assetsPath,
       suiteName,
       suite.browserName,
       suite.platformName || '',
     );
-  } catch (err) {
-    console.error(`Failed to generate junit file: ${err}`);
+  } catch (e) {
+    console.warn('Skipping JUnit file generation:', e);
   }
 
   return passed;

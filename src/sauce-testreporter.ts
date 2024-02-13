@@ -11,17 +11,25 @@ const getPlatformName = (platform: string) => {
   return platform;
 };
 
-export function generateJunitFile(
+export function generateJUnitFile(
   assetsPath: string,
   suiteName: string,
   browserName: string,
   platform: string,
 ) {
+  const junitPath = path.join(assetsPath, `report.xml`);
+  if (!fs.existsSync(junitPath)) {
+    console.warn(
+      `JUnit file generation skipped: the original JUnit file (${junitPath}) from TestCafe was not located.`,
+    );
+    return;
+  }
   const opts = { compact: true, spaces: 4, textFn: (val: string) => val };
-  const xmlData = fs.readFileSync(path.join(assetsPath, `report.xml`), 'utf8');
+  const xmlData = fs.readFileSync(junitPath, 'utf8');
   const result: any = convert.xml2js(xmlData, opts);
 
   if (!result.testsuite) {
+    console.warn('JUnit file generation skipped: no test suites detected.');
     return;
   }
 
