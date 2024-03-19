@@ -324,8 +324,9 @@ function zipArtifacts(runCfg: TestCafeConfig) {
   if (!runCfg.artifacts || !runCfg.artifacts.retain) {
     return;
   }
-  Object.keys(runCfg.artifacts.retain).forEach((source) => {
-    const dest = path.join(runCfg.assetsPath, runCfg.artifacts.retain[source]);
+  const archivesMap = runCfg.artifacts.retain;
+  Object.keys(archivesMap).forEach((source) => {
+    const dest = path.join(runCfg.assetsPath, archivesMap[source]);
     try {
       zip(path.dirname(runCfg.path), source, dest);
     } catch (err) {
