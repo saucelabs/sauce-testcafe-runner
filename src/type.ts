@@ -103,4 +103,11 @@ export type TestCafeConfig = {
     version: string;
     configFile?: string;
   };
+  artifacts?: Artifacts;
+};
+
+export type Artifacts = {
+  retain?: {
+    [key: string]: string;
+  };
 };

@@ -8,6 +8,7 @@ import {
   getAbsolutePath,
   prepareNpmEnv,
   preExec,
+  zip,
 } from 'sauce-testrunner-utils';
 
 import { TestCafeConfig, Suite, CompilerOptions, second } from './type';
@@ -27,6 +28,7 @@ async function prepareConfiguration(
     runCfg.projectPath || '.',
   );
   const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
+  runCfg.assetsPath = assetsPath;
   const suite = getSuite(runCfg, suiteName) as Suite | undefined;
   if (!suite) {
     throw new Error(`Could not find suite '${suiteName}'`);
@@ -66,7 +68,7 @@ async function prepareConfiguration(
   // Install NPM dependencies
   await prepareNpmEnv(runCfg, nodeCtx);
 
-  return { projectPath, assetsPath, suite };
+  return { runCfg, projectPath, assetsPath, suite };
 }
 
 // Build --compiler-options argument
@@ -318,10 +320,27 @@ async function runTestCafe(
   return false;
 }
 
+function zipArtifacts(runCfg: TestCafeConfig) {
+  if (!runCfg.artifacts || !runCfg.artifacts.retain) {
+    return;
+  }
+  const archivesMap = runCfg.artifacts.retain;
+  Object.keys(archivesMap).forEach((source) => {
+    const dest = path.join(runCfg.assetsPath, archivesMap[source]);
+    try {
+      zip(path.dirname(runCfg.path), source, dest);
+    } catch (err) {
+      console.error(
+        `Zip file creation failed for destination: "${dest}", source: "${source}". Error: ${err}.`,
+      );
+    }
+  });
+}
+
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
 
-  const { projectPath, assetsPath, suite } = await prepareConfiguration(
+  const { runCfg, projectPath, assetsPath, suite } = await prepareConfiguration(
     nodeBin,
     runCfgPath,
     suiteName,
@@ -377,6 +396,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   } catch (e) {
     console.warn('Skipping JUnit file generation:', e);
   }
+  zipArtifacts(runCfg);
 
   return passed;
 }
