@@ -19,11 +19,11 @@
     "testcafe"
   ],
   "dependencies": {
-    "@saucelabs/testcomposer": "^2.0.0",
+    "@saucelabs/testcomposer": "2.0.1",
     "@tsconfig/node20": "20.1.2",
     "@types/shelljs": "^0.8.15",
-    "dotenv": "16.3.1",
-    "lodash": "^4.17.21",
+    "dotenv": "16.4.5",
+    "lodash": "4.17.21",
     "mocha-junit-reporter": "^2.2.1",
     "sauce-testrunner-utils": "2.1.1",
     "shelljs": "^0.8.5",
