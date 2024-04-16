@@ -40,7 +40,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           node-version-file: '.nvmrc'
@@ -129,7 +129,7 @@ jobs:
 
       - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -153,7 +153,7 @@ jobs:
 
       - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: azure/powershell@v1
+        uses: azure/powershell@v2
         with:
           inlineScript: |
             Compress-Archive bundle/ testcafe-windows-amd64.zip
@@ -204,7 +204,7 @@ jobs:
 
       - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -219,7 +219,7 @@ jobs:
         if: ${{ steps.prep.outputs.asset_id == '' }}
 
       - name: Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v2
+        uses: FedericoCarboni/setup-ffmpeg@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
         with:
