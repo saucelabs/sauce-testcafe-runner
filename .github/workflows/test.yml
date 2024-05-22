@@ -104,7 +104,8 @@ jobs:
           gsutil cp ./testcafe-windows-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-windows-amd64-${{ github.run_id }}.zip
 
   build-mac-bundle:
-    runs-on: macos-latest
+    # macos-latest is arm only which is not supported by the setup-ffmpeg action
+    runs-on: macos-13
     needs: [test]
     steps:
       - name: Checkout
