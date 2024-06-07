@@ -20,6 +20,7 @@
   ],
   "dependencies": {
     "@saucelabs/testcomposer": "3.0.0",
+    "@tsconfig/node22": "^22.0.0",
     "@types/shelljs": "^0.8.15",
     "dotenv": "16.4.5",
     "lodash": "4.17.21",
@@ -37,7 +38,6 @@
     "@babel/core": "^7.24.7",
     "@babel/preset-env": "^7.24.7",
     "@babel/preset-typescript": "^7.24.7",
-    "@tsconfig/node22": "^22.0.0",
     "@types/chai": "^4.3.16",
     "@types/jest": "^29.5.12",
     "@types/jquery": "^3.5.30",
