@@ -7,8 +7,8 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
-  SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
-  SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+  SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+  SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -24,8 +24,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - uses: FedericoCarboni/setup-ffmpeg@v3
         id: setup-ffmpeg
@@ -55,13 +55,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.12"
 
       - name: Google Cloud Login
         id: 'auth'
@@ -114,13 +114,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Google Cloud Login
         id: 'auth'
@@ -229,7 +229,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
@@ -249,7 +249,7 @@ jobs:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.9.1
+          scVersion: 4.9.2
 
       - name: Test on Sauce
         working-directory: ./tests/cloud/
@@ -280,7 +280,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
@@ -300,7 +300,7 @@ jobs:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}
-          scVersion: 4.9.1
+          scVersion: 4.9.2
 
       - name: Test on Sauce
         working-directory: ./tests/cloud/
