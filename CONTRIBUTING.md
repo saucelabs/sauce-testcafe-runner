@@ -1,52 +1,57 @@
 # Contributing to `sauce-testcafe-runner`
 
-**Thank you for your interest in `sauce-testcafe-runner`. We highly value your contributions.**
+**Thank you for your interest in `sauce-testcafe-runner`. We highly appreciate and welcome your contributions.**
 
-There are several ways to get involved:
+## Ways to Get Involved
 
-- [Report a Bug](#report-a-bug)
-- [Suggest a Feature](#suggest-a-feature)
-- [Contribute Code](#contribute-code)
+- **[Report a Bug](#report-a-bug)**: Identify and report any issues or bugs.
+- **[Suggest a Feature](#suggest-a-feature)**: Propose ideas for new features or improvements.
+- **[Contribute Code](#contribute-code)**: Help develop and enhance the project by contributing your coding skills.
 
-Please follow the guidelines outlined below. If you need assistance, don't hesitate to open an issue.
+For any assistance, please don't hesitate to reach out by opening an [issue](/issues).
 
 ## Report a Bug
-Reporting bugs is a valuable way to contribute. Before creating a bug report, please check if an [existing issue](/issues) already addresses the problem. If one exists, feel free to add your observations as a comment.
+
+Before reporting a bug, please check if there is an [existing issue](/issues) addressing the same concern. If such an issue exists, feel free to contribute by adding your comments.
 
 To report a new bug:
-- Open an issue summarizing the bug.
+- Open an issue summarizing the bug details.
 - Label it as "bug."
-- If you are prepared to provide a fix, that's excellent! In that case, submit a pull request as described in the [Contribute Code](#contribute-code) section.
+- If you have a solution or a fix, wonderful! Please submit a pull request as outlined in the [Contribute Code](#contribute-code) section.
 
 ## Suggest a Feature
+
 To suggest a new feature:
 - Open a [new issue](../../issues/new).
-- Summarize the desired functionality and its use case.
+- Describe the desired functionality and its use case.
 - Label the issue as "feature."
 
 ## Contribute Code
-The following outlines our workflow for code contributions:
 
-1. Browse the list of [open issues](../../issues). Choose one to work on, or create a new one to discuss your ideas.
-2. It's best to discuss your plans beforehand to ensure alignment with our project goals.
-3. Fork the repository on GitHub.
-4. Create a topic branch from `main`.
-5. Start a new pull request, label it `work in progress`, and describe your intended contributions.
-6. Commit logical and self-contained changes.
-7. Ensure each commit is signed off (`git commit -s -m "your message"`), as a sign of your agreement to the Developer Certificate of Origin (DCO).
-8. Push your changes to a topic branch in your fork.
-9. Update the pull request with new information and completed tasks.
-10. Engage with any feedback from project maintainers.
-11. Once complete, remove the `work in progress` label and request a review from the maintainers.
-12. Your pull request requires approval from at least two [maintainers](MAINTAINERS).
+### Code Contribution Workflow
+
+1. **Explore Open Issues**: Browse through the [open issues](../../issues). You can either work on an existing issue or create a new one to discuss your ideas.
+2. **Fork and Branch**: Fork the repository and create a branch from the `main` branch to base your work.
+3. **Start a Pull Request**: Open a pull request and label it `work in progress`. Outline your contributions.
+4. **Commit Your Changes**: Commit your changes in logical units. Ensure you sign off on your commits using `git commit -s -m "adding X to change Y"`.
+5. **Engage**: Push your changes to your branch and update your pull request with any new information or completed tasks. Engage with feedback from project maintainers.
+6. **Final Review**: Once completed, remove the `work in progress` label and request a final review from the maintainers.
+7. **Approval**: Your pull request must receive approval from at least two [maintainers](MAINTAINERS).
 
 ### Commit Messages
-Your commit messages should clearly answer two questions: what changed and why. The subject line should focus on what changed, while the body provides the reason.
 
-Link the pull request to the relevant issue id.
+Your commit messages should clearly articulate what changed and why:
+- **Subject**: Briefly describe what was changed.
+- **Body**: Explain why these changes were necessary.
 
+Ensure the pull request description references the corresponding issue ID.
+
+### Developer Certificate of Origin
+
+All contributions must adhere to the Developer Certificate of Origin (DCO) version 1.1, as documented at [developercertificate.org](http://developercertificate.org/). This implies that by submitting a contribution, you certify that you have the right to do so. Please include a "Signed-off-by" tag in every patch, which can be automated with a [Git hook](https://stackoverflow.com/questions/15015894/git-add-signed-off-by-line-using-format-signoff-not-working).
+
+```bash
+git commit -s -m "Describe your change"
 ```
-git commit -s -m "adding X to change Y"
-```
 
-**Enjoy contributing and happy coding!**
+**Enjoy contributing, and happy coding!**
