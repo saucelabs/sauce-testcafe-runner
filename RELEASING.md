@@ -1,45 +1,36 @@
 # Releasing
 
-Releasing a new version of the runner requires a Github Action to be triggered.
+Releasing a new version of the runner is facilitated through a specific GitHub Action.
 
-## How to release
+## How to Release
 
-The workflow is named [Release New Version](../../actions/workflows/release.yml).\
-It has to be manually trigger, *without* creating a tag before or a release, everything will be taken care of.
+To initiate a release, trigger the [Release New Version](../../actions/workflows/release.yml) workflow manually. This process does not require the creation of a tag or a release beforehand, as these steps are automated.
 
-A new release can be made either from `main`, or any other branch.
+Releases can be made from the `main` branch or any other branch, offering flexibility in the development process.
 
-Two settings are available:
-- `Release type - major, minor or patch`
-- `Pre-Release flavor - rc, beta, or anything`
+### Available Settings
+- **Release Type**: Choose from `major`, `minor`, or `patch`, following [SemVer](https://semver.org/) guidelines.
+- **Pre-Release Flavor**: Options include `rc`, `beta`, or custom labels. Omitting this setting assumes a stable and complete release.
 
-### Release type - major, minor or patch
+#### Note:
+When updating an existing pre-release, avoid specifying a new release type to maintain version continuity.
 
-Type-in the expected value depending the changes you are releasing.\
-This is intended to be respectul of [SemVer](https://semver.org/)
+### Examples of Release Behavior
 
-### Pre-Release flavor - rc, beta, or anything
+The behavior of the release process varies based on the inputs provided:
 
-To publish a pre-release, you need to define a flavor. Any release without flavor is assumed to be a stable and complete release.
+| Current Version | Release Type | Pre-Release Flavor | New Version |
+|-----------------|--------------|--------------------|-------------|
+| 1.5.7           | major        |                    | 2.0.0       |
+| 1.5.7           | major        | rc                 | 2.0.0-rc.0  |
+| 2.0.0-rc.0      |              | rc                 | 2.0.0-rc.1  |
+| 2.0.0-rc.1      | major        |                    | 2.0.0       |
 
-> Nota:
->   If you need to update the same flavor, you *must not* specify a release type.
+#### Important:
 
-## Examples
+Ensure not to consecutively specify both a release type and a pre-release flavor more than once to prevent unintended version increments.
 
-Expected behavior depending inputs
-
-| Current Version | Release type value | Pre-Release flavor | New version |
-| --- | --- | --- | --- |
-| 1.5.7 | major | | 2.0.0 |
-| 1.5.7 | major | rc | 2.0.0-rc.0 |
-| 2.0.0-rc.0 |  | rc | 2.0.0-rc.1 |
-| 2.0.0-rc.1 | major | | 2.0.0 |
-
-
-> Avoid specifying twice in a row both `release type` and `pre-release flavor`, as it will increase version.
->
-> | Current Version | Release type value | Pre-Release flavor | New version |
-> | --- | --- | --- | --- |
-> | 1.5.7 | major | rc | 2.0.0-rc.0 |
-> | 2.0.0-rc.0 | major | rc | ***3.0.0-rc.0*** |
+| Current Version | Release Type | Pre-Release Flavor | Resulting Version |
+|-----------------|--------------|--------------------|-------------------|
+| 1.5.7           | major        | rc                 | 2.0.0-rc.0        |
+| 2.0.0-rc.0      | major        | rc                 | ***3.0.0-rc.0***  |

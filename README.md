@@ -1,6 +1,5 @@
-Sauce Testcafe Runner
-======================
+# Sauce TestCafe Runner
 
-Sauce Labs test runner image for [`saucectl`](https://github.com/saucelabs/saucectl) to run [TestCafe](https://testcafe.io/) tests using [saucectl](https://docs.saucelabs.com/dev/cli/saucectl/). This repository contains the code that is being executed in Sauce Labs when running `saucectl run`.
+Sauce Labs provides a test runner for [`saucectl`](https://github.com/saucelabs/saucectl) designed specifically to run [TestCafe](https://testcafe.io/) tests. This repository hosts the code executed in Sauce Labs during a `saucectl run`.
 
-If you are interested to contribute to this project, please have a look into our [contribution guidelines](https://github.com/saucelabs/sauce-testcafe-runner/blob/main/CONTRIBUTING.md).
+Interested in contributing? Check out our [contribution guidelines](https://github.com/saucelabs/sauce-testcafe-runner/blob/main/CONTRIBUTING.md) for more information on how to get involved.
