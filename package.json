@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "@saucelabs/testcomposer": "3.0.0",
-    "@tsconfig/node22": "^22.0.0",
+    "@tsconfig/node20": "^20.1.4",
     "@types/shelljs": "^0.8.15",
     "dotenv": "16.4.5",
     "lodash": "4.17.21",
