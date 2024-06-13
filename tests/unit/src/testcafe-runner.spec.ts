@@ -7,7 +7,7 @@ import {
 } from '../../../src/testcafe-runner';
 import { Suite, CompilerOptions } from '../../../src/type';
 
-export interface ProcessEnv {
+interface ProcessEnv {
   [key: string]: string | undefined;
 }
 
