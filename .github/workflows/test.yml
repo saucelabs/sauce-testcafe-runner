@@ -7,8 +7,8 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
-  SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
-  SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+  SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+  SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -22,12 +22,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
-      - uses: FedericoCarboni/setup-ffmpeg@v2
+      - uses: FedericoCarboni/setup-ffmpeg@v3
         id: setup-ffmpeg
 
       - name: Install Dependencies
@@ -53,15 +53,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.12"
 
       - name: Google Cloud Login
         id: 'auth'
@@ -83,7 +83,7 @@ jobs:
       - run: npm run build
 
       - name: Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v2
+        uses: FedericoCarboni/setup-ffmpeg@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
         with:
@@ -93,7 +93,7 @@ jobs:
         run: bash ./scripts/bundle.sh
 
       - name: Archive bundle
-        uses: azure/powershell@v1
+        uses: azure/powershell@v2
         with:
           inlineScript: |
             Compress-Archive bundle/ testcafe-windows-amd64.zip
@@ -104,22 +104,23 @@ jobs:
           gsutil cp ./testcafe-windows-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-windows-amd64-${{ github.run_id }}.zip
 
   build-mac-bundle:
-    runs-on: macos-latest
+    # macos-latest is arm only which is not supported by the setup-ffmpeg action
+    runs-on: macos-13
     needs: [test]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Google Cloud Login
         id: 'auth'
@@ -141,7 +142,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - uses: FedericoCarboni/setup-ffmpeg@v2
+      - uses: FedericoCarboni/setup-ffmpeg@v3
         if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
         with:
@@ -226,9 +227,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
@@ -248,7 +249,7 @@ jobs:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.9.1
+          scVersion: 4.9.2
 
       - name: Test on Sauce
         working-directory: ./tests/cloud/
@@ -277,9 +278,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
@@ -299,7 +300,7 @@ jobs:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}
-          scVersion: 4.9.1
+          scVersion: 4.9.2
 
       - name: Test on Sauce
         working-directory: ./tests/cloud/

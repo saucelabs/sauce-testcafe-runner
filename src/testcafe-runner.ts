@@ -1,6 +1,8 @@
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import { URL } from 'node:url';
+import { setTimeout } from 'node:timers';
 import {
   getArgs,
   loadRunConfig,
@@ -8,6 +10,7 @@ import {
   getAbsolutePath,
   prepareNpmEnv,
   preExec,
+  zip,
 } from 'sauce-testrunner-utils';
 
 import { TestCafeConfig, Suite, CompilerOptions, second } from './type';
@@ -27,6 +30,7 @@ async function prepareConfiguration(
     runCfg.projectPath || '.',
   );
   const assetsPath = path.join(path.dirname(runCfgPath), '__assets__');
+  runCfg.assetsPath = assetsPath;
   const suite = getSuite(runCfg, suiteName) as Suite | undefined;
   if (!suite) {
     throw new Error(`Could not find suite '${suiteName}'`);
@@ -66,7 +70,7 @@ async function prepareConfiguration(
   // Install NPM dependencies
   await prepareNpmEnv(runCfg, nodeCtx);
 
-  return { projectPath, assetsPath, suite };
+  return { runCfg, projectPath, assetsPath, suite };
 }
 
 // Build --compiler-options argument
@@ -261,8 +265,8 @@ export function buildCommandLine(
 // If the 'disableNativeAutomation' setting is enabled in the configuration,
 // it indicates that the CDP connection is disabled, and TestCafe uses its own
 // proxy to communicate with the browser.
-function isCDPDisabled() {
-  const cfg = require(path.join(__dirname, 'sauce-testcafe-config.cjs'));
+function isCDPDisabled(projectPath: string) {
+  const cfg = require(path.join(projectPath, 'sauce-testcafe-config.cjs'));
   return cfg.disableNativeAutomation;
 }
 
@@ -318,28 +322,31 @@ async function runTestCafe(
   return false;
 }
 
+function zipArtifacts(runCfg: TestCafeConfig) {
+  if (!runCfg.artifacts || !runCfg.artifacts.retain) {
+    return;
+  }
+  const archivesMap = runCfg.artifacts.retain;
+  Object.keys(archivesMap).forEach((source) => {
+    const dest = path.join(runCfg.assetsPath, archivesMap[source]);
+    try {
+      zip(path.dirname(runCfg.path), source, dest);
+    } catch (err) {
+      console.error(
+        `Zip file creation failed for destination: "${dest}", source: "${source}". Error: ${err}.`,
+      );
+    }
+  });
+}
+
 async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const preExecTimeout = 300;
 
-  const { projectPath, assetsPath, suite } = await prepareConfiguration(
+  const { runCfg, projectPath, assetsPath, suite } = await prepareConfiguration(
     nodeBin,
     runCfgPath,
     suiteName,
   );
-
-  // TestCafe used a reverse proxy for browser automation before.
-  // With TestCafe 3.0.0 and later, native automation mode was enabled by default,
-  // see https://testcafe.io/documentation/404237/guides/intermediate-guides/native-automation-mode,
-  // introducing CDP support for Chrome and Edge.
-  // This means that HTTP requests can't be routed through the reverse proxy anymore.
-  // Now, we need to set up an OS-level proxy connection.
-  if (
-    isChromiumBased(suite.browserName) &&
-    !isCDPDisabled() &&
-    isProxyAvailable()
-  ) {
-    setupProxy();
-  }
 
   if (!(await preExec.run({ preExec: suite.preExec }, preExecTimeout))) {
     return false;
@@ -355,6 +362,20 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     path.join(__dirname, 'sauce-testcafe-config.cjs'),
     configFile,
   );
+
+  // TestCafe used a reverse proxy for browser automation before.
+  // With TestCafe 3.0.0 and later, native automation mode was enabled by default,
+  // see https://testcafe.io/documentation/404237/guides/intermediate-guides/native-automation-mode,
+  // introducing CDP support for Chrome and Edge.
+  // This means that HTTP requests can't be routed through the reverse proxy anymore.
+  // Now, we need to set up an OS-level proxy connection.
+  if (
+    isChromiumBased(suite.browserName) &&
+    !isCDPDisabled(projectPath) &&
+    isProxyAvailable()
+  ) {
+    setupProxy();
+  }
 
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
@@ -377,6 +398,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   } catch (e) {
     console.warn('Skipping JUnit file generation:', e);
   }
+  zipArtifacts(runCfg);
 
   return passed;
 }

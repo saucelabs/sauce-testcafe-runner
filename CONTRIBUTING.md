@@ -1,58 +1,57 @@
 # Contributing to `sauce-testcafe-runner`
 
-**Thank you for your interest in `sauce-testcafe-runner`. Your contributions are highly welcome.**
+**Thank you for your interest in `sauce-testcafe-runner`. We highly appreciate and welcome your contributions.**
 
-There are multiple ways of getting involved:
+## Ways to Get Involved
 
-- [Report a bug](#report-a-bug)
-- [Suggest a feature](#suggest-a-feature)
-- [Contribute code](#contribute-code)
+- **[Report a Bug](#report-a-bug)**: Identify and report any issues or bugs.
+- **[Suggest a Feature](#suggest-a-feature)**: Propose ideas for new features or improvements.
+- **[Contribute Code](#contribute-code)**: Help develop and enhance the project by contributing your coding skills.
 
-Below are a few guidelines we would like you to follow.
-If you need help, please reach out to us by opening an issue.
+For any assistance, please don't hesitate to reach out by opening an [issue](/issues).
 
-## Report a bug
-Reporting bugs is one of the best ways to contribute. Before creating a bug report, please check that an [issue](/issues) reporting the same problem does not already exist. If there is such an issue, you may add your information as a comment.
+## Report a Bug
 
-To report a new bug you should open an issue that summarizes the bug and set the label to "bug".
+Before reporting a bug, please check if there is an [existing issue](/issues) addressing the same concern. If such an issue exists, feel free to contribute by adding your comments.
 
-If you want to provide a fix along with your bug report: That is great! In this case please send us a pull request as described in section [Contribute Code](#contribute-code).
+To report a new bug:
+- Open an issue summarizing the bug details.
+- Label it as "bug."
+- If you have a solution or a fix, wonderful! Please submit a pull request as outlined in the [Contribute Code](#contribute-code) section.
 
-## Suggest a feature
-To request a new feature you should open an [issue](../../issues/new) and summarize the desired functionality and its use case. Set the issue label to "feature".
+## Suggest a Feature
 
-## Contribute code
-This is an outline of what the workflow for code contributions looks like
+To suggest a new feature:
+- Open a [new issue](../../issues/new).
+- Describe the desired functionality and its use case.
+- Label the issue as "feature."
 
-- Check the list of open [issues](../../issues). Either assign an existing issue to yourself, or
-create a new one that you would like work on and discuss your ideas and use cases.
+## Contribute Code
 
-It is always best to discuss your plans beforehand, to ensure that your contribution is in line with our goals.
+### Code Contribution Workflow
 
-- Fork the repository on GitHub
-- Create a topic branch from where you want to base your work. This is usually 'main'.
-- Open a new pull request, label it `work in progress` and outline what you will be contributing
-- Make commits of logical units.
-- Make sure you sign-off on your commits `git commit -s -m "adding X to change Y"`
-- Write good commit messages (see below).
-- Push your changes to a topic branch in your fork of the repository.
-- As you push your changes, update the pull request with new infomation and tasks as you complete them
-- Project maintainers might comment on your work as you progress
-- When you are done, remove the `work in progess` label and ping the maintainers for a review
-- Your pull request must receive a :thumbsup: from two [maintainers](MAINTAINERS)
+1. **Explore Open Issues**: Browse through the [open issues](../../issues). You can either work on an existing issue or create a new one to discuss your ideas.
+2. **Fork and Branch**: Fork the repository and create a branch from the `main` branch to base your work.
+3. **Start a Pull Request**: Open a pull request and label it `work in progress`. Outline your contributions.
+4. **Commit Your Changes**: Commit your changes in logical units. Ensure you sign off on your commits using `git commit -s -m "adding X to change Y"`.
+5. **Engage**: Push your changes to your branch and update your pull request with any new information or completed tasks. Engage with feedback from project maintainers.
+6. **Final Review**: Once completed, remove the `work in progress` label and request a final review from the maintainers.
+7. **Approval**: Your pull request must receive approval from at least two [maintainers](MAINTAINERS).
 
-Thanks for your contributions!
+### Commit Messages
 
-### Commit messages
-Your commit messages ideally can answer two questions: what changed and why. The subject line should feature the “what” and the body of the commit should describe the “why”.
+Your commit messages should clearly articulate what changed and why:
+- **Subject**: Briefly describe what was changed.
+- **Body**: Explain why these changes were necessary.
 
-When creating a pull request, its description should reference the corresponding issue id.
+Ensure the pull request description references the corresponding issue ID.
 
-### Sign your work / Developer certificate of origin
-All contributions (including pull requests) must agree to the Developer Certificate of Origin (DCO) version 1.1. This is exactly the same one created and used by the Linux kernel developers and posted on http://developercertificate.org/. This is a developer's certification that he or she has the right to submit the patch for inclusion into the project. Simply submitting a contribution implies this agreement, however, please include a "Signed-off-by" tag in every patch (this tag is a conventional way to confirm that you agree to the DCO) - you can automate this with a [Git hook](https://stackoverflow.com/questions/15015894/git-add-signed-off-by-line-using-format-signoff-not-working)
+### Developer Certificate of Origin
 
+All contributions must adhere to the Developer Certificate of Origin (DCO) version 1.1, as documented at [developercertificate.org](http://developercertificate.org/). This implies that by submitting a contribution, you certify that you have the right to do so. Please include a "Signed-off-by" tag in every patch, which can be automated with a [Git hook](https://stackoverflow.com/questions/15015894/git-add-signed-off-by-line-using-format-signoff-not-working).
+
+```bash
+git commit -s -m "Describe your change"
 ```
-git commit -s -m "adding X to change Y"
-```
 
-**Have fun, and happy hacking!**
+**Enjoy contributing, and happy coding!**

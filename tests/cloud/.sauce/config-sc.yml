@@ -12,7 +12,7 @@ sauce:
     build: Release $CI_COMMIT_SHORT_SHA
 
 testcafe:
-  version: 2.3.1
+  version: 3.6.0
 
 suites:
   - name: "Win10 - Chrome"
