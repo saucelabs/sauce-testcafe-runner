@@ -206,6 +206,9 @@ export function buildCommandLine(
       cli.push('--compiler-options', options);
     }
   }
+  if (suite.esm) {
+    cli.push('--esm');
+  }
 
   // Screenshots
   if (suite.screenshots) {
