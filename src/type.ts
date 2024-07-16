@@ -90,6 +90,7 @@ export type Suite = {
   filter?: Filter;
   preExec?: string[];
   timeout?: number;
+  esm?: boolean;
 };
 
 export type TestCafeConfig = {

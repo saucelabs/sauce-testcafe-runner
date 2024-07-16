@@ -206,6 +206,9 @@ export function buildCommandLine(
       cli.push('--compiler-options', options);
     }
   }
+  if (suite.esm) {
+    cli.push('--esm');
+  }
 
   // Screenshots
   if (suite.screenshots) {
@@ -286,8 +289,8 @@ async function runTestCafe(
     '..',
     'node_modules',
     'testcafe',
-    'lib',
-    'cli',
+    'bin',
+    'testcafe-with-v8-flag-filter.js',
   );
 
   const testcafeProc = spawn(
