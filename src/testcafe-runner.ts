@@ -289,8 +289,8 @@ async function runTestCafe(
     '..',
     'node_modules',
     'testcafe',
-    'lib',
-    'cli',
+    'bin',
+    'testcafe-with-v8-flag-filter.js',
   );
 
   const testcafeProc = spawn(
