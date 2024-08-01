@@ -16,6 +16,7 @@ import {
 import { TestCafeConfig, Suite, CompilerOptions, second } from './type';
 import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
+import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
 async function prepareConfiguration(
   nodeBin: string,
@@ -65,7 +66,11 @@ async function prepareConfiguration(
     'bin',
     'npm-cli.js',
   );
-  const nodeCtx = { nodePath: nodeBin, npmPath: npmBin };
+  const nodeCtx: NodeContext = {
+    nodePath: nodeBin,
+    npmPath: npmBin,
+    useGlobals: !!runCfg.nodeVersion,
+  };
 
   // Install NPM dependencies
   await prepareNpmEnv(runCfg, nodeCtx);
