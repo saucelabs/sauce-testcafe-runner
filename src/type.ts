@@ -104,6 +104,7 @@ export type TestCafeConfig = {
     version: string;
     configFile?: string;
   };
+  nodeVersion?: string;
   artifacts?: Artifacts;
 };
 
