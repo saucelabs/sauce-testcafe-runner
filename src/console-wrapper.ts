@@ -20,7 +20,7 @@ async function testCafeRunner() {
     if (!fs.existsSync(assetsPath)) {
       fs.mkdirSync(assetsPath);
     }
-    const fd = fs.openSync(path.join(assetsPath, 'console.log'), 'w+', 0o644);
+    const fd = fs.openSync(path.join(assetsPath, 'console2.log'), 'w+', 0o644);
     const ws = new stream.Writable({
       write(data: any, encoding: any, cb: any) {
         fs.write(fd, data, undefined, encoding, cb);
