@@ -37,7 +37,7 @@ jobs:
         run: npm run build
 
       - name: Unit Test
-        run: npm run unit-test
+        run: npm run test
 
       - name: Integration Test
         run: npm run integration-test
