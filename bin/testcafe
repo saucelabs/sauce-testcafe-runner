@@ -1,5 +1,0 @@
-#!/usr/bin/env node
-
-const { testCafeRunner } = require('../lib/console-wrapper');
-
-(async () => await testCafeRunner())();

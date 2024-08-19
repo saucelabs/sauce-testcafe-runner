@@ -5,14 +5,12 @@
   "author": "<devx@saucelabs.com>",
   "license": "MIT",
   "private": true,
-  "bin": "./bin/testcafe",
-  "main": "lib/console-wrapper.js",
+  "main": "lib/testcafe-runner.js",
   "scripts": {
     "build": "tsc && cp src/sauce-testcafe-config.cjs lib/",
-    "test": "node lib/console-wrapper.js",
+    "test": "jest --env node",
     "lint": "prettier --check '**/*.{js,ts,mjs,cjs}' && eslint .",
     "fmt": "prettier --write '**/*.{js,ts,mjs,cjs}'",
-    "unit-test": "jest --env node",
     "integration-test": "bash ./tests/run.sh"
   },
   "keywords": [

@@ -3,7 +3,6 @@ rm -rf ./bundle/
 mkdir ./bundle/
 mkdir -p ./bundle/scripts
 cp -r ./src/ ./bundle/src/
-cp -r ./bin/ bundle/bin/
 cp package.json bundle/package.json
 cp package-lock.json bundle/package-lock.json
 cp tsconfig.json bundle/tsconfig.json
