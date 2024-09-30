@@ -126,6 +126,13 @@ export function buildCommandLine(
     const browserArgs = suite.browserArgs.join(' ');
     testCafeBrowserName = testCafeBrowserName + ' ' + browserArgs;
   }
+
+  const browserProfile = process.env.SAUCE_FIREFOX_BROWSER_PROFILE;
+  if (browserProfile) {
+    const absolutePath = path.join(projectPath, browserProfile);
+    testCafeBrowserName = `${testCafeBrowserName} -profile ${absolutePath}`;
+  }
+
   cli.push(testCafeBrowserName);
 
   // Add all sources files/globs
