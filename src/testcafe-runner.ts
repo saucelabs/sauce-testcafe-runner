@@ -130,6 +130,7 @@ export function buildCommandLine(
   const browserProfile = process.env.SAUCE_FIREFOX_BROWSER_PROFILE;
   if (browserProfile) {
     const absolutePath = path.join(projectPath, browserProfile);
+    console.log(`Using Firefox profile: ${absolutePath}`);
     testCafeBrowserName = `${testCafeBrowserName} -profile ${absolutePath}`;
   }
 
