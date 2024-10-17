@@ -10,7 +10,7 @@
     "build": "tsc && cp src/sauce-testcafe-config.cjs lib/",
     "test": "jest --env node",
     "prepare": "husky || true",
-    "lint": "prettier --check '**/*.{js,ts,mjs,cjs}' && eslint .",
+    "lint": "prettier --check '**/*.{js,ts,mjs,cjs}' && eslint ./tests ./src",
     "fmt": "prettier --write '**/*.{js,ts,mjs,cjs}'",
     "integration-test": "bash ./tests/run.sh"
   },
