@@ -1,6 +1,6 @@
 import { Selector, fixture, test } from 'testcafe';
 
-fixture`Getting Started`.page`http://devexpress.github.io/testcafe/example`;
+fixture('Getting Started').page('http://devexpress.github.io/testcafe/example');
 
 const testName = 'testcafe test';
 test(testName, async function (t) {
