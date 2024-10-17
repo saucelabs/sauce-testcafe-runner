@@ -32,6 +32,8 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
+        env:
+          HUSKY: 0
 
       - name: Build
         run: npm run build
@@ -80,6 +82,8 @@ jobs:
         run: npm version --no-git-tag-version 1.0.0
 
       - run: npm ci --production
+        env:
+          HUSKY: 0
       - run: npm run build
 
       - name: Setup ffmpeg
@@ -138,6 +142,8 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci --production
+        env:
+          HUSKY: 0
 
       - name: Build
         run: npm run build

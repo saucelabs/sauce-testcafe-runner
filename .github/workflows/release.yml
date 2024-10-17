@@ -55,6 +55,8 @@ jobs:
       - name: Install Dependencies
         if: ${{ steps.prep.outputs.tag_name == '' }}
         run: npm ci
+        env:
+          HUSKY: 0
 
       - name: Build Bundle
         if: ${{ steps.prep.outputs.tag_name == '' }}
@@ -155,6 +157,8 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci --production
+        env:
+          HUSKY: 0
         if: ${{ steps.prep.outputs.asset_id == '' }}
 
       - name: Bundle Directory
@@ -231,6 +235,8 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci --production
+        env:
+          HUSKY: 0
         if: ${{ steps.prep.outputs.asset_id == '' }}
 
       - name: Setup ffmpeg
