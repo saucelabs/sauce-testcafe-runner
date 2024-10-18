@@ -20,6 +20,9 @@ suites:
 #########################
   - name: "test chrome on windows 10"
     browserName: "chrome"
+    # FIX: Pinning to 129 to workaround current issue using testcafe with
+    # chrome 130+.
+    browserVersion: "129"
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
@@ -38,6 +41,9 @@ suites:
 
   - name: "test chrome on windows 11"
     browserName: "chrome"
+    # FIX: Pinning to 129 to workaround current issue using testcafe with
+    # chrome 130+.
+    browserVersion: "129"
     platformName: "Windows 11"
     src:
       - "**/*.test.js"

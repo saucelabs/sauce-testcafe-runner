@@ -1,6 +1,6 @@
 import { Selector, fixture, test } from 'testcafe';
 
-fixture`Getting Started Sauce demo`.page`https://www.saucedemo.com/`;
+fixture('Getting Started Sauce demo').page('https://www.saucedemo.com/');
 
 const Users = {
   password: 'secret_sauce',
