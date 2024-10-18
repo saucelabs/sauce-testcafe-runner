@@ -26,6 +26,9 @@ suites:
 
   - name: "test chrome on mac 11"
     browserName: "chrome"
+    # FIX: Pinning to 129 to workaround current issue using testcafe with
+    # chrome 130+.
+    browserVersion: "129"
     platformName: "macOS 11.00"
     src:
       - "**/*.test.js"
@@ -50,6 +53,9 @@ suites:
 
   - name: "test chrome on mac 12"
     browserName: "chrome"
+    # FIX: Pinning to 129 to workaround current issue using testcafe with
+    # chrome 130+.
+    browserVersion: "129"
     platformName: "macOS 12"
     src:
       - "**/*.test.js"
@@ -74,6 +80,9 @@ suites:
 
   - name: "test chrome on mac 13"
     browserName: "chrome"
+    # FIX: Pinning to 129 to workaround current issue using testcafe with
+    # chrome 130+.
+    browserVersion: "129"
     platformName: "macOS 13"
     src:
       - "**/*.test.js"
