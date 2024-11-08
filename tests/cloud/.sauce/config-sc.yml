@@ -12,15 +12,12 @@ sauce:
     build: Release $CI_COMMIT_SHORT_SHA
 
 testcafe:
-  version: 3.6.0
+  version: 3.6.2
 
 suites:
   - name: "Win10 - Chrome"
     platformName: "Windows 10"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     src:
       - "tests/**/*.test.js"
     speed: 1
@@ -34,9 +31,6 @@ suites:
   - name: "Win11 - Chrome"
     platformName: "Windows 11"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     src:
       - "tests/**/*.test.js"
     speed: 1
@@ -50,9 +44,6 @@ suites:
   - name: "macOS11 - Chrome"
     platformName: "macOS 11.00"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     src:
       - "tests/**/*.test.js"
     speed: 1
@@ -72,9 +63,6 @@ suites:
   - name: "macOS12 - Chrome"
     platformName: "macOS 12"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     src:
       - "tests/**/*.test.js"
     speed: 1
@@ -94,9 +82,6 @@ suites:
   - name: "macOS13 - Chrome"
     platformName: "macOS 13"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     src:
       - "tests/**/*.test.js"
     speed: 1
