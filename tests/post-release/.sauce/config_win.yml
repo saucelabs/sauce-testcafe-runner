@@ -11,7 +11,7 @@ sauce:
 testcafe:
   # CAUTION: This has to be an already deployed framework version in the cloud. Not necessarily the one you want to test.
   # Then use --runner-version to specify the release you actually want to use.
-  version: 3.0.1
+  version: 3.6.2
 rootDir: ./
 
 suites:
@@ -20,9 +20,6 @@ suites:
 #########################
   - name: "test chrome on windows 10"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
@@ -41,9 +38,6 @@ suites:
 
   - name: "test chrome on windows 11"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     platformName: "Windows 11"
     src:
       - "**/*.test.js"
@@ -59,4 +53,3 @@ suites:
     platformName: "Windows 11"
     src:
       - "**/*.test.js"
-

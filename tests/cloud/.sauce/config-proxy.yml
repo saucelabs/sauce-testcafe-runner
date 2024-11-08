@@ -12,15 +12,12 @@ sauce:
     build: Release $CI_COMMIT_SHORT_SHA
 
 testcafe:
-  version: 3.2.0
+  version: 3.6.2
 
 suites:
   - name: "Proxy - macOS13"
     platformName: "macOS 13"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     timeout: 2m
     src:
       - "tests/sc/*.test.js"
@@ -28,9 +25,6 @@ suites:
   - name: "Proxy - Win11"
     platformName: "Windows 11"
     browserName: "chrome"
-    # FIX: Pinning to 129 to workaround current issue using testcafe with
-    # chrome 130+.
-    browserVersion: "129"
     timeout: 2m
     src:
       - "tests/sc/*.test.js"
