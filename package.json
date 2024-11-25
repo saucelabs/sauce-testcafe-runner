@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "@saucelabs/testcomposer": "3.0.2",
-    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/node22": "^22.0.0",
     "@types/shelljs": "^0.8.15",
     "dotenv": "16.4.5",
     "lodash": "4.17.21",
@@ -28,31 +28,31 @@
     "shelljs": "^0.8.5",
     "testcafe": "3.7.0",
     "testcafe-browser-provider-ios": "0.5.0",
-    "testcafe-reporter-saucelabs": "3.5.1",
-    "typescript": "^5.6.3",
+    "testcafe-reporter-saucelabs": "3.6.0",
+    "typescript": "^5.7.2",
     "xml-js": "1.6.11",
     "yargs": "17.7.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.14.0",
+    "@eslint/js": "^9.15.0",
     "@types/chai": "^5.0.1",
     "@types/eslint__js": "^8.42.3",
     "@types/jest": "^29.5.14",
     "@types/jquery": "^3.5.32",
-    "@types/mocha": "^10.0.9",
-    "@types/node": "^20.17.3",
-    "eslint": "^9.14.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.9.4",
+    "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jest": "^28.9.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-testcafe": "^0.2.1",
-    "husky": "^9.1.6",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "mocha": "^10.8.2",
     "prettier": "^3.3.3",
     "pretty-quick": "^4.0.0",
     "release-it": "^17.10.0",
     "ts-jest": "^29.2.5",
-    "typescript-eslint": "^8.13.0"
+    "typescript-eslint": "^8.16.0"
   }
 }
