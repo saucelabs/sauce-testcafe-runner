@@ -36,7 +36,6 @@
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@types/chai": "^5.0.1",
-    "@types/eslint__js": "^8.42.3",
     "@types/jest": "^29.5.14",
     "@types/jquery": "^3.5.32",
     "@types/mocha": "^10.0.10",
