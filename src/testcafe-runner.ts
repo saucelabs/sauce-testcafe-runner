@@ -292,15 +292,6 @@ function isChromiumBased(browser: string) {
 }
 
 /**
- * START: NEW FUNCTION
- * Polls for a booted iOS simulator and logs its details.
- * This runs in the background and stops once a simulator is found or the timeout is reached.
- * @param {second} timeout - The maximum time to poll in seconds.
- */
-import { spawn } from 'child_process';
-import { second } from './type'; // Assuming 'second' is a defined type like 'number'
-
-/**
  * Polls for a booted iOS simulator, checks if it is locked, and unlocks it if necessary.
  * This runs in the background and stops once a booted simulator is found and handled.
  * @param {second} timeout - The maximum time to poll in seconds.
