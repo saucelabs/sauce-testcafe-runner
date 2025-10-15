@@ -301,8 +301,25 @@ function startSimulatorPolling(timeout: second) {
   const endTime = Date.now() + timeout * 1000;
   let foundAndHandled = false;
 
+  // Helper function to perform the unlock sequence
+  const unlockSimulator = () => {
+    console.log('Simulator is LOCKED 🔒. Attempting to unlock...');
+    const unlockProc = spawn('xcrun', ['simctl', 'bootstatus', 'booted', '-u']);
+
+    unlockProc.on('error', (err) => {
+      console.error('Failed to run simulator unlock command.', err);
+    });
+
+    unlockProc.on('close', (unlockCode) => {
+      if (unlockCode === 0) {
+        console.log('Simulator UNLOCKED successfully 🔑.');
+      } else {
+        console.error(`Failed to unlock simulator (exit code: ${unlockCode}).`);
+      }
+    });
+  };
+
   const poll = () => {
-    // Stop polling if we're done or if the timeout is exceeded.
     if (foundAndHandled || Date.now() > endTime) {
       clearInterval(intervalId);
       if (!foundAndHandled && Date.now() > endTime) {
@@ -311,7 +328,6 @@ function startSimulatorPolling(timeout: second) {
       return;
     }
 
-    // 1. Find a booted simulator
     const findBootedProc = spawn('xcrun', ['simctl', 'list', 'devices']);
     let output = '';
 
@@ -321,7 +337,7 @@ function startSimulatorPolling(timeout: second) {
 
     findBootedProc.on('error', (err) => {
       console.error('Failed to start xcrun process to find simulator.', err);
-      clearInterval(intervalId); // Stop on critical error
+      clearInterval(intervalId);
     });
 
     findBootedProc.on('close', (findCode) => {
@@ -332,10 +348,9 @@ function startSimulatorPolling(timeout: second) {
         .find((line) => line.includes('(Booted)'));
       if (bootedLine && !foundAndHandled) {
         console.log(`✅ Found booted simulator: ${bootedLine.trim()}`);
-        foundAndHandled = true; // Mark as handled to stop further polling
+        foundAndHandled = true;
         clearInterval(intervalId);
 
-        // 2. Check if the simulator is locked
         const checkLockProc = spawn('sh', [
           '-c',
           'xcrun simctl spawn booted launchctl print-system | grep -q "com.apple.springboard.lockstate"',
@@ -348,30 +363,10 @@ function startSimulatorPolling(timeout: second) {
         checkLockProc.on('close', (lockCode) => {
           // An exit code of 0 from grep means it found the lockstate service (LOCKED).
           if (lockCode === 0) {
-            console.log('Simulator is LOCKED 🔒. Attempting to unlock...');
-
-            // 3. Unlock the simulator
-            const unlockProc = spawn('xcrun', [
-              'simctl',
-              'bootstatus',
-              'booted',
-              '-u',
-            ]);
-
-            unlockProc.on('error', (err) => {
-              console.error('Failed to run simulator unlock command.', err);
-            });
-
-            unlockProc.on('close', (unlockCode) => {
-              if (unlockCode === 0) {
-                console.log('Simulator UNLOCKED successfully 🔑.');
-              } else {
-                console.error(
-                  `Failed to unlock simulator (exit code: ${unlockCode}).`,
-                );
-              }
-            });
+            unlockSimulator();
           } else {
+            // --- START: MODIFIED BLOCK ---
+            // If unlocked, it might be the initial boot-up state. Wait and re-check.
             console.log(
               'Simulator appears unlocked. Waiting 1 second and re-checking...',
             );
@@ -395,6 +390,7 @@ function startSimulatorPolling(timeout: second) {
                 console.error('Failed to run second lock screen check.', err);
               });
             }, 1000); // 1000 milliseconds = 1 second
+            // --- END: MODIFIED BLOCK ---
           }
         });
       }
@@ -403,11 +399,8 @@ function startSimulatorPolling(timeout: second) {
 
   console.log('Polling for booted iOS simulator...');
   const intervalId = setInterval(poll, pollInterval);
-  poll(); // Run the first poll immediately.
+  poll();
 }
-/**
- * END: NEW FUNCTION
- */
 
 async function runTestCafe(
   tcCommandLine: (string | number)[],
