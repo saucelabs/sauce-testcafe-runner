@@ -1,4 +1,5 @@
-import { spawn, spawnSync } from 'child_process';
+//import { spawn, spawnSync } from 'child_process';
+import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { URL } from 'node:url';
@@ -291,25 +292,33 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
-async function isSimulatorBooted() {
-  // Check if there are any booted devices
-  const result = spawnSync('xcrun', ['simctl', 'list', 'devices'], {
-    encoding: 'utf-8',
+async function isSimulatorBooted(): Promise<string | false> {
+  // Wrap exec in a promise to use it with async/await
+  return new Promise((resolve) => {
+    // Execute the command asynchronously
+    exec('xcrun simctl list devices', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error executing xcrun: ${stderr}`);
+        resolve(false); // Resolve with false on error
+        return;
+      }
+
+      const lines = stdout.split('\n');
+      const bootedLine = lines.find((line) => line.includes('Booted'));
+
+      if (bootedLine) {
+        const uuidMatch = bootedLine.match(/\(([^)]+)\)/);
+        if (uuidMatch && uuidMatch[1]) {
+          console.log('✅ Booted simulator found.');
+          resolve(uuidMatch[1]); // Resolve with the UUID
+          return;
+        }
+      }
+
+      console.log('⚙️ No booted simulator found, checking again...');
+      resolve(false); // Resolve with false if no booted device is found
+    });
   });
-  if (result.error) {
-    return false;
-  }
-  const lines = result.stdout.split('\n');
-  const bootedLine = lines.find((line) => line.includes('Booted'));
-  if (bootedLine) {
-    const uuidMatch = bootedLine.match(/\(([^)]+)\)/);
-    if (uuidMatch && uuidMatch[1]) {
-      console.log('Booted simulator found.');
-      return uuidMatch[1];
-    }
-  }
-  console.log('No booted simulator found, checking again...');
-  return false;
 }
 
 async function runTestCafe(
