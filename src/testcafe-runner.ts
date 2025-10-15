@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { URL } from 'node:url';
@@ -391,6 +391,15 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     isProxyAvailable()
   ) {
     setupProxy();
+  }
+
+
+  // Check if idb is available
+  const result = spawnSync('idb', ['list-targets'], { encoding: 'utf-8' });
+  if (result.error) {
+    console.log('idb not available, skipping...');
+  } else {
+    console.log(result.stdout);
   }
 
   // saucectl suite.timeout is in nanoseconds, convert to seconds
