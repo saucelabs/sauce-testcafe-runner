@@ -301,20 +301,31 @@ function startSimulatorPolling(timeout: second) {
   const endTime = Date.now() + timeout * 1000;
   let foundAndHandled = false;
 
-  // Helper function to perform the unlock sequence
-  const unlockSimulator = () => {
-    console.log('Simulator is LOCKED 🔒. Attempting to unlock...');
-    const unlockProc = spawn('xcrun', ['simctl', 'bootstatus', 'booted', '-u']);
+  // Helper function to launch SpringBoard (return to home screen)
+  const returnToHomeScreen = () => {
+    console.log(
+      'Simulator is locked or not on home screen. Launching SpringBoard...',
+    );
+    const launchProc = spawn('xcrun', [
+      'simctl',
+      'launch',
+      'booted',
+      'com.apple.springboard',
+    ]);
 
-    unlockProc.on('error', (err) => {
-      console.error('Failed to run simulator unlock command.', err);
+    launchProc.on('error', (err) => {
+      console.error('Failed to run SpringBoard launch command.', err);
     });
 
-    unlockProc.on('close', (unlockCode) => {
-      if (unlockCode === 0) {
-        console.log('Simulator UNLOCKED successfully 🔑.');
+    launchProc.on('close', (launchCode) => {
+      if (launchCode === 0) {
+        console.log(
+          'Successfully launched SpringBoard. Simulator is on home screen. 🏡',
+        );
       } else {
-        console.error(`Failed to unlock simulator (exit code: ${unlockCode}).`);
+        console.error(
+          `Failed to launch SpringBoard (exit code: ${launchCode}).`,
+        );
       }
     });
   };
@@ -351,48 +362,57 @@ function startSimulatorPolling(timeout: second) {
         foundAndHandled = true;
         clearInterval(intervalId);
 
-        const checkLockProc = spawn('sh', [
-          '-c',
-          'xcrun simctl spawn booted launchctl print-system | grep -q "com.apple.springboard.lockstate"',
+        // --- START: MODIFIED BLOCK ---
+        // We now use `openurl`. An error (non-zero exit code) indicates a locked screen.
+        const checkLockProc = spawn('xcrun', [
+          'simctl',
+          'openurl',
+          'booted',
+          'https://saucelabs.com',
         ]);
 
         checkLockProc.on('error', (err) => {
-          console.error('Failed to run lock screen check.', err);
+          // This error is for the spawn process itself, not the command's exit code.
+          console.error('Failed to run the openurl check.', err);
         });
 
         checkLockProc.on('close', (lockCode) => {
-          // An exit code of 0 from grep means it found the lockstate service (LOCKED).
-          if (lockCode === 0) {
-            unlockSimulator();
+          // A non-zero exit code means the command failed, which we interpret as LOCKED.
+          if (lockCode !== 0) {
+            returnToHomeScreen();
           } else {
-            // --- START: MODIFIED BLOCK ---
-            // If unlocked, it might be the initial boot-up state. Wait and re-check.
+            // A zero exit code means it succeeded, but this could be a false positive
+            // right after boot. We wait and re-check.
             console.log(
-              'Simulator appears unlocked. Waiting 1 second and re-checking...',
+              'URL opened successfully. Waiting 1 second and re-checking...',
             );
             setTimeout(() => {
-              const reCheckLockProc = spawn('sh', [
-                '-c',
-                'xcrun simctl spawn booted launchctl print-system | grep -q "com.apple.springboard.lockstate"',
+              const reCheckLockProc = spawn('xcrun', [
+                'simctl',
+                'openurl',
+                'booted',
+                'https://saucelabs.com',
               ]);
 
               reCheckLockProc.on('close', (secondLockCode) => {
-                if (secondLockCode === 0) {
-                  // It's now locked, so unlock it.
-                  unlockSimulator();
+                if (secondLockCode !== 0) {
+                  // It failed the second time, so it's definitely locked.
+                  returnToHomeScreen();
                 } else {
-                  // Still unlocked after the delay, so we can be confident.
-                  console.log('Confirmed: Simulator is UNLOCKED.');
+                  // Succeeded again, we can be confident it's usable.
+                  console.log(
+                    'Confirmed: Simulator is unlocked and responsive.',
+                  );
                 }
               });
 
               reCheckLockProc.on('error', (err) => {
-                console.error('Failed to run second lock screen check.', err);
+                console.error('Failed to run the second openurl check.', err);
               });
             }, 1000); // 1000 milliseconds = 1 second
-            // --- END: MODIFIED BLOCK ---
           }
         });
+        // --- END: MODIFIED BLOCK ---
       }
     });
   };
