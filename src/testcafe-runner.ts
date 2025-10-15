@@ -427,8 +427,11 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   if (suite.platformName === 'iOS') {
     const testCafePromise = runTestCafe(tcCommandLine, projectPath, timeout);
     const simulatorPromise = (async () => {
-      while (true) {
-        const uuid = await isSimulatorBooted();
+      let uuid;
+      const startTime = Date.now();
+      // Wait for the simulator to be booted (max 2 minutes)
+      while (Date.now() - startTime < 120000) {
+        uuid = await isSimulatorBooted();
         if (uuid) {
           console.log(`Simulator booted with UUID ${uuid}`);
           return;
@@ -436,6 +439,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     })();
+
     const [testCafeResult] = await Promise.all([
       testCafePromise,
       simulatorPromise,
