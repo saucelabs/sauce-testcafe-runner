@@ -291,6 +291,27 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
+async function isSimulatorBooted() {
+  // Check if there are any booted devices
+  const result = spawnSync('xcrun', ['simctl', 'list', 'devices'], {
+    encoding: 'utf-8',
+  });
+  if (result.error) {
+    return false;
+  }
+  const lines = result.stdout.split('\n');
+  const bootedLine = lines.find((line) => line.includes('Booted'));
+  if (bootedLine) {
+    const uuidMatch = bootedLine.match(/\(([^)]+)\)/);
+    if (uuidMatch && uuidMatch[1]) {
+      console.log('Booted simulator found.');
+      return uuidMatch[1];
+    }
+  }
+  console.log('No booted simulator found, checking again...');
+  return false;
+}
+
 async function runTestCafe(
   tcCommandLine: (string | number)[],
   projectPath: string,
@@ -402,28 +423,26 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     assetsPath,
     configFile,
   );
-  const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
-
-  // Check if there are any booted devices
-  const result = spawnSync('xcrun', ['simctl', 'list', 'devices'], {
-    encoding: 'utf-8',
-  });
-  if (result.error) {
-    console.log('xcrun not available, skipping...');
-  } else {
-    console.log(result.stdout);
-    const lines = result.stdout.split('\n');
-    const bootedLine = lines.find((line) => line.includes('Booted'));
-    if (bootedLine) {
-      console.log('Booted device(s) found:');
-      const trimmedLine = bootedLine.trim();
-      console.log(trimmedLine);
-      const uuidMatch = trimmedLine.match(/\(([^)]+)\)/);
-      if (uuidMatch && uuidMatch[1]) {
-        const uuid = uuidMatch[1];
-        console.log(`Booted device UUID: ${uuid}`);
+  let passed = false;
+  if (suite.platformName === 'iOS') {
+    const testCafePromise = runTestCafe(tcCommandLine, projectPath, timeout);
+    const simulatorPromise = (async () => {
+      while (true) {
+        const uuid = await isSimulatorBooted();
+        if (uuid) {
+          console.log(`Simulator booted with UUID ${uuid}`);
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
-    }
+    })();
+    const [testCafeResult] = await Promise.all([
+      testCafePromise,
+      simulatorPromise,
+    ]);
+    passed = testCafeResult;
+  } else {
+    passed = await runTestCafe(tcCommandLine, projectPath, timeout);
   }
 
   try {
