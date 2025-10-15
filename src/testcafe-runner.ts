@@ -1,5 +1,5 @@
 //import { spawn, spawnSync } from 'child_process';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { URL } from 'node:url';
