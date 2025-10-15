@@ -393,6 +393,17 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     setupProxy();
   }
 
+  // saucectl suite.timeout is in nanoseconds, convert to seconds
+  const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
+
+  const tcCommandLine = buildCommandLine(
+    suite,
+    projectPath,
+    assetsPath,
+    configFile,
+  );
+  const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
+
   // Check if there are any booted devices
   const result = spawnSync('xcrun', ['simctl', 'list', 'devices'], {
     encoding: 'utf-8',
@@ -414,17 +425,6 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
       }
     }
   }
-
-  // saucectl suite.timeout is in nanoseconds, convert to seconds
-  const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
-
-  const tcCommandLine = buildCommandLine(
-    suite,
-    projectPath,
-    assetsPath,
-    configFile,
-  );
-  const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
 
   try {
     generateJUnitFile(
