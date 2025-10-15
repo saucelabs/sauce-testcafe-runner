@@ -400,6 +400,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   if (result.error) {
     console.log('xcrun not available, skipping...');
   } else {
+    console.log(result.stdout);
     const lines = result.stdout.split('\n');
     const bootedLine = lines.find((line) => line.includes('Booted'));
     if (bootedLine) {
