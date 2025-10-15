@@ -297,7 +297,7 @@ function isChromiumBased(browser: string) {
  * @param {second} timeout - The maximum time to poll in seconds.
  */
 function startSimulatorPolling(timeout: second) {
-  const pollInterval = 5000; // Poll every 5 seconds.
+  const pollInterval = 1500; // Poll every 5 seconds.
   const endTime = Date.now() + timeout * 1000;
   let foundAndHandled = false;
 
@@ -372,8 +372,29 @@ function startSimulatorPolling(timeout: second) {
               }
             });
           } else {
-            // An exit code of 1 from grep means it did not find the lock (UNLOCKED).
-            console.log('Simulator is already UNLOCKED.');
+            console.log(
+              'Simulator appears unlocked. Waiting 1 second and re-checking...',
+            );
+            setTimeout(() => {
+              const reCheckLockProc = spawn('sh', [
+                '-c',
+                'xcrun simctl spawn booted launchctl print-system | grep -q "com.apple.springboard.lockstate"',
+              ]);
+
+              reCheckLockProc.on('close', (secondLockCode) => {
+                if (secondLockCode === 0) {
+                  // It's now locked, so unlock it.
+                  unlockSimulator();
+                } else {
+                  // Still unlocked after the delay, so we can be confident.
+                  console.log('Confirmed: Simulator is UNLOCKED.');
+                }
+              });
+
+              reCheckLockProc.on('error', (err) => {
+                console.error('Failed to run second lock screen check.', err);
+              });
+            }, 1000); // 1000 milliseconds = 1 second
           }
         });
       }
