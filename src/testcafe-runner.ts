@@ -1,5 +1,4 @@
-//import { spawn, spawnSync } from 'child_process';
-import { exec, spawn } from 'child_process';
+import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { URL } from 'node:url';
@@ -292,40 +291,79 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
-async function isSimulatorBooted(): Promise<string | false> {
-  // Wrap exec in a promise to use it with async/await
-  return new Promise((resolve) => {
-    // Execute the command asynchronously
-    exec('xcrun simctl list devices', (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error executing xcrun: ${stderr}`);
-        resolve(false); // Resolve with false on error
-        return;
+/**
+ * START: NEW FUNCTION
+ * Polls for a booted iOS simulator and logs its details.
+ * This runs in the background and stops once a simulator is found or the timeout is reached.
+ * @param {second} timeout - The maximum time to poll in seconds.
+ */
+function startSimulatorPolling(timeout: second) {
+  const pollInterval = 1500; // Poll every 5 seconds.
+  const endTime = Date.now() + timeout * 1000;
+  let found = false;
+
+  const poll = () => {
+    // Stop polling if a device was found or the timeout is exceeded.
+    if (found || Date.now() > endTime) {
+      if (intervalId) {
+        clearInterval(intervalId);
       }
+      if (!found && Date.now() > endTime) {
+        console.log('Polling for booted simulator timed out.');
+      }
+      return;
+    }
 
-      const lines = stdout.split('\n');
-      const bootedLine = lines.find((line) => line.includes('Booted'));
+    const xcrun = spawn('xcrun', ['simctl', 'list', 'devices']);
+    let output = '';
 
-      if (bootedLine) {
-        const uuidMatch = bootedLine.match(/\(([^)]+)\)/);
-        if (uuidMatch && uuidMatch[1]) {
-          console.log('✅ Booted simulator found.');
-          resolve(uuidMatch[1]); // Resolve with the UUID
-          return;
+    xcrun.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+
+    xcrun.on('close', (code) => {
+      if (code === 0 && !found) {
+        const lines = output.split('\n');
+        const bootedLine = lines.find((line) => line.includes('(Booted)'));
+        if (bootedLine) {
+          console.log(`✅ Found booted simulator: ${bootedLine.trim()}`);
+          found = true; // Set flag to stop polling.
+          clearInterval(intervalId);
         }
       }
-
-      console.log('⚙️ No booted simulator found, checking again...');
-      resolve(false); // Resolve with false if no booted device is found
     });
-  });
+
+    xcrun.on('error', (err) => {
+      console.error('Failed to start xcrun process for polling.', err);
+      clearInterval(intervalId); // Stop polling on critical error.
+    });
+  };
+
+  console.log('Polling for booted iOS simulator...');
+  const intervalId = setInterval(poll, pollInterval);
+  poll(); // Run the first poll immediately without waiting.
 }
+/**
+ * END: NEW FUNCTION
+ */
 
 async function runTestCafe(
   tcCommandLine: (string | number)[],
   projectPath: string,
   timeout: second,
 ) {
+  /**
+   * START: MODIFIED SECTION
+   * Start polling for a booted simulator on macOS.
+   * This runs in the background and does not block the TestCafe process.
+   */
+  if (process.platform === 'darwin') {
+    startSimulatorPolling(timeout);
+  }
+  /**
+   * END: MODIFIED SECTION
+   */
+
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(
     __dirname,
@@ -432,31 +470,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     assetsPath,
     configFile,
   );
-  let passed = false;
-  if (suite.platformName === 'iOS') {
-    const testCafePromise = runTestCafe(tcCommandLine, projectPath, timeout);
-    const simulatorPromise = (async () => {
-      let uuid;
-      const startTime = Date.now();
-      // Wait for the simulator to be booted (max 2 minutes)
-      while (Date.now() - startTime < 120000) {
-        uuid = await isSimulatorBooted();
-        if (uuid) {
-          console.log(`Simulator booted with UUID ${uuid}`);
-          return;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    })();
-
-    const [testCafeResult] = await Promise.all([
-      testCafePromise,
-      simulatorPromise,
-    ]);
-    passed = testCafeResult;
-  } else {
-    passed = await runTestCafe(tcCommandLine, projectPath, timeout);
-  }
+  const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
 
   try {
     generateJUnitFile(
