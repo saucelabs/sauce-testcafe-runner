@@ -393,12 +393,23 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     setupProxy();
   }
 
-  // Check if idb is available
-  const result = spawnSync('idb', ['list-targets'], { encoding: 'utf-8' });
+  // Check if there are any booted devices
+  const result = spawnSync('xcrun', ['simctl', 'list', 'devices'], { encoding: 'utf-8' });
   if (result.error) {
-    console.log('idb not available, skipping...');
+    console.log('xcrun not available, skipping...');
   } else {
-    console.log(result.stdout);
+    const lines = result.stdout.split('\n');
+    const bootedLine = lines.find(line => line.includes('Booted'));
+    if (bootedLine) {
+        console.log('Booted device(s) found:');
+        const trimmedLine = bootedLine.trim();
+        console.log(trimmedLine);
+        const uuidMatch = trimmedLine.match(/\(([^)]+)\)/);
+        if (uuidMatch && uuidMatch[1]) {
+            const uuid = uuidMatch[1];
+            console.log(`Booted device UUID: ${uuid}`);
+        }
+    }
   }
 
   // saucectl suite.timeout is in nanoseconds, convert to seconds
