@@ -393,7 +393,6 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     setupProxy();
   }
 
-
   // Check if idb is available
   const result = spawnSync('idb', ['list-targets'], { encoding: 'utf-8' });
   if (result.error) {
