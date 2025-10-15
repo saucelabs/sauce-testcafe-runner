@@ -394,21 +394,23 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   }
 
   // Check if there are any booted devices
-  const result = spawnSync('xcrun', ['simctl', 'list', 'devices'], { encoding: 'utf-8' });
+  const result = spawnSync('xcrun', ['simctl', 'list', 'devices'], {
+    encoding: 'utf-8',
+  });
   if (result.error) {
     console.log('xcrun not available, skipping...');
   } else {
     const lines = result.stdout.split('\n');
-    const bootedLine = lines.find(line => line.includes('Booted'));
+    const bootedLine = lines.find((line) => line.includes('Booted'));
     if (bootedLine) {
-        console.log('Booted device(s) found:');
-        const trimmedLine = bootedLine.trim();
-        console.log(trimmedLine);
-        const uuidMatch = trimmedLine.match(/\(([^)]+)\)/);
-        if (uuidMatch && uuidMatch[1]) {
-            const uuid = uuidMatch[1];
-            console.log(`Booted device UUID: ${uuid}`);
-        }
+      console.log('Booted device(s) found:');
+      const trimmedLine = bootedLine.trim();
+      console.log(trimmedLine);
+      const uuidMatch = trimmedLine.match(/\(([^)]+)\)/);
+      if (uuidMatch && uuidMatch[1]) {
+        const uuid = uuidMatch[1];
+        console.log(`Booted device UUID: ${uuid}`);
+      }
     }
   }
 
