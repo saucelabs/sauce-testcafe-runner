@@ -297,51 +297,101 @@ function isChromiumBased(browser: string) {
  * This runs in the background and stops once a simulator is found or the timeout is reached.
  * @param {second} timeout - The maximum time to poll in seconds.
  */
+import { spawn } from 'child_process';
+import { second } from './type'; // Assuming 'second' is a defined type like 'number'
+
+/**
+ * Polls for a booted iOS simulator, checks if it is locked, and unlocks it if necessary.
+ * This runs in the background and stops once a booted simulator is found and handled.
+ * @param {second} timeout - The maximum time to poll in seconds.
+ */
 function startSimulatorPolling(timeout: second) {
-  const pollInterval = 1500; // Poll every 5 seconds.
+  const pollInterval = 5000; // Poll every 5 seconds.
   const endTime = Date.now() + timeout * 1000;
-  let found = false;
+  let foundAndHandled = false;
 
   const poll = () => {
-    // Stop polling if a device was found or the timeout is exceeded.
-    if (found || Date.now() > endTime) {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-      if (!found && Date.now() > endTime) {
+    // Stop polling if we're done or if the timeout is exceeded.
+    if (foundAndHandled || Date.now() > endTime) {
+      clearInterval(intervalId);
+      if (!foundAndHandled && Date.now() > endTime) {
         console.log('Polling for booted simulator timed out.');
       }
       return;
     }
 
-    const xcrun = spawn('xcrun', ['simctl', 'list', 'devices']);
+    // 1. Find a booted simulator
+    const findBootedProc = spawn('xcrun', ['simctl', 'list', 'devices']);
     let output = '';
 
-    xcrun.stdout.on('data', (data) => {
+    findBootedProc.stdout.on('data', (data) => {
       output += data.toString();
     });
 
-    xcrun.on('close', (code) => {
-      if (code === 0 && !found) {
-        const lines = output.split('\n');
-        const bootedLine = lines.find((line) => line.includes('(Booted)'));
-        if (bootedLine) {
-          console.log(`✅ Found booted simulator: ${bootedLine.trim()}`);
-          found = true; // Set flag to stop polling.
-          clearInterval(intervalId);
-        }
-      }
+    findBootedProc.on('error', (err) => {
+      console.error('Failed to start xcrun process to find simulator.', err);
+      clearInterval(intervalId); // Stop on critical error
     });
 
-    xcrun.on('error', (err) => {
-      console.error('Failed to start xcrun process for polling.', err);
-      clearInterval(intervalId); // Stop polling on critical error.
+    findBootedProc.on('close', (findCode) => {
+      if (findCode !== 0) return;
+
+      const bootedLine = output
+        .split('\n')
+        .find((line) => line.includes('(Booted)'));
+      if (bootedLine && !foundAndHandled) {
+        console.log(`✅ Found booted simulator: ${bootedLine.trim()}`);
+        foundAndHandled = true; // Mark as handled to stop further polling
+        clearInterval(intervalId);
+
+        // 2. Check if the simulator is locked
+        const checkLockProc = spawn('sh', [
+          '-c',
+          'xcrun simctl spawn booted launchctl print-system | grep -q "com.apple.springboard.lockstate"',
+        ]);
+
+        checkLockProc.on('error', (err) => {
+          console.error('Failed to run lock screen check.', err);
+        });
+
+        checkLockProc.on('close', (lockCode) => {
+          // An exit code of 0 from grep means it found the lockstate service (LOCKED).
+          if (lockCode === 0) {
+            console.log('Simulator is LOCKED 🔒. Attempting to unlock...');
+
+            // 3. Unlock the simulator
+            const unlockProc = spawn('xcrun', [
+              'simctl',
+              'bootstatus',
+              'booted',
+              '-u',
+            ]);
+
+            unlockProc.on('error', (err) => {
+              console.error('Failed to run simulator unlock command.', err);
+            });
+
+            unlockProc.on('close', (unlockCode) => {
+              if (unlockCode === 0) {
+                console.log('Simulator UNLOCKED successfully 🔑.');
+              } else {
+                console.error(
+                  `Failed to unlock simulator (exit code: ${unlockCode}).`,
+                );
+              }
+            });
+          } else {
+            // An exit code of 1 from grep means it did not find the lock (UNLOCKED).
+            console.log('Simulator is already UNLOCKED.');
+          }
+        });
+      }
     });
   };
 
   console.log('Polling for booted iOS simulator...');
   const intervalId = setInterval(poll, pollInterval);
-  poll(); // Run the first poll immediately without waiting.
+  poll(); // Run the first poll immediately.
 }
 /**
  * END: NEW FUNCTION
