@@ -347,7 +347,11 @@ async function runTestCafe(
     startSimulatorPolling(timeout);
   }
 
-  await delay(7500);
+  console.log('System load before delay:');
+  spawn('uptime', [], { stdio: 'inherit' });
+  await delay(15000);
+  console.log('System load after delay:');
+  spawn('uptime', [], { stdio: 'inherit' });
   console.log(Date.now());
 
   const nodeBin = process.argv[0];
