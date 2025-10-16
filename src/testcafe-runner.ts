@@ -336,8 +336,6 @@ function startSimulatorPolling(timeout: second) {
   console.log('Polling for booted iOS simulator...');
   console.log(Date.now());
   const intervalId = setInterval(poll, pollInterval);
-  // poll();
-  console.log(Date.now());
 }
 
 async function runTestCafe(
@@ -349,7 +347,7 @@ async function runTestCafe(
     startSimulatorPolling(timeout);
   }
 
-  await delay(5000);
+  await delay(7500);
   console.log(Date.now());
 
   const nodeBin = process.argv[0];
