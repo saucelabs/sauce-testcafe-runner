@@ -18,6 +18,8 @@ import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
 async function prepareConfiguration(
   nodeBin: string,
   runCfgPath: string,
@@ -291,44 +293,10 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
-/**
- * Polls for a booted iOS simulator, checks if it is locked, and unlocks it if necessary.
- * This runs in the background and stops once a booted simulator is found and handled.
- * @param {second} timeout - The maximum time to poll in seconds.
- */
 function startSimulatorPolling(timeout: second) {
-  const pollInterval = 1500; // Poll every 5 seconds.
+  const pollInterval = 1500; // Poll every 1.5 seconds.
   const endTime = Date.now() + timeout * 1000;
   let foundAndHandled = false;
-
-  // Helper function to launch SpringBoard (return to home screen)
-  const returnToHomeScreen = () => {
-    console.log(
-      'Simulator is locked or not on home screen. Launching SpringBoard...',
-    );
-    const launchProc = spawn('xcrun', [
-      'simctl',
-      'launch',
-      'booted',
-      'com.apple.springboard',
-    ]);
-
-    launchProc.on('error', (err) => {
-      console.error('Failed to run SpringBoard launch command.', err);
-    });
-
-    launchProc.on('close', (launchCode) => {
-      if (launchCode === 0) {
-        console.log(
-          'Successfully launched SpringBoard. Simulator is on home screen. 🏡',
-        );
-      } else {
-        console.error(
-          `Failed to launch SpringBoard (exit code: ${launchCode}).`,
-        );
-      }
-    });
-  };
 
   const poll = () => {
     if (foundAndHandled || Date.now() > endTime) {
@@ -361,65 +329,15 @@ function startSimulatorPolling(timeout: second) {
         console.log(`✅ Found booted simulator: ${bootedLine.trim()}`);
         foundAndHandled = true;
         clearInterval(intervalId);
-
-        // --- START: MODIFIED BLOCK ---
-        // We now use `openurl`. An error (non-zero exit code) indicates a locked screen.
-        const checkLockProc = spawn('xcrun', [
-          'simctl',
-          'openurl',
-          'booted',
-          'https://saucelabs.com',
-        ]);
-
-        checkLockProc.on('error', (err) => {
-          // This error is for the spawn process itself, not the command's exit code.
-          console.error('Failed to run the openurl check.', err);
-        });
-
-        checkLockProc.on('close', (lockCode) => {
-          // A non-zero exit code means the command failed, which we interpret as LOCKED.
-          if (lockCode !== 0) {
-            returnToHomeScreen();
-          } else {
-            // A zero exit code means it succeeded, but this could be a false positive
-            // right after boot. We wait and re-check.
-            console.log(
-              'URL opened successfully. Waiting 1 second and re-checking...',
-            );
-            setTimeout(() => {
-              const reCheckLockProc = spawn('xcrun', [
-                'simctl',
-                'openurl',
-                'booted',
-                'https://saucelabs.com',
-              ]);
-
-              reCheckLockProc.on('close', (secondLockCode) => {
-                if (secondLockCode !== 0) {
-                  // It failed the second time, so it's definitely locked.
-                  returnToHomeScreen();
-                } else {
-                  // Succeeded again, we can be confident it's usable.
-                  console.log(
-                    'Confirmed: Simulator is unlocked and responsive.',
-                  );
-                }
-              });
-
-              reCheckLockProc.on('error', (err) => {
-                console.error('Failed to run the second openurl check.', err);
-              });
-            }, 1000); // 1000 milliseconds = 1 second
-          }
-        });
-        // --- END: MODIFIED BLOCK ---
       }
     });
   };
 
   console.log('Polling for booted iOS simulator...');
+  console.log(Date.now());
   const intervalId = setInterval(poll, pollInterval);
-  poll();
+  // poll();
+  console.log(Date.now());
 }
 
 async function runTestCafe(
@@ -427,17 +345,12 @@ async function runTestCafe(
   projectPath: string,
   timeout: second,
 ) {
-  /**
-   * START: MODIFIED SECTION
-   * Start polling for a booted simulator on macOS.
-   * This runs in the background and does not block the TestCafe process.
-   */
   if (process.platform === 'darwin') {
     startSimulatorPolling(timeout);
   }
-  /**
-   * END: MODIFIED SECTION
-   */
+
+  await delay(5000);
+  console.log(Date.now());
 
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(
