@@ -84,6 +84,8 @@ async function prepareConfiguration(
   // Define node/npm path for execution
   const npmBin = path.join(
     path.dirname(nodeBin),
+    '..',
+    'lib',
     'node_modules',
     'npm',
     'bin',
