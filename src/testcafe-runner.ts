@@ -17,6 +17,7 @@ import { TestCafeConfig, Suite, CompilerOptions, second } from './type';
 import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
+
 import { promisify } from 'util';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -28,6 +29,7 @@ interface SimulatorList {
 interface Runtimes {
   [runtimeIdentifier: string]: SimulatorDevice[];
 }
+
 interface SimulatorDevice {
   udid: string;
   isAvailable: boolean;
@@ -436,7 +438,7 @@ async function runTestCafe(
 
   console.log('System load before delay:');
   spawn('uptime', [], { stdio: 'inherit' });
-  await delay(7000);
+  await delay(5000);
   console.log('System load after delay:');
   spawn('uptime', [], { stdio: 'inherit' });
   console.log(Date.now());
@@ -541,7 +543,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
-  const tcCommandLine = buildCommandLine(
+  const tcCommandLine = await buildCommandLine(
     suite,
     projectPath,
     assetsPath,
