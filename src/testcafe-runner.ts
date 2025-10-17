@@ -19,6 +19,25 @@ import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+const execPromise = promisify(exec);
+
+interface SimulatorList {
+  devices: Runtimes;
+}
+interface Runtimes {
+  [runtimeIdentifier: string]: SimulatorDevice[];
+}
+
+interface SimulatorDevice {
+  udid: string;
+  isAvailable: boolean;
+  name: string;
+  state: 'Shutdown' | 'Booted' | 'Creating';
+  lastBootedAt?: string;
+  dataPath: string;
+  logPath: string;
+  deviceTypeIdentifier: string;
+}
 
 async function prepareConfiguration(
   nodeBin: string,
