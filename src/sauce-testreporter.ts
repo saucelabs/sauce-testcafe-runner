@@ -40,17 +40,22 @@ export function generateJUnitFile(
   testsuites._attributes.timestamp = new Date(
     testsuites._attributes.timestamp,
   ).toISOString();
-  for (let i = 0; i < testsuites.testcase.length; i++) {
-    const testcase = testsuites.testcase[i];
-    if (testcase.failure && testcase.failure._cdata) {
-      testsuites.testcase[i].failure._attributes =
-        testcase.failure._attributes || {};
-      testsuites.testcase[i].failure._attributes.message = utils.escapeXML(
-        testcase.failure._attributes.message || '',
-      );
-      testsuites.testcase[i].failure._attributes.type =
-        testcase.failure._attributes.type || '';
-      testsuites.testcase[i].failure._cdata = testcase.failure._cdata || '';
+  if (testsuites.testcase) {
+    if (!Array.isArray(testsuites.testcase)) {
+      testsuites.testcase = [testsuites.testcase];
+    }
+    for (let i = 0; i < testsuites.testcase.length; i++) {
+      const testcase = testsuites.testcase[i];
+      if (testcase.failure && testcase.failure._cdata) {
+        testsuites.testcase[i].failure._attributes =
+          testcase.failure._attributes || {};
+        testsuites.testcase[i].failure._attributes.message = utils.escapeXML(
+          testcase.failure._attributes.message || '',
+        );
+        testsuites.testcase[i].failure._attributes.type =
+          testcase.failure._attributes.type || '';
+        testsuites.testcase[i].failure._cdata = testcase.failure._cdata || '';
+      }
     }
   }
   testsuites.properties = {

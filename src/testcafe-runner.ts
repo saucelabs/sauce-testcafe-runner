@@ -345,6 +345,30 @@ async function runTestCafe(
 ) {
   if (process.platform === 'darwin') {
     startSimulatorPolling(timeout);
+    const testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
+    if (!testCafeBrowserName) {
+      throw new Error('SAUCE_BROWSER_PATH is not set.');
+    }
+    const parts = testCafeBrowserName.split(':');
+    if (parts.length !== 3 || parts[0].toLowerCase() !== 'ios') {
+      throw new Error(
+        'Invalid browser name format. Expected "ios:Device Name:Runtime Version"',
+      );
+    }
+    const deviceName = parts[1];
+    const runtimeVersion = parts[2]; // e.g., "iOS 14.3"
+    console.log(
+      `Preparing to launch device "${deviceName}" on runtime "${runtimeVersion}".`,
+    );
+
+    const runtimeKey = `com.apple.CoreSimulator.SimRuntime.${runtimeVersion.replace(/[.\s]/g, '-')}`;
+    console.log(`Searching for runtime key: "${runtimeKey}"`);
+    console.log('Executing: "xcrun simctl list devices -j"');
+    const { stdout } = await execPromise('xcrun simctl list devices -j');
+    const simulatorData: SimulatorList = JSON.parse(stdout);
+    if (simulatorData) {
+      console.log('sim data exists');
+    }
   }
 
   console.log('System load before delay:');
