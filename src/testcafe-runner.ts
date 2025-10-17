@@ -401,7 +401,7 @@ async function runTestCafe(
     }
 
     console.log(
-      `Found ${devicesForRuntime.length} devices for runtime "${runtimeVersion}". Searching for "${deviceName}"...`,
+      `Found devices for runtime "${runtimeVersion}". Searching for "${deviceName}"...`,
     );
 
     const targetDevice = devicesForRuntime.find(
