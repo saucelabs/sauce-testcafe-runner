@@ -391,7 +391,8 @@ async function runTestCafe(
     const simulatorData: SimulatorList = JSON.parse(stdout);
     console.log(simulatorData);
     console.log(runtimeKey);
-    const devicesForRuntime = simulatorData.devices[runtimeKey];
+    console.log(deviceName);
+    /*const devicesForRuntime = simulatorData.devices[runtimeKey];
 
     console.log(
       `Found devices for runtime "${runtimeVersion}". Searching for "${deviceName}"...`,
@@ -405,7 +406,7 @@ async function runTestCafe(
     if (!targetDevice) {
       throw new Error(
         `Device "${deviceName}" is not available for runtime "${runtimeVersion}".`,
-      );
+      ); 
     }
 
     console.log(
@@ -428,7 +429,9 @@ async function runTestCafe(
       console.log(
         `"${deviceName}" is already in state: "${targetDevice.state}". No boot action needed.`,
       );
+
     }
+    */
   }
 
   console.log('System load before delay:');
