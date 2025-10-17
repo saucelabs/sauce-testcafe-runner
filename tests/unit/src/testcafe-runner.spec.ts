@@ -20,13 +20,13 @@ describe('.buildCommandLine', function () {
     process.env = OLD_ENV;
   });
 
-  it('most basic config', function () {
+  it('most basic config', async function () {
     const suite: Suite = {
       browserName: 'firefox',
       src: ['**/*.test.js'],
       name: 'unit test',
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -40,7 +40,7 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('most basic config with typescript options', function () {
+  it('most basic config with typescript options', async function () {
     const suite: Suite = {
       name: 'unit test',
       browserName: 'firefox',
@@ -52,7 +52,7 @@ describe('.buildCommandLine', function () {
         },
       },
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -68,7 +68,7 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('basic with filters', function () {
+  it('basic with filters', async function () {
     const suite: Suite = {
       name: 'unit test',
       browserName: 'firefox',
@@ -88,7 +88,7 @@ describe('.buildCommandLine', function () {
         },
       },
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -114,7 +114,7 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('basic with screenshots', function () {
+  it('basic with screenshots', async function () {
     const suite: Suite = {
       name: 'unit test',
       browserName: 'firefox',
@@ -124,7 +124,7 @@ describe('.buildCommandLine', function () {
         takeOnFails: true,
       },
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -140,7 +140,7 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('basic with quarantineMode', function () {
+  it('basic with quarantineMode', async function () {
     const suite: Suite = {
       name: 'unit test',
       browserName: 'firefox',
@@ -150,7 +150,7 @@ describe('.buildCommandLine', function () {
         successThreshold: 3,
       },
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -166,7 +166,7 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('basic with different flags', function () {
+  it('basic with different flags', async function () {
     const suite: Suite = {
       name: 'unit test',
       browserName: 'firefox',
@@ -186,7 +186,7 @@ describe('.buildCommandLine', function () {
       disablePageCaching: true,
       disableScreenshots: true,
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -223,14 +223,14 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('basic with client scripts', function () {
+  it('basic with client scripts', async function () {
     const suite: Suite = {
       name: 'unit test',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       clientScripts: ['script.js'],
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -246,14 +246,14 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('basic with tsConfigPath', function () {
+  it('basic with tsConfigPath', async function () {
     const suite: Suite = {
       name: 'unit tset',
       browserName: 'firefox',
       src: ['**/*.test.js'],
       tsConfigPath: 'tsconfig.json',
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -269,13 +269,13 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('basic with no-array src', function () {
+  it('basic with no-array src', async function () {
     const suite: Suite = {
       name: 'unit test',
       browserName: 'firefox',
       src: '**/*.test.js',
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -289,14 +289,14 @@ describe('.buildCommandLine', function () {
     ]);
   });
 
-  it('basic with browserArgs', function () {
+  it('basic with browserArgs', async function () {
     const suite: Suite = {
       name: 'unit test',
       browserName: 'firefox',
       src: '**/*.test.js',
       browserArgs: ['--chrome-fake-param'],
     };
-    const cli = buildCommandLine(
+    const cli = await buildCommandLine(
       suite,
       '/fake/project/path',
       '/fake/assets/path',
@@ -317,7 +317,7 @@ describe('.buildCommandLine', function () {
       process.env = OLD_ENV;
     });
 
-    it('should use http_proxy', function () {
+    it('should use http_proxy', async function () {
       process.env.SAUCE_VIDEO_RECORD = 'truthy';
       process.env.SAUCE_BROWSER_PATH = 'D:\\chrome99\\chrome.exe';
       process.env.HTTP_PROXY = 'http://localhost:8080';
@@ -326,7 +326,7 @@ describe('.buildCommandLine', function () {
         browserName: 'firefox',
         src: '**/*.test.js',
       };
-      const cli = buildCommandLine(
+      const cli = await buildCommandLine(
         suite,
         '/fake/project/path',
         '/fake/assets/path',
