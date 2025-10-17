@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { URL } from 'node:url';
@@ -18,7 +18,120 @@ import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
+import { promisify } from 'util';
+
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+const execPromise = promisify(exec);
+
+interface SimulatorDevice {
+  udid: string;
+  isAvailable: boolean;
+  name: string;
+  state: 'Shutdown' | 'Booted' | 'Creating';
+  lastBootedAt?: string;
+  dataPath: string;
+  logPath: string;
+  deviceTypeIdentifier: string;
+}
+
+interface Runtimes {
+  [runtimeIdentifier: string]: SimulatorDevice[];
+}
+
+interface SimulatorList {
+  devices: Runtimes;
+}
+
+async function launchIOSSimulator(browserName: string): Promise<void> {
+  // 1. Parse and Validate the Input String
+  console.log(`Parsing input: "${browserName}"`);
+  const parts = browserName.split(':');
+  if (parts.length !== 3 || parts[0].toLowerCase() !== 'ios') {
+    throw new Error(
+      'Invalid browser name format. Expected "ios:Device Name:Runtime Version"',
+    );
+  }
+
+  const deviceName = parts[1];
+  const runtimeVersion = parts[2]; // e.g., "iOS 14.3"
+
+  console.log(
+    `Preparing to launch device "${deviceName}" on runtime "${runtimeVersion}".`,
+  );
+
+  // 2. Format the Runtime Version into the Key Used in the JSON
+  // Example: "iOS 14.3" becomes "com.apple.CoreSimulator.SimRuntime.iOS-14-3"
+  const runtimeKey = `com.apple.CoreSimulator.SimRuntime.${runtimeVersion.replace(/[.\s]/g, '-')}`;
+  console.log(`Searching for runtime key: "${runtimeKey}"`);
+
+  try {
+    // 3. Execute Shell Command to Get Simulator List as JSON
+    console.log('Executing: "xcrun simctl list devices -j"');
+    const { stdout, stderr } = await execPromise(
+      'xcrun simctl list devices -j',
+    );
+
+    if (stderr) {
+      throw new Error(`Error listing devices: ${stderr}`);
+    }
+
+    const simulatorData: SimulatorList = JSON.parse(stdout);
+
+    // 4. Find the Target Device
+    const devicesForRuntime = simulatorData.devices[runtimeKey];
+    if (!devicesForRuntime || devicesForRuntime.length === 0) {
+      console.error(
+        'Available runtimes:',
+        Object.keys(simulatorData.devices).join('\n'),
+      );
+      throw new Error(
+        `Runtime "${runtimeVersion}" (key: ${runtimeKey}) not found or has no devices.`,
+      );
+    }
+
+    console.log(
+      `Found ${devicesForRuntime.length} devices for runtime "${runtimeVersion}". Searching for "${deviceName}"...`,
+    );
+
+    const targetDevice = devicesForRuntime.find(
+      (device) => device.name === deviceName && device.isAvailable,
+    );
+
+    // 5. Check if a matching device was found
+    if (!targetDevice) {
+      throw new Error(
+        `Device "${deviceName}" is not available for runtime "${runtimeVersion}".`,
+      );
+    }
+
+    console.log(
+      `Found available device: ${targetDevice.name} (State: ${targetDevice.state}, UDID: ${targetDevice.udid})`,
+    );
+
+    // 6. Boot the Simulator
+    // We check the device's state to avoid trying to boot an already running simulator.
+    if (targetDevice.state === 'Shutdown') {
+      console.log(
+        `Device is shutdown. Booting simulator with UDID: ${targetDevice.udid}`,
+      );
+      await execPromise(
+        `open -a Simulator --args -CurrentDeviceUDID ${targetDevice.udid}`,
+      );
+      await delay(3000);
+      await execPromise(`xcrun simctl boot ${targetDevice.udid}`);
+      await delay(5000);
+      console.log(`Successfully initiated boot for "${deviceName}".`);
+    } else {
+      console.log(
+        `"${deviceName}" is already in state: "${targetDevice.state}". No boot action needed.`,
+      );
+    }
+  } catch (error) {
+    console.error('An error occurred during the process.');
+    // Re-throw the error to allow the caller to handle it.
+    throw error;
+  }
+}
 
 async function prepareConfiguration(
   nodeBin: string,
@@ -102,7 +215,7 @@ export function buildCompilerOptions(compilerOptions: CompilerOptions) {
 }
 
 // Build the command line string to invoke TestCafe with all required parameters.
-export function buildCommandLine(
+export async function buildCommandLine(
   suite: Suite | undefined,
   projectPath: string,
   assetsPath: string,
@@ -117,6 +230,13 @@ export function buildCommandLine(
   let testCafeBrowserName = browserName;
   if (process.env.SAUCE_BROWSER_PATH) {
     testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
+    if (
+      process.platform === 'darwin' &&
+      testCafeBrowserName.startsWith('ios:')
+    ) {
+      await launchIOSSimulator(testCafeBrowserName);
+      console.log('Simulator launch process completed successfully.');
+    }
   }
   if (suite.headless) {
     testCafeBrowserName = `${testCafeBrowserName}:headless`;
@@ -349,7 +469,7 @@ async function runTestCafe(
 
   console.log('System load before delay:');
   spawn('uptime', [], { stdio: 'inherit' });
-  await delay(15000);
+  await delay(5000);
   console.log('System load after delay:');
   spawn('uptime', [], { stdio: 'inherit' });
   console.log(Date.now());
@@ -454,7 +574,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
-  const tcCommandLine = buildCommandLine(
+  const tcCommandLine = await buildCommandLine(
     suite,
     projectPath,
     assetsPath,
