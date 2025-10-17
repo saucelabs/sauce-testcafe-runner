@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { URL } from 'node:url';
@@ -17,6 +17,8 @@ import { TestCafeConfig, Suite, CompilerOptions, second } from './type';
 import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
+
+import { promisify } from 'util';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 const execPromise = promisify(exec);
