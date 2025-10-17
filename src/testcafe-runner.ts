@@ -390,7 +390,7 @@ async function runTestCafe(
     const { stdout } = await execPromise('xcrun simctl list devices -j');
     const simulatorData: SimulatorList = JSON.parse(stdout);
     const devicesForRuntime = simulatorData.devices[runtimeKey];
-    if (!devicesForRuntime || devicesForRuntime.length === 0) {
+    if (!devicesForRuntime) {
       console.error(
         'Available runtimes:',
         Object.keys(simulatorData.devices).join('\n'),
