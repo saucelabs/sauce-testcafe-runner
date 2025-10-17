@@ -389,6 +389,8 @@ async function runTestCafe(
     console.log('Executing: "xcrun simctl list devices -j"');
     const { stdout } = await execPromise('xcrun simctl list devices -j');
     const simulatorData: SimulatorList = JSON.parse(stdout);
+    console.log(simulatorData);
+    console.log(runtimeKey);
     const devicesForRuntime = simulatorData.devices[runtimeKey];
 
     console.log(
