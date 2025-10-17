@@ -390,15 +390,6 @@ async function runTestCafe(
     const { stdout } = await execPromise('xcrun simctl list devices -j');
     const simulatorData: SimulatorList = JSON.parse(stdout);
     const devicesForRuntime = simulatorData.devices[runtimeKey];
-    if (!devicesForRuntime) {
-      console.error(
-        'Available runtimes:',
-        Object.keys(simulatorData.devices).join('\n'),
-      );
-      throw new Error(
-        `Runtime "${runtimeVersion}" (key: ${runtimeKey}) not found or has no devices.`,
-      );
-    }
 
     console.log(
       `Found devices for runtime "${runtimeVersion}". Searching for "${deviceName}"...`,
