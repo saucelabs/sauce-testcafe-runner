@@ -18,6 +18,8 @@ import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
 async function prepareConfiguration(
   nodeBin: string,
   runCfgPath: string,
@@ -363,6 +365,13 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     runCfgPath,
     suiteName,
   );
+
+  console.log('System load before delay:');
+  spawn('uptime', [], { stdio: 'inherit' });
+  await delay(15000);
+  console.log('System load after delay:');
+  spawn('uptime', [], { stdio: 'inherit' });
+  console.log(Date.now());
 
   if (!(await preExec.run({ preExec: suite.preExec }, preExecTimeout))) {
     return false;
