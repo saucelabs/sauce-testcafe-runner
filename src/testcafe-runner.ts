@@ -354,6 +354,82 @@ async function runTestCafe(
     });
   });
 
+  try {
+    return Promise.race([timeoutPromise, testcafePromise]);
+  } catch (e) {
+    console.error(`Failed to run TestCafe: ${e}`);
+  }
+
+  return false;
+}
+
+function zipArtifacts(runCfg: TestCafeConfig) {
+  if (!runCfg.artifacts || !runCfg.artifacts.retain) {
+    return;
+  }
+  const archivesMap = runCfg.artifacts.retain;
+  Object.keys(archivesMap).forEach((source) => {
+    const dest = path.join(runCfg.assetsPath, archivesMap[source]);
+    try {
+      zip(path.dirname(runCfg.path), source, dest);
+    } catch (err) {
+      console.error(
+        `Zip file creation failed for destination: "${dest}", source: "${source}". Error: ${err}.`,
+      );
+    }
+  });
+}
+
+async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
+  const preExecTimeout = 300;
+
+  const { runCfg, projectPath, assetsPath, suite } = await prepareConfiguration(
+    nodeBin,
+    runCfgPath,
+    suiteName,
+  );
+
+  /*
+  console.log('System load before delay:');
+  spawn('uptime', [], { stdio: 'inherit' });
+  await delay(15000);
+  console.log('System load after delay:');
+  spawn('uptime', [], { stdio: 'inherit' });
+  console.log(Date.now());
+  */
+
+  if (!(await preExec.run({ preExec: suite.preExec }, preExecTimeout))) {
+    return false;
+  }
+
+  process.env.SAUCE_SUITE_NAME = suiteName;
+  process.env.SAUCE_ARTIFACTS_DIRECTORY = assetsPath;
+
+  // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
+  // configuration, which will be loaded during TestCafe setup step.
+  const configFile = path.join(projectPath, 'sauce-testcafe-config.cjs');
+  fs.copyFileSync(
+    path.join(__dirname, 'sauce-testcafe-config.cjs'),
+    configFile,
+  );
+
+  // TestCafe used a reverse proxy for browser automation before.
+  // With TestCafe 3.0.0 and later, native automation mode was enabled by default,
+  // see https://testcafe.io/documentation/404237/guides/intermediate-guides/native-automation-mode,
+  // introducing CDP support for Chrome and Edge.
+  // This means that HTTP requests can't be routed through the reverse proxy anymore.
+  // Now, we need to set up an OS-level proxy connection.
+  if (
+    isChromiumBased(suite.browserName) &&
+    !isCDPDisabled(projectPath) &&
+    isProxyAvailable()
+  ) {
+    setupProxy();
+  }
+
+  // saucectl suite.timeout is in nanoseconds, convert to seconds
+  const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
+
   if (process.platform === 'darwin') {
     //startSimulatorPolling(timeout);
     const testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
@@ -412,88 +488,17 @@ async function runTestCafe(
       );
       await delay(3000);
       await execPromise(`xcrun simctl boot ${targetDevice.udid}`);
-      await delay(15000);
+      await delay(25000);
       console.log(`Successfully initiated boot for "${deviceName}".`);
+      process.env.DEBUG = 'testcafe:browser-provider-ios';
     } else {
       console.log(
         `"${deviceName}" is already in state: "${targetDevice.state}". No boot action needed.`,
       );
     }
   }
-
-  try {
-    return Promise.race([timeoutPromise, testcafePromise]);
-  } catch (e) {
-    console.error(`Failed to run TestCafe: ${e}`);
-  }
-
-  return false;
-}
-
-function zipArtifacts(runCfg: TestCafeConfig) {
-  if (!runCfg.artifacts || !runCfg.artifacts.retain) {
-    return;
-  }
-  const archivesMap = runCfg.artifacts.retain;
-  Object.keys(archivesMap).forEach((source) => {
-    const dest = path.join(runCfg.assetsPath, archivesMap[source]);
-    try {
-      zip(path.dirname(runCfg.path), source, dest);
-    } catch (err) {
-      console.error(
-        `Zip file creation failed for destination: "${dest}", source: "${source}". Error: ${err}.`,
-      );
-    }
-  });
-}
-
-async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
-  const preExecTimeout = 300;
-
-  const { runCfg, projectPath, assetsPath, suite } = await prepareConfiguration(
-    nodeBin,
-    runCfgPath,
-    suiteName,
-  );
-
-  console.log('System load before delay:');
+  console.log('System load before running TestCafe:');
   spawn('uptime', [], { stdio: 'inherit' });
-  await delay(15000);
-  console.log('System load after delay:');
-  spawn('uptime', [], { stdio: 'inherit' });
-  console.log(Date.now());
-
-  if (!(await preExec.run({ preExec: suite.preExec }, preExecTimeout))) {
-    return false;
-  }
-
-  process.env.SAUCE_SUITE_NAME = suiteName;
-  process.env.SAUCE_ARTIFACTS_DIRECTORY = assetsPath;
-
-  // Copy our runner's TestCafe configuration to __project__/ to preserve the customer's
-  // configuration, which will be loaded during TestCafe setup step.
-  const configFile = path.join(projectPath, 'sauce-testcafe-config.cjs');
-  fs.copyFileSync(
-    path.join(__dirname, 'sauce-testcafe-config.cjs'),
-    configFile,
-  );
-
-  // TestCafe used a reverse proxy for browser automation before.
-  // With TestCafe 3.0.0 and later, native automation mode was enabled by default,
-  // see https://testcafe.io/documentation/404237/guides/intermediate-guides/native-automation-mode,
-  // introducing CDP support for Chrome and Edge.
-  // This means that HTTP requests can't be routed through the reverse proxy anymore.
-  // Now, we need to set up an OS-level proxy connection.
-  if (
-    isChromiumBased(suite.browserName) &&
-    !isCDPDisabled(projectPath) &&
-    isProxyAvailable()
-  ) {
-    setupProxy();
-  }
-
-  // saucectl suite.timeout is in nanoseconds, convert to seconds
-  const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
   const tcCommandLine = buildCommandLine(
     suite,
