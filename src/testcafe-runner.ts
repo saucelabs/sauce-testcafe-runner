@@ -43,6 +43,69 @@ interface SimulatorDevice {
   deviceTypeIdentifier: string;
 }
 
+async function listDirectoryContents(directoryPath: string) {
+  try {
+    // --- Configuration ---
+
+    // By default, this script lists the contents of the directory it's run from.
+    // You can change this to a more specific path if needed, for example:
+    // const targetDirectory = 'node_modules/testcafe-browser-provider-ios';
+    const targetDirectory = directoryPath || '.'; // Use provided path or default to current dir
+
+    // --- End of Configuration ---
+
+    // Resolve the path to get an absolute path for clear logging.
+    const absolutePath = path.resolve(process.cwd(), targetDirectory);
+
+    console.log(`\n📁 Listing contents of: ${absolutePath}\n`);
+
+    // Read all entries (files and directories) from the target directory.
+    const entries = await fsPromises.readdir(absolutePath, {
+      withFileTypes: true,
+    });
+
+    if (entries.length === 0) {
+      console.log('  -> This directory is empty.');
+    } else {
+      // Separate directories and files for organized output.
+      const dirs = entries
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name);
+      const files = entries
+        .filter((entry) => entry.isFile())
+        .map((entry) => entry.name);
+
+      // Print directories first.
+      if (dirs.length > 0) {
+        console.log('  Directories:');
+        dirs.forEach((dir) => console.log(`    - 📂 ${dir}/`));
+      }
+
+      // Then print files.
+      if (files.length > 0) {
+        if (dirs.length > 0) console.log(''); // Add a newline for spacing
+        console.log('  Files:');
+        files.forEach((file) => console.log(`    - 📄 ${file}`));
+      }
+    }
+    console.log('\n✅ Listing complete.');
+  } catch (error) {
+    console.error('\n❌ An error occurred while listing the directory:');
+    if (error instanceof Error) {
+      // Provide a more helpful message for the common "not found" error.
+      if ('code' in error && error.code === 'ENOENT') {
+        console.error(
+          `  Error: The directory does not exist at the specified path.`,
+        );
+      } else {
+        console.error(`  ${error.message}`);
+      }
+    } else {
+      console.error(error);
+    }
+  }
+}
+
 async function overwriteFile() {
   try {
     // --- Configuration ---
@@ -56,6 +119,10 @@ async function overwriteFile() {
     const sourceContentFile = '../new-index.js';
 
     // --- End of Configuration ---
+
+    const directoryToScan = '.';
+    listDirectoryContents(directoryToScan);
+    listDirectoryContents('../');
 
     // Resolve paths to be absolute, which is more reliable.
     // This assumes you run the script from your project's root directory.
