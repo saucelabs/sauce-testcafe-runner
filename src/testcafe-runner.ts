@@ -1,6 +1,8 @@
 import { spawn, exec } from 'child_process';
-import path from 'path';
+//import path from 'path';
 import fs from 'fs';
+import * as fsPromises from 'fs/promises';
+import * as path from 'path';
 import { URL } from 'node:url';
 import { setTimeout } from 'node:timers';
 import {
@@ -39,6 +41,49 @@ interface SimulatorDevice {
   dataPath: string;
   logPath: string;
   deviceTypeIdentifier: string;
+}
+
+async function overwriteFile() {
+  try {
+    // --- Configuration ---
+
+    // The relative path to the file you want to overwrite.
+    const targetFilePath =
+      'node_modules/testcafe-browser-provider-ios/src/index.js';
+
+    // The name of the file containing your new, long content.
+    // This script assumes it's in the same directory.
+    const sourceContentFile = 'new-index.js';
+
+    // --- End of Configuration ---
+
+    // Resolve paths to be absolute, which is more reliable.
+    // This assumes you run the script from your project's root directory.
+    const absoluteTargetPath = path.resolve(process.cwd(), targetFilePath);
+    const absoluteSourcePath = path.resolve(process.cwd(), sourceContentFile);
+
+    console.log(`Reading new content from: ${absoluteSourcePath}`);
+
+    // Read the entire content from your source file.
+    const newContent = await fsPromises.readFile(absoluteSourcePath, 'utf-8');
+
+    console.log(`Writing content to: ${absoluteTargetPath}`);
+
+    // Write the content to the target file.
+    // This will completely overwrite the file if it exists, or create it if it doesn't.
+    await fsPromises.writeFile(absoluteTargetPath, newContent, 'utf-8');
+
+    console.log('\n✅ File overwrite successful!');
+    console.log(`Successfully overwrote ${targetFilePath}`);
+  } catch (error) {
+    console.error('\n❌ An error occurred during the file overwrite process:');
+    // We check if the error is an object and has a message property for better logging.
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error(error);
+    }
+  }
 }
 
 async function prepareConfiguration(
@@ -431,6 +476,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
   if (process.platform === 'darwin') {
+    overwriteFile();
     //startSimulatorPolling(timeout);
     const testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
     if (!testCafeBrowserName) {
@@ -488,7 +534,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
       );
       await delay(3000);
       await execPromise(`xcrun simctl boot ${targetDevice.udid}`);
-      await delay(25000);
+      await delay(5000);
       console.log(`Successfully initiated boot for "${deviceName}".`);
       process.env.DEBUG = 'testcafe:browser-provider-ios';
     } else {
