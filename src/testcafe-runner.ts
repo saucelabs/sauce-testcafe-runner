@@ -116,17 +116,17 @@ async function overwriteFile() {
 
     // The name of the file containing your new, long content.
     // This script assumes it's in the same directory.
-    const sourceContentFile = '../lib/new-index.js';
+    const sourceContentFile = '/Users/chef/bundle/new-index.js';
 
     // --- End of Configuration ---
 
     console.log('Running File');
     console.log(__filename);
     //const directoryToScan = '.';
-    console.log('One above DIR Files');
-    listDirectoryContents('../');
-    console.log('One above lib');
-    listDirectoryContents('../lib/');
+    //console.log('One above DIR Files');
+    //listDirectoryContents('../');
+    console.log('One above lib node_modules');
+    listDirectoryContents('../lib/node_modules/');
 
     // Resolve paths to be absolute, which is more reliable.
     // This assumes you run the script from your project's root directory.
