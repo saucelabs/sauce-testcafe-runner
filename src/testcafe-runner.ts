@@ -112,23 +112,21 @@ async function overwriteFile() {
 
     // The relative path to the file you want to overwrite.
     const targetFilePath =
-      '../node_modules/testcafe-browser-provider-ios/src/index.js';
+      '../lib/node_modules/testcafe-browser-provider-ios/src/index.js';
 
     // The name of the file containing your new, long content.
     // This script assumes it's in the same directory.
-    const sourceContentFile = '../new-index.js';
+    const sourceContentFile = '../lib/new-index.js';
 
     // --- End of Configuration ---
 
     console.log('Running File');
     console.log(__filename);
-    const directoryToScan = '.';
-    console.log('Current DIR Files');
-    listDirectoryContents(directoryToScan);
+    //const directoryToScan = '.';
     console.log('One above DIR Files');
     listDirectoryContents('../');
-    console.log('One above node_modules');
-    listDirectoryContents('../node_modules/');
+    console.log('One above lib');
+    listDirectoryContents('../lib/');
 
     // Resolve paths to be absolute, which is more reliable.
     // This assumes you run the script from your project's root directory.
