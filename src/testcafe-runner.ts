@@ -49,11 +49,11 @@ async function overwriteFile() {
 
     // The relative path to the file you want to overwrite.
     const targetFilePath =
-      'node_modules/testcafe-browser-provider-ios/src/index.js';
+      '../node_modules/testcafe-browser-provider-ios/src/index.js';
 
     // The name of the file containing your new, long content.
     // This script assumes it's in the same directory.
-    const sourceContentFile = 'new-index.js';
+    const sourceContentFile = '../new-index.js';
 
     // --- End of Configuration ---
 
