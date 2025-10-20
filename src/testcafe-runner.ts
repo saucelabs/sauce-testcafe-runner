@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { URL } from 'node:url';
@@ -18,7 +18,28 @@ import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
+import { promisify } from 'util';
+
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+const execPromise = promisify(exec);
+
+interface SimulatorList {
+  devices: Runtimes;
+}
+interface Runtimes {
+  [runtimeIdentifier: string]: SimulatorDevice[];
+}
+
+interface SimulatorDevice {
+  udid: string;
+  isAvailable: boolean;
+  name: string;
+  state: 'Shutdown' | 'Booted' | 'Creating';
+  lastBootedAt?: string;
+  dataPath: string;
+  logPath: string;
+  deviceTypeIdentifier: string;
+}
 
 async function prepareConfiguration(
   nodeBin: string,
@@ -332,6 +353,72 @@ async function runTestCafe(
       resolve(code === 0);
     });
   });
+
+  if (process.platform === 'darwin') {
+    //startSimulatorPolling(timeout);
+    const testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
+    if (!testCafeBrowserName) {
+      throw new Error('SAUCE_BROWSER_PATH is not set.');
+    }
+    const parts = testCafeBrowserName.split(':');
+    if (parts.length !== 3 || parts[0].toLowerCase() !== 'ios') {
+      throw new Error(
+        'Invalid browser name format. Expected "ios:Device Name:Runtime Version"',
+      );
+    }
+    const deviceName = parts[1];
+    const runtimeVersion = parts[2]; // e.g., "iOS 14.3"
+    console.log(
+      `Preparing to launch device "${deviceName}" on runtime "${runtimeVersion}".`,
+    );
+
+    const runtimeKey = `com.apple.CoreSimulator.SimRuntime.${runtimeVersion.replace(/[.\s]/g, '-')}`;
+    console.log(`Searching for runtime key: "${runtimeKey}"`);
+    console.log('Executing: "xcrun simctl list devices -j"');
+    const { stdout } = await execPromise('xcrun simctl list devices -j');
+    const simulatorData: SimulatorList = JSON.parse(stdout);
+    console.log(simulatorData);
+    console.log(runtimeKey);
+    console.log(deviceName);
+    const devicesForRuntime = simulatorData.devices[runtimeKey];
+
+    console.log(
+      `Found devices for runtime "${runtimeVersion}". Searching for "${deviceName}"...`,
+    );
+
+    const targetDevice = devicesForRuntime.find(
+      (device) => device.name === deviceName && device.isAvailable,
+    );
+
+    // 5. Check if a matching device was found
+    if (!targetDevice) {
+      throw new Error(
+        `Device "${deviceName}" is not available for runtime "${runtimeVersion}".`,
+      );
+    }
+
+    console.log(
+      `Found available device: ${targetDevice.name} (State: ${targetDevice.state}, UDID: ${targetDevice.udid})`,
+    );
+
+    // 6. Boot the Simulator
+    // We check the device's state to avoid trying to boot an already running simulator.
+    if (targetDevice.state === 'Shutdown') {
+      console.log(
+        `Device is shutdown. Booting simulator with UDID: ${targetDevice.udid}`,
+      );
+      await execPromise(
+        `open -a Simulator --args -CurrentDeviceUDID ${targetDevice.udid}`,
+      );
+      await delay(3000);
+      await execPromise(`xcrun simctl boot ${targetDevice.udid}`);
+      console.log(`Successfully initiated boot for "${deviceName}".`);
+    } else {
+      console.log(
+        `"${deviceName}" is already in state: "${targetDevice.state}". No boot action needed.`,
+      );
+    }
+  }
 
   try {
     return Promise.race([timeoutPromise, testcafePromise]);
