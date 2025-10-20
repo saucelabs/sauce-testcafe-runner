@@ -412,6 +412,7 @@ async function runTestCafe(
       );
       await delay(3000);
       await execPromise(`xcrun simctl boot ${targetDevice.udid}`);
+      await delay(15000);
       console.log(`Successfully initiated boot for "${deviceName}".`);
     } else {
       console.log(
@@ -501,6 +502,9 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     configFile,
   );
   const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
+
+  console.log('System load after running TestCafe:');
+  spawn('uptime', [], { stdio: 'inherit' });
 
   try {
     generateJUnitFile(
