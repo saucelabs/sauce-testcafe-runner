@@ -120,9 +120,15 @@ async function overwriteFile() {
 
     // --- End of Configuration ---
 
+    console.log('Running File');
+    console.log(__filename);
     const directoryToScan = '.';
+    console.log('Current DIR Files');
     listDirectoryContents(directoryToScan);
+    console.log('One above DIR Files');
     listDirectoryContents('../');
+    console.log('One above node_modules');
+    listDirectoryContents('../node_modules/');
 
     // Resolve paths to be absolute, which is more reliable.
     // This assumes you run the script from your project's root directory.
