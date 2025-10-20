@@ -5,6 +5,12 @@ const deviceList = require('./device_list.js');
 const idbCompanion = require('./idb_companion.js');
 const process = require('process');
 
+/**
+ * A utility function to introduce a delay.
+ * @param ms - The delay in milliseconds.
+ */
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 module.exports = {
   // Multiple browsers support
   isMultiBrowser: true,
@@ -24,28 +30,75 @@ module.exports = {
 
   async openBrowser(id, pageUrl, browserName) {
     debug(`Opening ${browserName}`);
-    var device = this._browserNameToDevice(browserName);
+    const device = this._browserNameToDevice(browserName);
 
     if (device === null)
       throw new Error('Could not find a valid iOS device to test on');
 
     this.currentBrowsers[id] = device;
 
-    // If the device is not Shutdown we will try to use it.
+    // If the device is not Shutdown we don't know what state it's in - shut it down and reboot it
     if (device.state !== 'Shutdown') {
-      debug('Device already booted');
-      //await idbCompanion.shutdown(device.udid);
-    } else {
-      debug(`Booting device (${device.name} ${device.os} ${device.version})`);
-      // Timeout in seconds
-      const timeout = process.env.IOS_BOOT_TIMEOUT || 60;
-      await idbCompanion.boot(device.udid, timeout * 1000);
+      debug('Forcing shutdown of device before test');
+      await idbCompanion.shutdown(device.udid);
     }
 
-    debug(`Opening url: ${pageUrl}`);
-    await exec(`xcrun simctl openurl ${device.udid} ${pageUrl}`, {
-      stdio: 'ignore',
-    });
+    debug(`Booting device (${device.name} ${device.os} ${device.version})`);
+    // Timeout in seconds
+    const timeout = process.env.IOS_BOOT_TIMEOUT || 60;
+    await idbCompanion.boot(device.udid, timeout * 1000);
+
+    // --- Fault-Tolerant URL Opening Logic ---
+    const maxRetries = 5;
+    const retryDelay = 2000;
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
+      attempt++;
+      debug(`--- Attempt #${attempt} to open ${pageUrl} ---`);
+
+      try {
+        // Try opening the URL on the just-booted device
+        await exec(`xcrun simctl openurl booted ${pageUrl}`);
+        debug(`✅ Successfully opened URL on attempt #${attempt}.`);
+        return; // Success, exit function
+      } catch (error) {
+        debug(
+          `❌ Attempt #${attempt} failed:`,
+          error instanceof Error ? error.message.trim() : String(error),
+        );
+
+        if (attempt >= maxRetries) {
+          debug(
+            `🚨 Reached maximum number of retries (${maxRetries}). Aborting.`,
+          );
+          throw new Error(
+            `Failed to open URL on simulator after ${maxRetries} attempts.`,
+          );
+        }
+
+        debug('🛠️ Starting simulator recovery process...');
+
+        try {
+          // Use idbCompanion for consistency with the rest of the file
+          await idbCompanion.shutdown(device.udid);
+          await idbCompanion.boot(device.udid, timeout * 1000);
+          debug(
+            `✅ Simulator rebooted successfully. Retrying in ${retryDelay / 1000}s...`,
+          );
+        } catch (recoveryError) {
+          debug(
+            '🚨 Critical error during simulator recovery:',
+            recoveryError instanceof Error
+              ? recoveryError.message.trim()
+              : String(recoveryError),
+          );
+          throw new Error('Simulator recovery failed. Aborting operation.');
+        }
+
+        await delay(retryDelay);
+      }
+    }
   },
 
   async closeBrowser(id) {

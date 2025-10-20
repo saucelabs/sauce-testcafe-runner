@@ -1,4 +1,5 @@
-import { spawn, exec } from 'child_process';
+//import { spawn, exec } from 'child_process';
+import { spawn } from 'child_process';
 //import path from 'path';
 import fs from 'fs';
 import * as fsPromises from 'fs/promises';
@@ -20,6 +21,7 @@ import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
+/*
 import { promisify } from 'util';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -28,6 +30,7 @@ const execPromise = promisify(exec);
 interface SimulatorList {
   devices: Runtimes;
 }
+
 interface Runtimes {
   [runtimeIdentifier: string]: SimulatorDevice[];
 }
@@ -104,7 +107,7 @@ async function listDirectoryContents(directoryPath: string) {
       console.error(error);
     }
   }
-}
+}*/
 
 async function overwriteFile() {
   try {
@@ -126,10 +129,10 @@ async function overwriteFile() {
     //console.log('One above DIR Files');
     //listDirectoryContents('../');
     //console.log('One above lib node_modules');
-    listDirectoryContents('/Users/chef/bundle/src/');
-    listDirectoryContents(
-      '/Users/chef/bundle/node_modules/testcafe-browser-provider-ios/src/',
-    );
+    //listDirectoryContents('/Users/chef/bundle/src/');
+    //listDirectoryContents(
+    //  '/Users/chef/bundle/node_modules/testcafe-browser-provider-ios/src/',
+    //);
 
     // Resolve paths to be absolute, which is more reliable.
     // This assumes you run the script from your project's root directory.
@@ -549,6 +552,9 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
+  overwriteFile();
+
+  /* Not needed if the index.js works
   if (process.platform === 'darwin') {
     overwriteFile();
     //startSimulatorPolling(timeout);
@@ -609,14 +615,15 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
       await delay(3000);
       await execPromise(`xcrun simctl boot ${targetDevice.udid}`);
       await delay(5000);
+      await execPromise(`xcrun simctl openurl booted https://saucelabs.com`);
       console.log(`Successfully initiated boot for "${deviceName}".`);
       process.env.DEBUG = 'testcafe:browser-provider-ios';
     } else {
       console.log(
         `"${deviceName}" is already in state: "${targetDevice.state}". No boot action needed.`,
       );
-    }
-  }
+    } 
+  } */
   console.log('System load before running TestCafe:');
   spawn('uptime', [], { stdio: 'inherit' });
 
