@@ -48,51 +48,32 @@ module.exports = {
     const timeout = process.env.IOS_BOOT_TIMEOUT || 60;
     await idbCompanion.boot(device.udid, timeout * 1000);
 
-    // --- Fault-Tolerant URL Opening Logic ---
     const maxRetries = 5;
     const retryDelay = 2000;
     let attempt = 0;
 
     while (attempt < maxRetries) {
       attempt++;
-      debug(`--- Attempt #${attempt} to open ${pageUrl} ---`);
 
       try {
-        // Try opening the URL on the just-booted device
-        await exec(`xcrun simctl openurl booted ${pageUrl}`);
-        debug(`✅ Successfully opened URL on attempt #${attempt}.`);
-        return; // Success, exit function
+        // Try opening the URL on the device by udid
+        await exec(`xcrun simctl openurl ${device.udid} ${pageUrl}`);
+        return; // Success, exit function.
       } catch (error) {
-        debug(
-          `❌ Attempt #${attempt} failed:`,
-          error instanceof Error ? error.message.trim() : String(error),
-        );
-
+        debug(`Error opening URL: ${error}`);
         if (attempt >= maxRetries) {
-          debug(
-            `🚨 Reached maximum number of retries (${maxRetries}). Aborting.`,
-          );
           throw new Error(
             `Failed to open URL on simulator after ${maxRetries} attempts.`,
           );
         }
 
-        debug('🛠️ Starting simulator recovery process...');
-
+        // Start recovery process
         try {
           // Use idbCompanion for consistency with the rest of the file
           await idbCompanion.shutdown(device.udid);
           await idbCompanion.boot(device.udid, timeout * 1000);
-          debug(
-            `✅ Simulator rebooted successfully. Retrying in ${retryDelay / 1000}s...`,
-          );
         } catch (recoveryError) {
-          debug(
-            '🚨 Critical error during simulator recovery:',
-            recoveryError instanceof Error
-              ? recoveryError.message.trim()
-              : String(recoveryError),
-          );
+          debug(`Recovery error: ${recoveryError}`);
           throw new Error('Simulator recovery failed. Aborting operation.');
         }
 
