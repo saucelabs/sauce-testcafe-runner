@@ -48,7 +48,7 @@ module.exports = {
     const timeout = process.env.IOS_BOOT_TIMEOUT || 60;
     await idbCompanion.boot(device.udid, timeout * 1000);
 
-    const maxRetries = 5;
+    const maxRetries = 1;
     const retryDelay = 2000;
     let attempt = 0;
 
