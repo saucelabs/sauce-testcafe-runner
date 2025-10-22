@@ -63,7 +63,7 @@ module.exports = {
         debug(`Error opening URL: ${error}`);
         if (attempt >= maxRetries) {
           throw new Error(
-            `Failed to open URL on simulator after ${maxRetries} attempts.`,
+            `Failed to open URL on simulator after ${maxRetries} attempts. Last error: ${error instanceof Error ? error.message : String(error)}`,
           );
         }
 
@@ -74,7 +74,9 @@ module.exports = {
           await idbCompanion.boot(device.udid, timeout * 1000);
         } catch (recoveryError) {
           debug(`Recovery error: ${recoveryError}`);
-          throw new Error('Simulator recovery failed. Aborting operation.');
+          throw new Error(
+            `Simulator recovery failed. Aborting operation. Error: ${recoveryError instanceof Error ? recoveryError.message : String(recoveryError)}`,
+          );
         }
 
         await delay(retryDelay);
