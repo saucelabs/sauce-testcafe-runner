@@ -121,7 +121,7 @@ export function buildCommandLine(
     );
     testCafeBrowserName = testCafeBrowserName?.replace(
       /^(path:)(.*)$/,
-      '$1"$2"',
+      '$1`$2`',
     );
   }
   if (suite.headless) {
