@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { URL } from 'node:url';
-import { setTimeout } from 'node:timers';
+import { setTimeout, clearTimeout } from 'node:timers';
 import {
   getArgs,
   loadRunConfig,
@@ -317,7 +317,7 @@ async function runTestCafe(
       );
     }
 
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let testcafeProc: import('child_process').ChildProcess | null = null;
 
     try {
