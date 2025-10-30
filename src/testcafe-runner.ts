@@ -114,7 +114,10 @@ export function buildCommandLine(
   const browserName = suite.browserName;
   let testCafeBrowserName = browserName;
   if (process.env.SAUCE_BROWSER_PATH) {
-    testCafeBrowserName = process.env.SAUCE_BROWSER_PATH;
+    testCafeBrowserName = process.env.SAUCE_BROWSER_PATH.replace(
+      /^[^:]*:/,
+      'path:',
+    );
   }
   if (suite.headless) {
     testCafeBrowserName = `${testCafeBrowserName}:headless`;
