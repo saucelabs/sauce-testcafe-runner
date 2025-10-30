@@ -119,6 +119,10 @@ export function buildCommandLine(
       regex,
       'path:',
     );
+    testCafeBrowserName = browserPath?.replace(
+      /^(path:)(.*\.exe)(.*)$/,
+      '$1"$2"$3',
+    );
   }
   if (suite.headless) {
     testCafeBrowserName = `${testCafeBrowserName}:headless`;
