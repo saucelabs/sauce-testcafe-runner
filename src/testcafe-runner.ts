@@ -120,8 +120,8 @@ export function buildCommandLine(
       'path:',
     );
     testCafeBrowserName = testCafeBrowserName?.replace(
-      /^(path:)(.*\.exe)(.*)$/,
-      '$1"$2"$3',
+      /^(path:)(.*)$/,
+      '$1"$2"',
     );
   }
   if (suite.headless) {
