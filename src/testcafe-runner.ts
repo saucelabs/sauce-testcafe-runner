@@ -114,7 +114,7 @@ export function buildCommandLine(
   const browserName = suite.browserName;
   let testCafeBrowserName = browserName;
   if (process.env.SAUCE_BROWSER_PATH) {
-    const regex = new RegExp('^' + suiteBrowserName + ':');
+    const regex = new RegExp('^' + suite.browserName + ':');
     testCafeBrowserName = process.env.SAUCE_BROWSER_PATH?.replace(
       regex,
       'path:',
