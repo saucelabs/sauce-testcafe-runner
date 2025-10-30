@@ -119,7 +119,7 @@ export function buildCommandLine(
       regex,
       'path:',
     );
-    testCafeBrowserName = browserPath?.replace(
+    testCafeBrowserName = testCafeBrowserName?.replace(
       /^(path:)(.*\.exe)(.*)$/,
       '$1"$2"$3',
     );
