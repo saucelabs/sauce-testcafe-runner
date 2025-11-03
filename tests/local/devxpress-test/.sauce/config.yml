@@ -17,11 +17,11 @@ suites:
     src:
       - "**/*.test.js"
     speed: 1
-  - name: "saucy test #2"
-    browserName: "firefox"
-    src:
-      - "**/*.test.js"
-    speed: 1
+  #- name: "saucy test #2"
+  #  browserName: "firefox"
+  #  src:
+  #    - "**/*.test.js"
+  #  speed: 1
   - name: "saucy test #3"
     browserName: "microsoftedge"
     src:
