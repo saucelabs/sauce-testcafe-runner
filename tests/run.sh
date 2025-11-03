@@ -2,7 +2,7 @@
 
 # suite=result
 tests=(devxpress-test=success sauceswag-ok=success sauceswag-fail=failure)
-
+: '
 for i in "${tests[@]}"; do
     suite=$(echo ${i} | cut -d '=' -f 1)
     expected_result=$(echo ${i} | cut -d '=' -f 2)
@@ -28,4 +28,4 @@ for i in "${tests[@]}"; do
     fi
     rm -f ${tmpfile}
     echo ""
-done
+done'
