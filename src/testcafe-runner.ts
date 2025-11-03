@@ -18,6 +18,8 @@ import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function prepareConfiguration(
   nodeBin: string,
   runCfgPath: string,
@@ -334,7 +336,7 @@ async function runTestCafe(
   } catch (e) {
     console.error(`Failed to run TestCafe: ${e}`);
   }
-
+  await delay(5000);
   return false;
 }
 
