@@ -18,7 +18,7 @@ import { generateJUnitFile } from './sauce-testreporter';
 import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
 
-//const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function prepareConfiguration(
   nodeBin: string,
@@ -325,13 +325,12 @@ async function runTestCafe(
   // --- New Retry Logic ---
   const maxAttempts = 3;
   let lastError: unknown = null;
-
+  await delay(5000);
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     if (attempt > 1) {
       console.log(
         `--- TestCafe execution failed. Retrying (Attempt ${attempt} of ${maxAttempts})... ---`,
       );
-      //await delay(5000);
     }
 
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
