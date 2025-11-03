@@ -61,13 +61,27 @@ async function prepareConfiguration(
   }
 
   // Define node/npm path for execution
-  const npmBin = path.join(
+  let npmBin = path.join(
     path.dirname(nodeBin),
     'node_modules',
     'npm',
     'bin',
     'npm-cli.js',
   );
+  if (!fs.existsSync(npmBin)) {
+    const newPath = path.resolve(
+      path.dirname(nodeBin),
+      '..',
+      'lib',
+      'node_modules',
+      'npm',
+      'bin',
+      'npm-cli.js',
+    );
+    if (fs.existsSync(newPath)) {
+      npmBin = newPath;
+    }
+  }
   const nodeCtx: NodeContext = {
     nodePath: nodeBin,
     npmPath: npmBin,
