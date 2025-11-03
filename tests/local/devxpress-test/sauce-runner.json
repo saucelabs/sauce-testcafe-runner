@@ -16,7 +16,7 @@
   },
   "suites": [
     {
-      "browserName": "firefox",
+      "browserName": "chrome",
       "name": "saucy test",
       "headless": true,
       "speed": 1,
