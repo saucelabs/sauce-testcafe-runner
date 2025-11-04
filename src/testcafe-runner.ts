@@ -322,35 +322,79 @@ async function runTestCafe(
     'testcafe-with-v8-flag-filter.js',
   );
 
-  const testcafeProc = spawn(
-    nodeBin,
-    [testcafeBin, ...(tcCommandLine as string[])],
-    {
-      stdio: 'inherit',
-      cwd: projectPath,
-      env: process.env,
-    },
-  );
-
-  const timeoutPromise = new Promise<boolean>((resolve) => {
-    setTimeout(() => {
-      console.error(`Job timed out after ${timeout} seconds`);
-      resolve(false);
-    }, timeout * 1000);
-  });
-
-  const testcafePromise = new Promise<boolean>((resolve) => {
-    testcafeProc.on('close', (code /*, ...args*/) => {
-      resolve(code === 0);
-    });
-  });
-
-  try {
-    return Promise.race([timeoutPromise, testcafePromise]);
-  } catch (e) {
-    console.error(`Failed to run TestCafe: ${e}`);
-  }
+  // --- New Retry Logic ---
+  const maxAttempts = 3;
+  let lastError: unknown = null;
   await delay(5000);
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    if (attempt > 1) {
+      console.log(
+        `--- TestCafe execution failed. Retrying (Attempt ${attempt} of ${maxAttempts})... ---`,
+      );
+    }
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let testcafeProc: import('child_process').ChildProcess | null = null;
+
+    try {
+      // This promise wraps the entire lifecycle of the spawned process
+      const testcafePromise = new Promise<boolean>((resolve, reject) => {
+        testcafeProc = spawn(
+          nodeBin,
+          [testcafeBin, ...(tcCommandLine as string[])],
+          {
+            stdio: 'inherit',
+            cwd: projectPath,
+            env: process.env,
+          },
+        );
+
+        testcafeProc.on('error', (err) => {
+          console.error(`Failed to spawn TestCafe process: ${err.message}`);
+          lastError = err;
+          if (timeoutId) clearTimeout(timeoutId);
+          reject(err);
+        });
+
+        testcafeProc.on('close', (code) => {
+          if (timeoutId) clearTimeout(timeoutId);
+          if (code === 0) {
+            resolve(true);
+          } else {
+            lastError = new Error(`TestCafe process exited with code ${code}`);
+            resolve(false);
+          }
+        });
+      });
+
+      const timeoutPromise = new Promise<boolean>((resolve) => {
+        timeoutId = setTimeout(() => {
+          console.error(
+            `Job timed out after ${timeout} seconds (Attempt ${attempt})`,
+          );
+          lastError = new Error(`Job timed out after ${timeout} seconds`);
+          if (testcafeProc && !testcafeProc.killed) {
+            testcafeProc.kill('SIGTERM');
+          }
+          resolve(false);
+        }, timeout * 1000);
+      });
+
+      const passed = await Promise.race([testcafePromise, timeoutPromise]);
+
+      if (passed) {
+        return true;
+      }
+    } catch (e) {
+      console.error(`Spawn error on attempt ${attempt}:`, e);
+      if (timeoutId) clearTimeout(timeoutId);
+    }
+  }
+
+  console.error(`All ${maxAttempts} TestCafe execution attempts failed.`);
+  if (lastError) {
+    console.error('Last known error:', lastError);
+  }
   return false;
 }
 
