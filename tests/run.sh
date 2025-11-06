@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+: '
 # suite=result
 tests=(devxpress-test=success sauceswag-ok=success sauceswag-fail=failure)
 
@@ -28,4 +28,4 @@ for i in "${tests[@]}"; do
     fi
     rm -f ${tmpfile}
     echo ""
-done
+done'
