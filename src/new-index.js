@@ -9,7 +9,7 @@ const process = require('process');
  * A utility function to introduce a delay.
  * @param ms - The delay in milliseconds.
  */
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = util.promisify(setTimeout);
 
 module.exports = {
   // Multiple browsers support
@@ -48,7 +48,7 @@ module.exports = {
     const timeout = process.env.IOS_BOOT_TIMEOUT || 60;
     await idbCompanion.boot(device.udid, timeout * 1000);
 
-    const maxRetries = 1;
+    const maxRetries = 5;
     const retryDelay = 2000;
     let attempt = 0;
 
@@ -62,8 +62,12 @@ module.exports = {
       } catch (error) {
         debug(`Error opening URL: ${error}`);
         if (attempt >= maxRetries) {
+          if (error instanceof Error) {
+            error.message = `Failed to open URL on simulator after ${maxRetries} attempts. Last error: ${error.message}`;
+            throw error;
+          }
           throw new Error(
-            `Failed to open URL on simulator after ${maxRetries} attempts. Last error: ${error instanceof Error ? error.message : String(error)}`,
+            `Failed to open URL on simulator after ${maxRetries} attempts. Last error: ${String(error)}`,
           );
         }
 
