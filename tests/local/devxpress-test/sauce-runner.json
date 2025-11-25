@@ -17,7 +17,6 @@
   "suites": [
     {
       "browserName": "firefox",
-      "browserVersion": "latest-1",
       "name": "saucy test",
       "headless": true,
       "speed": 1,
