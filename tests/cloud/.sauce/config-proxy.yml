@@ -12,7 +12,7 @@ sauce:
     build: Release $CI_COMMIT_SHORT_SHA
 
 testcafe:
-  version: 3.6.2
+  version: 3.7.2
 
 suites:
   - name: "Proxy - macOS13"
@@ -29,4 +29,3 @@ suites:
     src:
       - "tests/sc/*.test.js"
     speed: 1
-
