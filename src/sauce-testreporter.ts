@@ -28,7 +28,7 @@ export function generateJUnitFile(
   const xmlData = fs.readFileSync(junitPath, 'utf8');
   const result: any = convert.xml2js(xmlData, opts);
 
-  if (!result.testsuite) {
+  if (!result.testsuite || !result.testsuite.testcase || result.testsuite.testcase.length === 0) {
     console.warn('JUnit file generation skipped: no test suites detected.');
     return;
   }
