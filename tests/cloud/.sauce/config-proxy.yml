@@ -17,14 +17,14 @@ testcafe:
 suites:
   - name: "Proxy - macOS13"
     platformName: "macOS 13"
-    browserName: "chrome:headless --disable-safe-browsing --disable-web-security --disable-notifications"
+    browserName: "chrome"
     timeout: 2m
     src:
       - "tests/sc/*.test.js"
     speed: 1
   - name: "Proxy - Win11"
     platformName: "Windows 11"
-    browserName: "chrome:headless --disable-safe-browsing --disable-web-security --disable-notifications"
+    browserName: "chrome"
     timeout: 2m
     src:
       - "tests/sc/*.test.js"

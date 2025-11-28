@@ -17,16 +17,20 @@ testcafe:
 suites:
   - name: "Win10 - Chrome"
     platformName: "Windows 10"
-    browserName: "chrome:headless --disable-safe-browsing --disable-web-security --disable-notifications"
+    browserName: "chrome"
     src:
       - "tests/**/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security" ,"--disable-notifications"]
+    
   - name: "Win10 - Firefox"
     platformName: "Windows 10"
     browserName: "firefox"
+    browserVersion: "143"
     src:
       - "tests/**/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security" ,"--disable-notifications"]
 
   - name: "Win11 - Chrome"
     platformName: "Windows 11"
