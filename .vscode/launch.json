@@ -1,0 +1,35 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch sauceswag-ok",
+      "program": "${workspaceFolder}",
+      "request": "launch",
+      "localRoot": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/tests/local/devxpress-test/",
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/tslib/**/*.js"
+      ],
+      "env": {
+        "SAUCE_DEBUG": "true"
+      },
+      "args": [
+        "-r",
+        "./sauce-runner.json",
+        "-s",
+        "saucy test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ],
+      "type": "node",
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "runtimeVersion": "20"
+    }
+  ]
+}

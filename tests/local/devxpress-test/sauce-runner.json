@@ -20,6 +20,7 @@
       "name": "saucy test",
       "headless": true,
       "speed": 1,
+      "armRequired": "true",
       "src": [
         "**/*.test.js"
       ]

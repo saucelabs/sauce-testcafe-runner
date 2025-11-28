@@ -7,12 +7,13 @@
   "private": true,
   "main": "lib/testcafe-runner.js",
   "scripts": {
-    "build": "tsc && cp src/sauce-testcafe-config.cjs lib/",
+    "build": "tsc",
     "test": "jest --env node",
     "prepare": "husky || true",
     "lint": "prettier --check '**/*.{js,ts,mjs,cjs}' && eslint ./tests ./src",
     "fmt": "prettier --write '**/*.{js,ts,mjs,cjs}'",
-    "integration-test": "bash ./tests/run.sh"
+    "integration-test": "bash ./tests/run.sh",
+    "watch": "tsc --watch"
   },
   "keywords": [
     "testcafe"
