@@ -4,13 +4,25 @@ const _ = require('lodash');
 
 let userConfig = {};
 
+const debug = process.env.SAUCE_DEBUG === 'true' || process.env.SAUCE_DEBUG === '1';
+
+function logDebug(...args) {
+  if (!debug) {
+    return;
+  }
+  console.log('[sauce-testcafe-config]', ...args);
+}
+
 const configFiles = process.env.TESTCAFE_CFG_FILE
   ? [process.env.TESTCAFE_CFG_FILE]
   : ['./.testcaferc.json', './.testcaferc.js', './.testcaferc.cjs'];
 
+logDebug('Looking for TestCafe config files in:', configFiles);
 for (const file of configFiles) {
+  logDebug(`Checking for TestCafe config: ${file}`);
   if (fs.existsSync(file)) {
     try {
+      logDebug(`Loading TestCafe config file: ${file}`);
       const extname = path.extname(file);
       if (extname === '.json') {
         const content = fs.readFileSync(file);
@@ -28,6 +40,8 @@ for (const file of configFiles) {
     }
   }
 }
+
+logDebug(`Loaded TestCafe user config:`, userConfig);
 
 const overrides = {
   reporter: [
