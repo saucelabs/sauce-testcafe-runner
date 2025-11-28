@@ -1,14 +1,14 @@
-import ts from 'typescript-eslint';
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import jest from 'eslint-plugin-jest';
+import ts from 'typescript-eslint';
 
 export default ts.config(
   js.configs.recommended,
   ...ts.configs.recommended,
   prettier,
   {
-    ignores: ['lib/**'],
+    ignores: ['lib/**', 'tests/**/sauce-testcafe-config.cjs'],
   },
   {
     files: ['**/*.*js', '**/*.*ts'],
