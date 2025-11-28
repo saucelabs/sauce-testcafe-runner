@@ -17,7 +17,7 @@ testcafe:
 suites:
   - name: "Win10 - Chrome"
     platformName: "Windows 10"
-    browserName: "chrome"
+    browserName: "chrome:headless --disable-safe-browsing --disable-web-security --disable-notifications"
     src:
       - "tests/**/*.test.js"
     speed: 1
