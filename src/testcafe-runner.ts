@@ -27,19 +27,18 @@ function getNpmCliPath(nodeBin: string): string {
     'npm-cli.js',
   );
 
-  if(fs.existsSync(npmBin)) {
+  if (fs.existsSync(npmBin)) {
     return npmBin;
   }
-  // read paths dynamically and 
-  const npmMain = require.resolve("npm");
+  // read paths dynamically if we can't at this stage we should fail.
+  const npmMain = require.resolve('npm');
   const npmDir = path.dirname(npmMain);
-  const npmCliPath = path.join(npmDir, "bin", "npm-cli.js");
-  if(!fs.existsSync(npmCliPath)) {
+  const npmCliPath = path.join(npmDir, 'bin', 'npm-cli.js');
+  if (!fs.existsSync(npmCliPath)) {
     throw new Error(`Could not locate npm-cli.js at path: ${npmCliPath}`);
   }
   return npmCliPath;
 }
-
 
 async function prepareConfiguration(
   nodeBin: string,
