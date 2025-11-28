@@ -58,7 +58,7 @@ suites:
   - name: "macOS11 - Firefox"
     platformName: "macOS 11.00"
     browserName: "firefox"
-    version: "143"
+    browserVersion: "143"
     src:
       - "tests/**/*.test.js"
     speed: 1
@@ -104,10 +104,10 @@ suites:
   - name: "macOS13 - Firefox"
     platformName: "macOS 13"
     browserName: "firefox"
+    browserVersion: "143"
     src:
       - "tests/**/*.test.js"
     speed: 1
-    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
     
   - name: "macOS13 - Safari"
     platformName: "macOS 13"
