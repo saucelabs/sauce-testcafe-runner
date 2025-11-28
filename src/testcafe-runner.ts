@@ -1,22 +1,45 @@
 import { spawn } from 'child_process';
-import path from 'path';
 import fs from 'fs';
-import { URL } from 'node:url';
 import { setTimeout } from 'node:timers';
+import { URL } from 'node:url';
+import path from 'path';
 import {
-  getArgs,
-  loadRunConfig,
-  getSuite,
   getAbsolutePath,
-  prepareNpmEnv,
+  getArgs,
+  getSuite,
+  loadRunConfig,
   preExec,
+  prepareNpmEnv,
   zip,
 } from 'sauce-testrunner-utils';
 
-import { TestCafeConfig, Suite, CompilerOptions, second } from './type';
-import { generateJUnitFile } from './sauce-testreporter';
-import { setupProxy, isProxyAvailable } from './network-proxy';
 import { NodeContext } from 'sauce-testrunner-utils/lib/types';
+import { isProxyAvailable, setupProxy } from './network-proxy';
+import { generateJUnitFile } from './sauce-testreporter';
+import { CompilerOptions, second, Suite, TestCafeConfig } from './type';
+
+function getNpmCliPath(nodeBin: string): string {
+  const npmBin = path.join(
+    path.dirname(nodeBin),
+    'node_modules',
+    'npm',
+    'bin',
+    'npm-cli.js',
+  );
+
+  if(fs.existsSync(npmBin)) {
+    return npmBin;
+  }
+  // read paths dynamically and 
+  const npmMain = require.resolve("npm");
+  const npmDir = path.dirname(npmMain);
+  const npmCliPath = path.join(npmDir, "bin", "npm-cli.js");
+  if(!fs.existsSync(npmCliPath)) {
+    throw new Error(`Could not locate npm-cli.js at path: ${npmCliPath}`);
+  }
+  return npmCliPath;
+}
+
 
 async function prepareConfiguration(
   nodeBin: string,
@@ -59,16 +82,9 @@ async function prepareConfiguration(
   }
 
   // Define node/npm path for execution
-  const npmBin = path.join(
-    path.dirname(nodeBin),
-    'node_modules',
-    'npm',
-    'bin',
-    'npm-cli.js',
-  );
   const nodeCtx: NodeContext = {
     nodePath: nodeBin,
-    npmPath: npmBin,
+    npmPath: getNpmCliPath(nodeBin),
     useGlobals: !!runCfg.nodeVersion,
   };
 
