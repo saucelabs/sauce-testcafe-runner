@@ -16,7 +16,7 @@
   },
   "suites": [
     {
-      "browserName": "firefox",
+      "browserName": "chrome:headless --disable-safe-browsing --disable-web-security --disable-notifications",
       "name": "saucy test",
       "headless": true,
       "speed": 1,

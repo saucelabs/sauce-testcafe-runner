@@ -4,7 +4,8 @@ const _ = require('lodash');
 
 let userConfig = {};
 
-const debug = process.env.SAUCE_DEBUG === 'true' || process.env.SAUCE_DEBUG === '1';
+const debug =
+  process.env.SAUCE_DEBUG === 'true' || process.env.SAUCE_DEBUG === '1';
 
 function logDebug(...args) {
   if (!debug) {
