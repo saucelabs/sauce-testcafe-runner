@@ -307,11 +307,10 @@ jobs:
         working-directory: ./tests/cloud/www/
 
       - name: Start sauce-connect
-        uses: saucelabs/sauce-connect-action@v3
+        uses: saucelabs/sauce-connect-action@v2
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          region: us
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
 
       - name: Test on Sauce
@@ -358,11 +357,10 @@ jobs:
         working-directory: ./tests/cloud/www/
 
       - name: Start sauce-connect
-        uses: saucelabs/sauce-connect-action@v3
+        uses: saucelabs/sauce-connect-action@v2
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          region: us
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}
 
       - name: Test on Sauce

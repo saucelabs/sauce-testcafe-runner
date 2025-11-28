@@ -16,9 +16,14 @@
   },
   "suites": [
     {
-      "browserName": "chrome:headless --disable-safe-browsing --disable-web-security --disable-notifications",
+      "browserName": "chrome",
       "name": "saucy test",
       "headless": true,
+      "browserArgs": [
+        "--disable-safe-browsing",
+        "--disable-web-security",
+        "--disable-notifications"
+      ],
       "speed": 1,
       "armRequired": "true",
       "src": [

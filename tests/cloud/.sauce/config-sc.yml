@@ -21,8 +21,8 @@ suites:
     src:
       - "tests/**/*.test.js"
     speed: 1
-    browserArgs: ["--disable-safe-browsing", "--disable-web-security" ,"--disable-notifications"]
-    
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
   - name: "Win10 - Firefox"
     platformName: "Windows 10"
     browserName: "firefox"
@@ -30,7 +30,7 @@ suites:
     src:
       - "tests/**/*.test.js"
     speed: 1
-    browserArgs: ["--disable-safe-browsing", "--disable-web-security" ,"--disable-notifications"]
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
 
   - name: "Win11 - Chrome"
     platformName: "Windows 11"
