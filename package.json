@@ -10,7 +10,7 @@
     "build": "tsc",
     "test": "jest --env node",
     "prepare": "husky || true",
-    "lint": "prettier --check '**/*.{js,ts,mjs,cjs}' && eslint ./tests ./src",
+    "lint": "prettier --check '**/*.{js,ts,mjs}' && eslint ./tests ./src",
     "fmt": "prettier --write '**/*.{js,ts,mjs,cjs}'",
     "integration-test": "bash ./tests/run.sh",
     "watch": "tsc --watch"

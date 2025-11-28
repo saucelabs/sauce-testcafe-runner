@@ -21,9 +21,12 @@ suites:
     src:
       - "tests/**/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
   - name: "Win10 - Firefox"
     platformName: "Windows 10"
     browserName: "firefox"
+    browserVersion: "143"
     src:
       - "tests/**/*.test.js"
     speed: 1
@@ -34,9 +37,12 @@ suites:
     src:
       - "tests/**/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
   - name: "Win11 - Firefox"
     platformName: "Windows 11"
     browserName: "firefox"
+    browserVersion: "143"
     src:
       - "tests/**/*.test.js"
     speed: 1
@@ -47,12 +53,16 @@ suites:
     src:
       - "tests/**/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
   - name: "macOS11 - Firefox"
     platformName: "macOS 11.00"
     browserName: "firefox"
+    browserVersion: "143"
     src:
       - "tests/**/*.test.js"
     speed: 1
+
   - name: "macOS11 - Safari"
     platformName: "macOS 11.00"
     browserName: "safari"
@@ -66,12 +76,16 @@ suites:
     src:
       - "tests/**/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
   - name: "macOS12 - Firefox"
     platformName: "macOS 12"
     browserName: "firefox"
+    browserVersion: "143"
     src:
       - "tests/**/*.test.js"
     speed: 1
+
   - name: "macOS12 - Safari"
     platformName: "macOS 12"
     browserName: "safari"
@@ -85,12 +99,16 @@ suites:
     src:
       - "tests/**/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
   - name: "macOS13 - Firefox"
     platformName: "macOS 13"
     browserName: "firefox"
+    browserVersion: "143"
     src:
       - "tests/**/*.test.js"
     speed: 1
+    
   - name: "macOS13 - Safari"
     platformName: "macOS 13"
     browserName: "safari"

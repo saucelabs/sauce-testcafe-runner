@@ -29,10 +29,12 @@ suites:
     platformName: "mac 11.00"
     src:
       - "**/*.test.js"
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
 
   - name: "test firefox on mac"
     browserName: "firefox"
     platformName: "mac 11.00"
+    browserVersion: "143"
     src:
       - "**/*.test.js"
 
@@ -50,9 +52,11 @@ suites:
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
 
   - name: "test firefox on windows"
     browserName: "firefox"
+    browserVersion: "143"
     platformName: "Windows 10"
     src:
       - "**/*.test.js"

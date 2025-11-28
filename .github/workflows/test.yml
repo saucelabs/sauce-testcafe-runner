@@ -312,7 +312,6 @@ jobs:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
-          scVersion: 4.9.2
 
       - name: Test on Sauce
         working-directory: ./tests/cloud/
@@ -363,7 +362,6 @@ jobs:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}
-          scVersion: 4.9.2
 
       - name: Test on Sauce
         working-directory: ./tests/cloud/
