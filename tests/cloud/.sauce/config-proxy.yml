@@ -22,6 +22,8 @@ suites:
     src:
       - "tests/sc/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+    
   - name: "Proxy - Win11"
     platformName: "Windows 11"
     browserName: "chrome"
@@ -29,3 +31,4 @@ suites:
     src:
       - "tests/sc/*.test.js"
     speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]

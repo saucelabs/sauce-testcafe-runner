@@ -23,9 +23,11 @@ suites:
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
 
   - name: "test firefox on windows 10"
     browserName: "firefox"
+    browserVersion: "143"
     platformName: "Windows 10"
     src:
       - "**/*.test.js"
@@ -41,9 +43,11 @@ suites:
     platformName: "Windows 11"
     src:
       - "**/*.test.js"
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
 
   - name: "test firefox on windows 11"
     browserName: "firefox"
+    browserVersion: "143"
     platformName: "Windows 11"
     src:
       - "**/*.test.js"
