@@ -1,4 +1,4 @@
-import { spawn, execSync } from 'child_process';
+import { spawn } from 'child_process';
 import fs from 'fs';
 import { setTimeout } from 'node:timers';
 import { URL } from 'node:url';
@@ -454,21 +454,9 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     attempts++;
 
     if (!passed && shouldRetry && attempts <= MAX_RETRIES) {
-      if (suite.browserName.toLowerCase() === 'safari') {
-        try {
-          execSync('killall Safari');
-          console.log('Killed Safari to ensure a fresh start.');
-        } catch (e) {
-          // If Safari is not running, killall will return a non-zero exit code.
-          // We can ignore this error since we just want to ensure it's not running.
-          console.log(`Could not kill Safari: ${e}`);
-        }
-        console.log(
-          `Connection error detected. Retrying... (Attempt ${attempts}/${MAX_RETRIES})`,
-        );
-      } else {
-        shouldRetry = false;
-      }
+      console.log(
+        `Connection error detected. Retrying... (Attempt ${attempts}/${MAX_RETRIES})`,
+      );
     } else {
       shouldRetry = false;
     }
