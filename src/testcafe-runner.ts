@@ -442,7 +442,7 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     configFile,
   );
 
-  const MAX_RETRIES = 5;
+  const MAX_RETRIES = 3;
   let attempts = 0;
   let passed = false;
   let shouldRetry = false;
