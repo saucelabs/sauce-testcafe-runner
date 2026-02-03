@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import fs from 'fs';
 import { setTimeout } from 'node:timers';
 import { URL } from 'node:url';
@@ -306,10 +306,11 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
-async function runTestCafe(
+export async function runTestCafe(
   tcCommandLine: (string | number)[],
   projectPath: string,
   timeout: second,
+  browserName: string,
 ): Promise<{ passed: boolean; shouldRetry: boolean }> {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(
@@ -339,12 +340,18 @@ async function runTestCafe(
   testcafeProc.stderr.pipe(process.stderr);
 
   testcafeProc.stdout.on('data', (data) => {
-    if (connectionErrorRegex.test(data.toString())) {
+    if (
+      connectionErrorRegex.test(data.toString()) &&
+      browserName.toLowerCase() === 'safari'
+    ) {
       shouldRetry = true;
     }
   });
   testcafeProc.stderr.on('data', (data) => {
-    if (connectionErrorRegex.test(data.toString())) {
+    if (
+      connectionErrorRegex.test(data.toString()) &&
+      browserName.toLowerCase() === 'safari'
+    ) {
       shouldRetry = true;
     }
   });
@@ -448,15 +455,25 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   let shouldRetry = false;
 
   do {
-    const result = await runTestCafe(tcCommandLine, projectPath, timeout);
+    const result = await runTestCafe(
+      tcCommandLine,
+      projectPath,
+      timeout,
+      suite.browserName,
+    );
     passed = result.passed;
     shouldRetry = result.shouldRetry;
     attempts++;
 
     if (!passed && shouldRetry && attempts <= MAX_RETRIES) {
       console.log(
-        `Connection error detected. Retrying... (Attempt ${attempts}/${MAX_RETRIES})`,
+        `Connection error detected. Killing Safari and retrying... (Attempt ${attempts}/${MAX_RETRIES})`,
       );
+      try {
+        execSync('killall Safari');
+      } catch (e) {
+        console.log(`Could not kill Safari: ${e}`);
+      }
     } else {
       shouldRetry = false;
     }
@@ -493,4 +510,9 @@ if (require.main === module) {
     });
 }
 
-module.exports = { buildCommandLine, buildCompilerOptions, run };
+module.exports = {
+  buildCommandLine,
+  buildCompilerOptions,
+  run,
+  runTestCafe,
+};
