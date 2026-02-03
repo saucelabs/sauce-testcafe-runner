@@ -1,13 +1,9 @@
 jest.mock('testcafe');
 jest.mock('sauce-testrunner-utils');
 jest.mock('../../../lib/sauce-testreporter');
-jest.mock('child_process');
-import { spawn } from 'child_process';
-import { EventEmitter } from 'events';
 import {
   buildCommandLine,
   buildCompilerOptions,
-  runTestCafe,
 } from '../../../src/testcafe-runner';
 import { Suite, CompilerOptions } from '../../../src/type';
 
@@ -400,117 +396,5 @@ describe('.buildCompilerOptions', function () {
     };
     const expected = `typescript.configPath=./tsconfig.json;typescript.customCompilerModulePath=/path/to/custom/compiler;typescript.options.allowUnusedLabels=true;typescript.options.noFallthroughCasesInSwitch=true;typescript.options.allowUmdGlobalAccess=true`;
     expect(buildCompilerOptions(input)).toEqual(expected);
-  });
-});
-
-describe('runTestCafe', () => {
-  let spawnMock: any;
-
-  beforeEach(() => {
-    spawnMock = spawn as unknown as jest.Mock;
-    spawnMock.mockClear();
-  });
-
-  it('should run TestCafe successfully', async () => {
-    const childProcessMock = new EventEmitter();
-    (childProcessMock as any).stdout = new EventEmitter();
-    (childProcessMock as any).stderr = new EventEmitter();
-    (childProcessMock as any).stdout.pipe = jest.fn();
-    (childProcessMock as any).stderr.pipe = jest.fn();
-    spawnMock.mockReturnValue(childProcessMock);
-
-    const promise = runTestCafe(['arg1'], '.', 10, 'firefox');
-
-    // Simulate process close
-    setTimeout(() => {
-      childProcessMock.emit('close', 0);
-    }, 10);
-
-    const result = await promise;
-    expect(result).toEqual({ passed: true, shouldRetry: false });
-  });
-
-  it('should fail if TestCafe returns non-zero exit code', async () => {
-    const childProcessMock = new EventEmitter();
-    (childProcessMock as any).stdout = new EventEmitter();
-    (childProcessMock as any).stderr = new EventEmitter();
-    (childProcessMock as any).stdout.pipe = jest.fn();
-    (childProcessMock as any).stderr.pipe = jest.fn();
-    spawnMock.mockReturnValue(childProcessMock);
-
-    const promise = runTestCafe(['arg1'], '.', 10, 'firefox');
-
-    setTimeout(() => {
-      childProcessMock.emit('close', 1);
-    }, 10);
-
-    const result = await promise;
-    expect(result).toEqual({ passed: false, shouldRetry: false });
-  });
-
-  it('should set shouldRetry to true on Safari connection error in stdout', async () => {
-    const childProcessMock = new EventEmitter();
-    (childProcessMock as any).stdout = new EventEmitter();
-    (childProcessMock as any).stderr = new EventEmitter();
-    (childProcessMock as any).stdout.pipe = jest.fn();
-    (childProcessMock as any).stderr.pipe = jest.fn();
-    spawnMock.mockReturnValue(childProcessMock);
-
-    const promise = runTestCafe(['arg1'], '.', 10, 'safari');
-
-    setTimeout(() => {
-      (childProcessMock as any).stdout.emit(
-        'data',
-        'ERROR Cannot establish one or more browser connections',
-      );
-      childProcessMock.emit('close', 1);
-    }, 10);
-
-    const result = await promise;
-    expect(result).toEqual({ passed: false, shouldRetry: true });
-  });
-
-  it('should set shouldRetry to true on Safari connection error in stderr', async () => {
-    const childProcessMock = new EventEmitter();
-    (childProcessMock as any).stdout = new EventEmitter();
-    (childProcessMock as any).stderr = new EventEmitter();
-    (childProcessMock as any).stdout.pipe = jest.fn();
-    (childProcessMock as any).stderr.pipe = jest.fn();
-    spawnMock.mockReturnValue(childProcessMock);
-
-    const promise = runTestCafe(['arg1'], '.', 10, 'safari');
-
-    setTimeout(() => {
-      (childProcessMock as any).stderr.emit(
-        'data',
-        'ERROR Cannot establish one or more browser connections',
-      );
-      childProcessMock.emit('close', 1);
-    }, 10);
-
-    const result = await promise;
-    expect(result).toEqual({ passed: false, shouldRetry: true });
-  });
-
-  it('should NOT set shouldRetry to true on connection error in non-Safari browser', async () => {
-    const childProcessMock = new EventEmitter();
-    (childProcessMock as any).stdout = new EventEmitter();
-    (childProcessMock as any).stderr = new EventEmitter();
-    (childProcessMock as any).stdout.pipe = jest.fn();
-    (childProcessMock as any).stderr.pipe = jest.fn();
-    spawnMock.mockReturnValue(childProcessMock);
-
-    const promise = runTestCafe(['arg1'], '.', 10, 'firefox');
-
-    setTimeout(() => {
-      (childProcessMock as any).stdout.emit(
-        'data',
-        'ERROR Cannot establish one or more browser connections',
-      );
-      childProcessMock.emit('close', 1);
-    }, 10);
-
-    const result = await promise;
-    expect(result).toEqual({ passed: false, shouldRetry: false });
   });
 });

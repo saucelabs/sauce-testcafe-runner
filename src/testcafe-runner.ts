@@ -306,7 +306,7 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
-export async function runTestCafe(
+async function runTestCafe(
   tcCommandLine: (string | number)[],
   projectPath: string,
   timeout: second,
@@ -514,5 +514,4 @@ module.exports = {
   buildCommandLine,
   buildCompilerOptions,
   run,
-  runTestCafe,
 };
