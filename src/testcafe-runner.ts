@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import fs from 'fs';
 import { setTimeout } from 'node:timers';
 import { URL } from 'node:url';
@@ -310,7 +310,8 @@ async function runTestCafe(
   tcCommandLine: (string | number)[],
   projectPath: string,
   timeout: second,
-) {
+  browserName: string,
+): Promise<{ passed: boolean; shouldRetry: boolean }> {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(
     __dirname,
@@ -325,22 +326,52 @@ async function runTestCafe(
     nodeBin,
     [testcafeBin, ...(tcCommandLine as string[])],
     {
-      stdio: 'inherit',
+      stdio: ['inherit', 'pipe', 'pipe'],
       cwd: projectPath,
       env: process.env,
     },
   );
 
-  const timeoutPromise = new Promise<boolean>((resolve) => {
+  let shouldRetry = false;
+  const connectionErrorRegex =
+    /ERROR Cannot establish one or more browser connections/;
+
+  testcafeProc.stdout.pipe(process.stdout);
+  testcafeProc.stderr.pipe(process.stderr);
+
+  testcafeProc.stdout.on('data', (data) => {
+    if (
+      connectionErrorRegex.test(data.toString()) &&
+      browserName.toLowerCase() === 'safari'
+    ) {
+      shouldRetry = true;
+    }
+  });
+  testcafeProc.stderr.on('data', (data) => {
+    if (
+      connectionErrorRegex.test(data.toString()) &&
+      browserName.toLowerCase() === 'safari'
+    ) {
+      shouldRetry = true;
+    }
+  });
+
+  const timeoutPromise = new Promise<{
+    passed: boolean;
+    shouldRetry: boolean;
+  }>((resolve) => {
     setTimeout(() => {
       console.error(`Job timed out after ${timeout} seconds`);
-      resolve(false);
+      resolve({ passed: false, shouldRetry: false });
     }, timeout * 1000);
   });
 
-  const testcafePromise = new Promise<boolean>((resolve) => {
+  const testcafePromise = new Promise<{
+    passed: boolean;
+    shouldRetry: boolean;
+  }>((resolve) => {
     testcafeProc.on('close', (code /*, ...args*/) => {
-      resolve(code === 0);
+      resolve({ passed: code === 0, shouldRetry });
     });
   });
 
@@ -350,7 +381,7 @@ async function runTestCafe(
     console.error(`Failed to run TestCafe: ${e}`);
   }
 
-  return false;
+  return { passed: false, shouldRetry: false };
 }
 
 function zipArtifacts(runCfg: TestCafeConfig) {
@@ -417,7 +448,36 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     assetsPath,
     configFile,
   );
-  const passed = await runTestCafe(tcCommandLine, projectPath, timeout);
+
+  const MAX_RETRIES = 3;
+  let attempts = 0;
+  let passed = false;
+  let shouldRetry = false;
+
+  do {
+    const result = await runTestCafe(
+      tcCommandLine,
+      projectPath,
+      timeout,
+      suite.browserName,
+    );
+    passed = result.passed;
+    shouldRetry = result.shouldRetry;
+    attempts++;
+
+    if (!passed && shouldRetry && attempts <= MAX_RETRIES) {
+      console.log(
+        `Connection error detected. Killing Safari and retrying... (Attempt ${attempts}/${MAX_RETRIES})`,
+      );
+      try {
+        execSync('killall Safari');
+      } catch (e) {
+        console.log(`Could not kill Safari: ${e}`);
+      }
+    } else {
+      shouldRetry = false;
+    }
+  } while (shouldRetry);
 
   try {
     generateJUnitFile(
@@ -450,4 +510,8 @@ if (require.main === module) {
     });
 }
 
-module.exports = { buildCommandLine, buildCompilerOptions, run };
+module.exports = {
+  buildCommandLine,
+  buildCompilerOptions,
+  run,
+};
