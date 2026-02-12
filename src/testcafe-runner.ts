@@ -470,7 +470,9 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
         `Connection error detected. Killing Safari and retrying... (Attempt ${attempts}/${MAX_RETRIES})`,
       );
       try {
-        execSync('killall Safari');
+        execSync('killall Safari || true');
+        execSync('pkill -f testcafe || true');
+        await new Promise((resolve) => setTimeout(resolve, 5000)); // 5s cooldown
       } catch (e) {
         console.log(`Could not kill Safari: ${e}`);
       }
