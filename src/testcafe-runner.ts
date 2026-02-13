@@ -120,6 +120,7 @@ export function buildCommandLine(
   projectPath: string,
   assetsPath: string,
   configFile: string | undefined,
+  ports?: [number, number],
 ) {
   const cli: (string | number)[] = [];
   if (suite === undefined) {
@@ -287,6 +288,10 @@ export function buildCommandLine(
     cli.push('--fixture-meta', filters.join(','));
   }
 
+  if (ports) {
+    cli.push('--ports', `${ports[0]},${ports[1]}`);
+  }
+
   return cli;
 }
 
@@ -322,6 +327,8 @@ async function runTestCafe(
     'testcafe-with-v8-flag-filter.js',
   );
 
+  console.log(`Starting TestCafe with args: ${tcCommandLine.join(' ')}`);
+
   const testcafeProc = spawn(
     nodeBin,
     [testcafeBin, ...(tcCommandLine as string[])],
@@ -356,12 +363,16 @@ async function runTestCafe(
     }
   });
 
+  let timer: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<{
     passed: boolean;
     shouldRetry: boolean;
   }>((resolve) => {
-    setTimeout(() => {
-      console.error(`Job timed out after ${timeout} seconds`);
+    timer = setTimeout(() => {
+      console.error(
+        `Job timed out after ${timeout} seconds. Killing TestCafe process.`,
+      );
+      testcafeProc.kill('SIGKILL');
       resolve({ passed: false, shouldRetry: false });
     }, timeout * 1000);
   });
@@ -371,6 +382,7 @@ async function runTestCafe(
     shouldRetry: boolean;
   }>((resolve) => {
     testcafeProc.on('close', (code /*, ...args*/) => {
+      clearTimeout(timer);
       resolve({ passed: code === 0, shouldRetry });
     });
   });
@@ -442,12 +454,15 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
-  const tcCommandLine = buildCommandLine(
-    suite,
-    projectPath,
-    assetsPath,
-    configFile,
-  );
+  // Port sets for each attempt. TestCafe uses two ports (one for the proxy, one for the
+  // browser connection). Using different ports on retry avoids conflicts with
+  // ports that may still be held by a zombie process from the previous attempt.
+  const portSets: [number, number][] = [
+    [1337, 1338],
+    [1339, 1340],
+    [1341, 1342],
+    [1343, 1344],
+  ];
 
   const MAX_RETRIES = 3;
   let attempts = 0;
@@ -455,6 +470,44 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   let shouldRetry = false;
 
   do {
+    const ports = portSets[attempts];
+    const tcCommandLine = buildCommandLine(
+      suite,
+      projectPath,
+      assetsPath,
+      configFile,
+      ports,
+    );
+
+    // Log diagnostic info about processes and ports before each attempt
+    console.log(
+      `\n--- Attempt ${attempts + 1}/${MAX_RETRIES + 1} using ports ${ports[0]},${ports[1]} ---`,
+    );
+    try {
+      const lsofOutput = execSync(
+        `lsof -iTCP:${ports[0]} -iTCP:${ports[1]} -sTCP:LISTEN 2>/dev/null || true`,
+      ).toString();
+      if (lsofOutput.trim()) {
+        console.log(
+          `Processes listening on ports ${ports[0]}/${ports[1]}:\n${lsofOutput}`,
+        );
+      } else {
+        console.log(`Ports ${ports[0]}/${ports[1]} are free.`);
+      }
+    } catch (e) {
+      console.log(`Could not check port status: ${e}`);
+    }
+    try {
+      const safariProcs = execSync(
+        'ps aux | grep -i "[S]afari" || true',
+      ).toString();
+      if (safariProcs.trim()) {
+        console.log(`Safari processes:\n${safariProcs}`);
+      }
+    } catch (e) {
+      console.log(`e:\n${e}`);
+    }
+
     const result = await runTestCafe(
       tcCommandLine,
       projectPath,
@@ -471,15 +524,23 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
       );
       try {
         execSync('killall Safari || true');
-        //execSync('pkill -f testcafe || true');
-        const procs = execSync(
-          'ps aux | grep -i testcafe | grep -v grep',
-        ).toString();
-        console.log(`Testcafe processes:\n${procs}`);
-        await new Promise((resolve) => setTimeout(resolve, 5000)); // 5s cooldown
       } catch (e) {
         console.log(`Could not kill Safari: ${e}`);
       }
+      // Log what's still running after killing Safari
+      try {
+        const procs = execSync(
+          'ps aux | grep -i testcafe | grep -v grep || true',
+        ).toString();
+        if (procs.trim()) {
+          console.log(`TestCafe processes still running:\n${procs}`);
+        }
+      } catch (e) {
+        console.log(`e:\n${e}`);
+      }
+      // Wait for processes and ports to fully release before retrying
+      console.log('Waiting 5 seconds before retry...');
+      await new Promise((resolve) => globalThis.setTimeout(resolve, 5000));
     } else {
       shouldRetry = false;
     }
