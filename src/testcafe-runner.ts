@@ -1,4 +1,4 @@
-import { spawn, execSync } from 'child_process';
+import { ChildProcess, spawn, execSync } from 'child_process';
 import fs from 'fs';
 import { clearTimeout, setTimeout } from 'node:timers';
 import { URL } from 'node:url';
@@ -316,6 +316,286 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
+// Locate and install the TestCafe Browser Tools .app bundle into
+// ~/.testcafe-browser-tools/. Returns true if the app is present after
+// the function completes (either already existed or was installed).
+function ensureBrowserToolsApp(): boolean {
+  if (process.platform !== 'darwin') {
+    return true;
+  }
+
+  const homeDir = process.env.HOME || '/Users/chef';
+  const browserToolsDestDir = path.join(homeDir, '.testcafe-browser-tools');
+  const browserToolsAppDest = path.join(
+    browserToolsDestDir,
+    'TestCafe Browser Tools.app',
+  );
+
+  const appExists = fs.existsSync(browserToolsAppDest);
+  console.log(
+    `TestCafe Browser Tools app: ${browserToolsAppDest} (exists: ${appExists})`,
+  );
+
+  if (appExists) {
+    return true;
+  }
+
+  // The runner's own node_modules (where testcafe + testcafe-browser-tools live).
+  // At runtime __dirname is lib/, so ../node_modules/ is the runner bundle root.
+  const runnerNodeModules = path.join(__dirname, '..', 'node_modules');
+
+  // Candidate source paths, ordered by likelihood.
+  const candidatePaths = [
+    // Primary: runner's node_modules (correct path on Sauce VMs)
+    path.join(
+      runnerNodeModules,
+      'testcafe-browser-tools',
+      'bin',
+      'mac',
+      'TestCafe Browser Tools.app',
+    ),
+    // Nested inside testcafe package
+    path.join(
+      runnerNodeModules,
+      'testcafe',
+      'node_modules',
+      'testcafe-browser-tools',
+      'bin',
+      'mac',
+      'TestCafe Browser Tools.app',
+    ),
+  ];
+
+  // Log what's actually in the bin/mac/ directory for diagnostics
+  for (const candidate of candidatePaths) {
+    const binMacDir = path.dirname(candidate);
+    if (fs.existsSync(binMacDir)) {
+      try {
+        const contents = execSync(`ls -la "${binMacDir}"`).toString();
+        console.log(`Contents of ${binMacDir}:\n${contents}`);
+      } catch (e) {
+        console.log(`Could not list ${binMacDir}: ${e}`);
+      }
+    }
+  }
+
+  // Try each candidate path
+  for (const src of candidatePaths) {
+    if (fs.existsSync(src)) {
+      console.log(`Found Browser Tools app at: ${src}`);
+      try {
+        fs.mkdirSync(browserToolsDestDir, { recursive: true });
+        execSync(`cp -R "${src}" "${browserToolsDestDir}/"`);
+        const installed = fs.existsSync(browserToolsAppDest);
+        console.log(`Browser Tools app installed successfully: ${installed}`);
+        if (installed) {
+          return true;
+        }
+      } catch (e) {
+        console.error(`Failed to copy from ${src}: ${e}`);
+      }
+    } else {
+      console.log(`Browser Tools app not found at candidate: ${src}`);
+    }
+  }
+
+  // Last resort: use find to search the bundle directory
+  const bundleDir = path.join(__dirname, '..');
+  console.log(
+    `Browser Tools app not found at any candidate path. Searching ${bundleDir}...`,
+  );
+  try {
+    const findResult = execSync(
+      `find "${bundleDir}" -name "TestCafe Browser Tools.app" -type d 2>/dev/null | head -5`,
+      { timeout: 10000 },
+    )
+      .toString()
+      .trim();
+
+    if (findResult) {
+      const foundPath = findResult.split('\n')[0];
+      console.log(`Found Browser Tools app via find: ${foundPath}`);
+      try {
+        fs.mkdirSync(browserToolsDestDir, { recursive: true });
+        execSync(`cp -R "${foundPath}" "${browserToolsDestDir}/"`);
+        const installed = fs.existsSync(browserToolsAppDest);
+        console.log(
+          `Browser Tools app installed from find result: ${installed}`,
+        );
+        if (installed) {
+          return true;
+        }
+      } catch (e) {
+        console.error(`Failed to copy from ${foundPath}: ${e}`);
+      }
+    } else {
+      console.log('No TestCafe Browser Tools.app found anywhere in bundle.');
+    }
+  } catch (e) {
+    console.error(`find command failed: ${e}`);
+  }
+
+  // Log the destination directory state for diagnostics
+  try {
+    if (fs.existsSync(browserToolsDestDir)) {
+      const contents = execSync(`ls -la "${browserToolsDestDir}"`).toString();
+      console.log(`~/.testcafe-browser-tools/ contents:\n${contents}`);
+    } else {
+      console.log('~/.testcafe-browser-tools/ does not exist.');
+    }
+  } catch (e) {
+    console.log(`Could not list ~/.testcafe-browser-tools/: ${e}`);
+  }
+
+  return false;
+}
+
+// Clear stale state from ~/.testcafe-browser-tools/ so that a fresh
+// retry can re-install cleanly.
+function clearBrowserToolsState(): void {
+  const homeDir = process.env.HOME || '/Users/chef';
+  const browserToolsDestDir = path.join(homeDir, '.testcafe-browser-tools');
+  if (fs.existsSync(browserToolsDestDir)) {
+    console.log(`Clearing stale browser tools state: ${browserToolsDestDir}`);
+    try {
+      execSync(`rm -rf "${browserToolsDestDir}"`);
+      console.log('Browser tools state cleared.');
+    } catch (e) {
+      console.error(`Failed to clear browser tools state: ${e}`);
+    }
+  }
+}
+
+// Start a watchdog that monitors the TestCafe process stdout for the browser
+// connect URL. If the connection is not established within `timeoutSec` seconds
+// of seeing the URL, the watchdog directly opens Safari to the connect URL as a
+// fallback. Returns a cleanup function to call when the TestCafe process exits.
+function startSafariWatchdog(
+  testcafeProc: ChildProcess,
+  timeoutSec: number = 15,
+): () => void {
+  let connectUrl: string | null = null;
+  let watchdogTimer: ReturnType<typeof setTimeout> | null = null;
+  let connectionEstablished = false;
+  let cleaned = false;
+
+  // Match the TestCafe connect URL in debug output.
+  // TestCafe logs something like: "http://localhost:1337/browser/connect/ABC123"
+  const connectUrlRegex =
+    /https?:\/\/localhost:\d+\/browser\/connect\/[a-zA-Z0-9_-]+/;
+  // Detect successful connection
+  const connectedRegex = /connection status -> '?ready'?|heartbeat/i;
+
+  const onStdout = (data: Buffer) => {
+    const text = data.toString();
+
+    if (!connectUrl) {
+      const match = text.match(connectUrlRegex);
+      if (match) {
+        connectUrl = match[0];
+        console.log(`[Safari Watchdog] Detected connect URL: ${connectUrl}`);
+
+        // Start the watchdog timer
+        watchdogTimer = setTimeout(() => {
+          if (!connectionEstablished && connectUrl) {
+            console.log(
+              `[Safari Watchdog] No connection after ${timeoutSec}s. ` +
+                `Force-opening Safari to: ${connectUrl}`,
+            );
+            // Check if the connect URL is reachable
+            try {
+              execSync(
+                `curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "${connectUrl}"`,
+                { timeout: 10000 },
+              );
+            } catch {
+              console.log(
+                '[Safari Watchdog] Connect URL not reachable via curl (may still work via Safari)',
+              );
+            }
+            // Try multiple approaches to open Safari
+            try {
+              execSync(`open -a Safari "${connectUrl}"`, { timeout: 10000 });
+              console.log(
+                '[Safari Watchdog] Fallback: opened Safari via `open -a Safari`',
+              );
+            } catch (e) {
+              console.log(`[Safari Watchdog] open -a Safari failed: ${e}`);
+              try {
+                execSync(
+                  `osascript -e 'tell application "Safari" to open location "${connectUrl}"'`,
+                  { timeout: 10000 },
+                );
+                console.log(
+                  '[Safari Watchdog] Fallback: opened Safari via osascript',
+                );
+              } catch (e2) {
+                console.error(
+                  `[Safari Watchdog] All fallback methods failed: ${e2}`,
+                );
+              }
+            }
+          }
+        }, timeoutSec * 1000);
+      }
+    }
+
+    if (connectedRegex.test(text)) {
+      connectionEstablished = true;
+      if (watchdogTimer) {
+        clearTimeout(watchdogTimer);
+        watchdogTimer = null;
+      }
+    }
+  };
+
+  const onStderr = (data: Buffer) => {
+    const text = data.toString();
+    if (!connectUrl) {
+      const match = text.match(connectUrlRegex);
+      if (match) {
+        connectUrl = match[0];
+        console.log(
+          `[Safari Watchdog] Detected connect URL (stderr): ${connectUrl}`,
+        );
+        // Trigger the same watchdog as above
+        onStdout(data);
+        return; // avoid double-processing
+      }
+    }
+    if (connectedRegex.test(text)) {
+      connectionEstablished = true;
+      if (watchdogTimer) {
+        clearTimeout(watchdogTimer);
+        watchdogTimer = null;
+      }
+    }
+  };
+
+  if (testcafeProc.stdout) {
+    testcafeProc.stdout.on('data', onStdout);
+  }
+  if (testcafeProc.stderr) {
+    testcafeProc.stderr.on('data', onStderr);
+  }
+
+  // Return cleanup function
+  return () => {
+    if (cleaned) return;
+    cleaned = true;
+    if (watchdogTimer) {
+      clearTimeout(watchdogTimer);
+      watchdogTimer = null;
+    }
+    if (testcafeProc.stdout) {
+      testcafeProc.stdout.removeListener('data', onStdout);
+    }
+    if (testcafeProc.stderr) {
+      testcafeProc.stderr.removeListener('data', onStderr);
+    }
+  };
+}
+
 async function runTestCafe(
   tcCommandLine: (string | number)[],
   projectPath: string,
@@ -376,6 +656,13 @@ async function runTestCafe(
     }
   });
 
+  // Start Safari watchdog: if TestCafe logs a connect URL but Safari never
+  // connects within 15s, the watchdog force-opens Safari to the URL directly.
+  let cleanupWatchdog: (() => void) | null = null;
+  if (browserName.toLowerCase() === 'safari') {
+    cleanupWatchdog = startSafariWatchdog(testcafeProc, 15);
+  }
+
   let timer: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<{
     passed: boolean;
@@ -396,6 +683,7 @@ async function runTestCafe(
   }>((resolve) => {
     testcafeProc.on('close', (code /*, ...args*/) => {
       clearTimeout(timer);
+      if (cleanupWatchdog) cleanupWatchdog();
       resolve({ passed: code === 0, shouldRetry });
     });
   });
@@ -406,6 +694,7 @@ async function runTestCafe(
     console.error(`Failed to run TestCafe: ${e}`);
   }
 
+  if (cleanupWatchdog) cleanupWatchdog();
   return { passed: false, shouldRetry: false };
 }
 
@@ -489,11 +778,6 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     console.log(`Could not check hostname resolution: ${e}`);
   }
 
-  // Pre-flight diagnostics for Safari: check that the TestCafe Browser Tools
-  // native app exists and log TCC (macOS permissions) state. TestCafe opens
-  // Safari via a native .app that uses ScriptingBridge (Apple Events) to tell
-  // Safari to navigate to the proxy URL. If the .app is missing or lacks
-  // Automation/Apple Events permissions, Safari opens but never loads the URL.
   // Pre-install TestCafe Browser Tools native app for Safari.
   // TestCafe opens Safari via a native macOS .app that uses ScriptingBridge
   // (Apple Events) to tell Safari to navigate to the proxy URL. The .app is
@@ -506,45 +790,12 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     process.platform === 'darwin' &&
     suite.browserName.toLowerCase() === 'safari'
   ) {
-    const homeDir = process.env.HOME || '/Users/chef';
-    const browserToolsDestDir = path.join(homeDir, '.testcafe-browser-tools');
-    const browserToolsAppDest = path.join(
-      browserToolsDestDir,
-      'TestCafe Browser Tools.app',
-    );
-    const browserToolsAppSrc = path.join(
-      projectPath,
-      'node_modules',
-      'testcafe-browser-tools',
-      'bin',
-      'mac',
-      'TestCafe Browser Tools.app',
-    );
-
-    const appExists = fs.existsSync(browserToolsAppDest);
-    console.log(
-      `TestCafe Browser Tools app: ${browserToolsAppDest} (exists: ${appExists})`,
-    );
-
-    if (!appExists) {
-      console.log(
-        `Browser Tools app missing! Pre-installing from ${browserToolsAppSrc}`,
+    const browserToolsInstalled = ensureBrowserToolsApp();
+    if (!browserToolsInstalled) {
+      console.warn(
+        'WARNING: Could not install TestCafe Browser Tools app. ' +
+          'Safari fallback watchdog will attempt direct launch if needed.',
       );
-      try {
-        fs.mkdirSync(browserToolsDestDir, { recursive: true });
-        // Use cp -R to copy the .app bundle preserving symlinks and permissions
-        execSync(`cp -R "${browserToolsAppSrc}" "${browserToolsDestDir}/"`);
-        const installed = fs.existsSync(browserToolsAppDest);
-        console.log(`Browser Tools app installed successfully: ${installed}`);
-        if (installed) {
-          const contents = execSync(
-            `ls -la "${browserToolsDestDir}"`,
-          ).toString();
-          console.log(`Browser Tools contents:\n${contents}`);
-        }
-      } catch (e) {
-        console.error(`Failed to pre-install Browser Tools app: ${e}`);
-      }
     }
   }
 
@@ -575,6 +826,8 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
       console.log(
         `Connection error detected. Killing Safari and retrying... (Attempt ${attempts}/${MAX_RETRIES})`,
       );
+
+      // Kill Safari and related processes
       try {
         const safariProcs = execSync(
           'ps aux | grep -i "[S]afari" || true',
@@ -585,25 +838,30 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
         const CryptexesProcs = execSync(
           'ps aux | grep -i "Cryptexes" || true',
         ).toString();
-        if (safariProcs.trim()) {
+        if (CryptexesProcs.trim()) {
           console.log(`Cryptexes processes prekill:\n${CryptexesProcs}`);
         }
         execSync('killall Safari || true');
+        // Also kill any lingering testcafe-browser-tools processes
+        execSync('killall testcafe-browser-tools || true');
+
         const safariProcs2 = execSync(
           'ps aux | grep -i "[S]afari" || true',
         ).toString();
-        if (safariProcs.trim()) {
+        if (safariProcs2.trim()) {
           console.log(`Safari processes postkill:\n${safariProcs2}`);
-        }
-        const CryptexesProcs2 = execSync(
-          'ps aux | grep -i "Cryptexes" || true',
-        ).toString();
-        if (safariProcs.trim()) {
-          console.log(`Cryptexes processes postkill:\n${CryptexesProcs2}`);
         }
       } catch (e) {
         console.log(`Could not kill Safari: ${e}`);
       }
+
+      // Clear stale browser tools state and re-install before retry.
+      // This addresses the root cause: if the .app was corrupt or missing,
+      // a fresh install gives the next attempt a clean slate.
+      clearBrowserToolsState();
+      const reinstalled = ensureBrowserToolsApp();
+      console.log(`Browser Tools re-installed before retry: ${reinstalled}`);
+
       // Wait for processes and ports to fully release before retrying
       console.log('Waiting 5 seconds before retry...');
       await new Promise((resolve) => globalThis.setTimeout(resolve, 5000));
