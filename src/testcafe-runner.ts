@@ -471,7 +471,11 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
       );
       try {
         execSync('killall Safari || true');
-        execSync('pkill -f testcafe || true');
+        //execSync('pkill -f testcafe || true');
+        const procs = execSync(
+          'ps aux | grep -i testcafe | grep -v grep',
+        ).toString();
+        console.log(`Testcafe processes:\n${procs}`);
         await new Promise((resolve) => setTimeout(resolve, 5000)); // 5s cooldown
       } catch (e) {
         console.log(`Could not kill Safari: ${e}`);
