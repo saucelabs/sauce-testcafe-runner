@@ -494,41 +494,57 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // Safari via a native .app that uses ScriptingBridge (Apple Events) to tell
   // Safari to navigate to the proxy URL. If the .app is missing or lacks
   // Automation/Apple Events permissions, Safari opens but never loads the URL.
-  if (suite.browserName.toLowerCase() === 'safari') {
-    try {
-      const homeDir = process.env.HOME || '/Users/chef';
-      const browserToolsPath = path.join(homeDir, '.testcafe-browser-tools');
-      const btExists = fs.existsSync(browserToolsPath);
+  // Pre-install TestCafe Browser Tools native app for Safari.
+  // TestCafe opens Safari via a native macOS .app that uses ScriptingBridge
+  // (Apple Events) to tell Safari to navigate to the proxy URL. The .app is
+  // lazily copied from node_modules to ~/.testcafe-browser-tools/ on first use.
+  // On ~5% of Sauce Labs VMs, this lazy copy fails silently, leaving the .app
+  // missing. Safari opens to its default homepage instead of the proxy URL,
+  // and TestCafe waits for browserInitTimeout then reports the connection error.
+  // By pre-installing the .app ourselves, we ensure it's always present.
+  if (
+    process.platform === 'darwin' &&
+    suite.browserName.toLowerCase() === 'safari'
+  ) {
+    const homeDir = process.env.HOME || '/Users/chef';
+    const browserToolsDestDir = path.join(homeDir, '.testcafe-browser-tools');
+    const browserToolsAppDest = path.join(
+      browserToolsDestDir,
+      'TestCafe Browser Tools.app',
+    );
+    const browserToolsAppSrc = path.join(
+      projectPath,
+      'node_modules',
+      'testcafe-browser-tools',
+      'bin',
+      'mac',
+      'TestCafe Browser Tools.app',
+    );
+
+    const appExists = fs.existsSync(browserToolsAppDest);
+    console.log(
+      `TestCafe Browser Tools app: ${browserToolsAppDest} (exists: ${appExists})`,
+    );
+
+    if (!appExists) {
       console.log(
-        `TestCafe Browser Tools path: ${browserToolsPath} (exists: ${btExists})`,
+        `Browser Tools app missing! Pre-installing from ${browserToolsAppSrc}`,
       );
-      if (btExists) {
-        const btContents = execSync(`ls -la "${browserToolsPath}"`).toString();
-        console.log(`Browser Tools contents:\n${btContents}`);
+      try {
+        fs.mkdirSync(browserToolsDestDir, { recursive: true });
+        // Use cp -R to copy the .app bundle preserving symlinks and permissions
+        execSync(`cp -R "${browserToolsAppSrc}" "${browserToolsDestDir}/"`);
+        const installed = fs.existsSync(browserToolsAppDest);
+        console.log(`Browser Tools app installed successfully: ${installed}`);
+        if (installed) {
+          const contents = execSync(
+            `ls -la "${browserToolsDestDir}"`,
+          ).toString();
+          console.log(`Browser Tools contents:\n${contents}`);
+        }
+      } catch (e) {
+        console.error(`Failed to pre-install Browser Tools app: ${e}`);
       }
-    } catch (e) {
-      console.log(`Could not check browser tools: ${e}`);
-    }
-    // Log the TCC database for Apple Events / Automation permissions.
-    // This shows whether the browser-tools app is authorized to send
-    // Apple Events to Safari via ScriptingBridge.
-    try {
-      const tccOutput = execSync(
-        'sqlite3 ~/Library/Application\\ Support/com.apple.TCC/TCC.db ' +
-          "\"SELECT service, client, client_type, auth_value, auth_reason FROM access WHERE service IN ('kTCCServiceAppleEvents', 'kTCCServiceScreenCapture', 'kTCCServiceAccessibility')\" 2>/dev/null || echo \"TCC query failed (SIP may block access)\"",
-      ).toString();
-      console.log(`TCC permissions:\n${tccOutput}`);
-    } catch (e) {
-      console.log(`Could not query TCC database: ${e}`);
-    }
-    // Verify Safari can be controlled via AppleScript/Apple Events at all
-    try {
-      const asTest = execSync(
-        'osascript -e \'tell application "System Events" to get name of every process whose name is "Safari"\' 2>&1 || echo "AppleScript test failed"',
-      ).toString();
-      console.log(`AppleScript Safari test: ${asTest.trim()}`);
-    } catch (e) {
-      console.log(`AppleScript test failed: ${e}`);
     }
   }
 
