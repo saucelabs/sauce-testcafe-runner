@@ -486,7 +486,7 @@ function startSafariWatchdog(
   // Detect successful connection
   const connectedRegex = /connection status -> '?ready'?|heartbeat/i;
 
-  const onStdout = (data: Buffer) => {
+  const onStdout = (data: { toString(): string }) => {
     const text = data.toString();
 
     if (!connectUrl) {
@@ -549,7 +549,7 @@ function startSafariWatchdog(
     }
   };
 
-  const onStderr = (data: Buffer) => {
+  const onStderr = (data: { toString(): string }) => {
     const text = data.toString();
     if (!connectUrl) {
       const match = text.match(connectUrlRegex);
