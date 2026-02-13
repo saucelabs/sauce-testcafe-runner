@@ -497,17 +497,6 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     } catch (e) {
       console.log(`Could not check port status: ${e}`);
     }
-    try {
-      const safariProcs = execSync(
-        'ps aux | grep -i "[S]afari" || true',
-      ).toString();
-      if (safariProcs.trim()) {
-        console.log(`Safari processes:\n${safariProcs}`);
-      }
-    } catch (e) {
-      console.log(`e:\n${e}`);
-    }
-
     const result = await runTestCafe(
       tcCommandLine,
       projectPath,
@@ -523,20 +512,33 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
         `Connection error detected. Killing Safari and retrying... (Attempt ${attempts}/${MAX_RETRIES})`,
       );
       try {
-        execSync('killall Safari || true');
-      } catch (e) {
-        console.log(`Could not kill Safari: ${e}`);
-      }
-      // Log what's still running after killing Safari
-      try {
-        const procs = execSync(
-          'ps aux | grep -i testcafe | grep -v grep || true',
+        const safariProcs = execSync(
+          'ps aux | grep -i "[S]afari" || true',
         ).toString();
-        if (procs.trim()) {
-          console.log(`TestCafe processes still running:\n${procs}`);
+        if (safariProcs.trim()) {
+          console.log(`Safari processes prekill:\n${safariProcs}`);
+        }
+        const safariProcs = execSync(
+          'ps aux | grep -i "Cryptexes" || true',
+        ).toString();
+        if (safariProcs.trim()) {
+          console.log(`Cryptexes processes prekill:\n${safariProcs}`);
+        }
+        execSync('killall Safari || true');
+        const safariProcs = execSync(
+          'ps aux | grep -i "[S]afari" || true',
+        ).toString();
+        if (safariProcs.trim()) {
+          console.log(`Safari processes postkill:\n${safariProcs}`);
+        }
+        const safariProcs = execSync(
+          'ps aux | grep -i "Cryptexes" || true',
+        ).toString();
+        if (safariProcs.trim()) {
+          console.log(`Cryptexes processes postkill:\n${safariProcs}`);
         }
       } catch (e) {
-        console.log(`e:\n${e}`);
+        console.log(`Could not kill Safari: ${e}`);
       }
       // Wait for processes and ports to fully release before retrying
       console.log('Waiting 5 seconds before retry...');
