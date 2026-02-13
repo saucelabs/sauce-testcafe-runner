@@ -292,6 +292,16 @@ export function buildCommandLine(
     cli.push('--ports', `${ports[0]},${ports[1]}`);
   }
 
+  // Force hostname to localhost for Safari. TestCafe auto-detects the system
+  // hostname by default, which on cloud VMs may not resolve to 127.0.0.1,
+  // causing Safari to be unable to reach TestCafe's reverse proxy.
+  if (browserName.toLowerCase() === 'safari') {
+    cli.push('--hostname', 'localhost');
+    // Retry failed network requests to the test page via Service Workers.
+    // Requires --hostname localhost (or HTTPS) to register the Service Worker.
+    cli.push('--retry-test-pages');
+  }
+
   return cli;
 }
 
@@ -463,6 +473,28 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     [1341, 1342],
     [1343, 1344],
   ];
+
+  // Log hostname resolution diagnostics to help debug connection failures.
+  // If the system hostname doesn't resolve to 127.0.0.1, TestCafe's proxy URL
+  // will be unreachable by Safari (which is why we now force --hostname localhost).
+  try {
+    const hostname = execSync('hostname').toString().trim();
+    const resolved = execSync(
+      `dscacheutil -q host -a name ${hostname} 2>/dev/null || echo "resolution failed"`,
+    )
+      .toString()
+      .trim();
+    console.log(`System hostname: ${hostname}`);
+    console.log(`Hostname resolution:\n${resolved}`);
+    const loopback = execSync(
+      'dscacheutil -q host -a name localhost 2>/dev/null || echo "resolution failed"',
+    )
+      .toString()
+      .trim();
+    console.log(`localhost resolution:\n${loopback}`);
+  } catch (e) {
+    console.log(`Could not check hostname resolution: ${e}`);
+  }
 
   const MAX_RETRIES = 3;
   let attempts = 0;
