@@ -518,24 +518,24 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
         if (safariProcs.trim()) {
           console.log(`Safari processes prekill:\n${safariProcs}`);
         }
-        const safariProcs = execSync(
+        const CryptexesProcs = execSync(
           'ps aux | grep -i "Cryptexes" || true',
         ).toString();
         if (safariProcs.trim()) {
-          console.log(`Cryptexes processes prekill:\n${safariProcs}`);
+          console.log(`Cryptexes processes prekill:\n${CryptexesProcs}`);
         }
         execSync('killall Safari || true');
-        const safariProcs = execSync(
+        const safariProcs2 = execSync(
           'ps aux | grep -i "[S]afari" || true',
         ).toString();
         if (safariProcs.trim()) {
-          console.log(`Safari processes postkill:\n${safariProcs}`);
+          console.log(`Safari processes postkill:\n${safariProcs2}`);
         }
-        const safariProcs = execSync(
+        const CryptexesProcs2 = execSync(
           'ps aux | grep -i "Cryptexes" || true',
         ).toString();
         if (safariProcs.trim()) {
-          console.log(`Cryptexes processes postkill:\n${safariProcs}`);
+          console.log(`Cryptexes processes postkill:\n${CryptexesProcs2}`);
         }
       } catch (e) {
         console.log(`Could not kill Safari: ${e}`);
