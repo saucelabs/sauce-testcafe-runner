@@ -120,7 +120,6 @@ export function buildCommandLine(
   projectPath: string,
   assetsPath: string,
   configFile: string | undefined,
-  ports?: [number, number],
 ) {
   const cli: (string | number)[] = [];
   if (suite === undefined) {
@@ -288,10 +287,6 @@ export function buildCommandLine(
     cli.push('--fixture-meta', filters.join(','));
   }
 
-  if (ports) {
-    cli.push('--ports', `${ports[0]},${ports[1]}`);
-  }
-
   // Force hostname to localhost for Safari. TestCafe auto-detects the system
   // hostname by default, which on cloud VMs may not resolve to 127.0.0.1,
   // causing Safari to be unable to reach TestCafe's reverse proxy.
@@ -339,13 +334,21 @@ async function runTestCafe(
 
   console.log(`Starting TestCafe with args: ${tcCommandLine.join(' ')}`);
 
+  // Enable TestCafe debug logging for Safari to capture the browser connection
+  // handshake details, including the exact command used to open Safari and
+  // whether the testcafe-browser-tools native app succeeded.
+  const tcEnv = { ...process.env };
+  if (browserName.toLowerCase() === 'safari') {
+    tcEnv.DEBUG = 'testcafe:*';
+  }
+
   const testcafeProc = spawn(
     nodeBin,
     [testcafeBin, ...(tcCommandLine as string[])],
     {
       stdio: ['inherit', 'pipe', 'pipe'],
       cwd: projectPath,
-      env: process.env,
+      env: tcEnv,
     },
   );
 
@@ -464,16 +467,6 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
   // saucectl suite.timeout is in nanoseconds, convert to seconds
   const timeout = (suite.timeout || 0) / 1_000_000_000 || 30 * 60; // 30min default
 
-  // Port sets for each attempt. TestCafe uses two ports (one for the proxy, one for the
-  // browser connection). Using different ports on retry avoids conflicts with
-  // ports that may still be held by a zombie process from the previous attempt.
-  const portSets: [number, number][] = [
-    [1337, 1338],
-    [1339, 1340],
-    [1341, 1342],
-    [1343, 1344],
-  ];
-
   // Log hostname resolution diagnostics to help debug connection failures.
   // If the system hostname doesn't resolve to 127.0.0.1, TestCafe's proxy URL
   // will be unreachable by Safari (which is why we now force --hostname localhost).
@@ -496,39 +489,62 @@ async function run(nodeBin: string, runCfgPath: string, suiteName: string) {
     console.log(`Could not check hostname resolution: ${e}`);
   }
 
+  // Pre-flight diagnostics for Safari: check that the TestCafe Browser Tools
+  // native app exists and log TCC (macOS permissions) state. TestCafe opens
+  // Safari via a native .app that uses ScriptingBridge (Apple Events) to tell
+  // Safari to navigate to the proxy URL. If the .app is missing or lacks
+  // Automation/Apple Events permissions, Safari opens but never loads the URL.
+  if (suite.browserName.toLowerCase() === 'safari') {
+    try {
+      const homeDir = process.env.HOME || '/Users/chef';
+      const browserToolsPath = path.join(homeDir, '.testcafe-browser-tools');
+      const btExists = fs.existsSync(browserToolsPath);
+      console.log(
+        `TestCafe Browser Tools path: ${browserToolsPath} (exists: ${btExists})`,
+      );
+      if (btExists) {
+        const btContents = execSync(`ls -la "${browserToolsPath}"`).toString();
+        console.log(`Browser Tools contents:\n${btContents}`);
+      }
+    } catch (e) {
+      console.log(`Could not check browser tools: ${e}`);
+    }
+    // Log the TCC database for Apple Events / Automation permissions.
+    // This shows whether the browser-tools app is authorized to send
+    // Apple Events to Safari via ScriptingBridge.
+    try {
+      const tccOutput = execSync(
+        'sqlite3 ~/Library/Application\\ Support/com.apple.TCC/TCC.db ' +
+          "\"SELECT service, client, client_type, auth_value, auth_reason FROM access WHERE service IN ('kTCCServiceAppleEvents', 'kTCCServiceScreenCapture', 'kTCCServiceAccessibility')\" 2>/dev/null || echo \"TCC query failed (SIP may block access)\"",
+      ).toString();
+      console.log(`TCC permissions:\n${tccOutput}`);
+    } catch (e) {
+      console.log(`Could not query TCC database: ${e}`);
+    }
+    // Verify Safari can be controlled via AppleScript/Apple Events at all
+    try {
+      const asTest = execSync(
+        'osascript -e \'tell application "System Events" to get name of every process whose name is "Safari"\' 2>&1 || echo "AppleScript test failed"',
+      ).toString();
+      console.log(`AppleScript Safari test: ${asTest.trim()}`);
+    } catch (e) {
+      console.log(`AppleScript test failed: ${e}`);
+    }
+  }
+
+  const tcCommandLine = buildCommandLine(
+    suite,
+    projectPath,
+    assetsPath,
+    configFile,
+  );
+
   const MAX_RETRIES = 3;
   let attempts = 0;
   let passed = false;
   let shouldRetry = false;
 
   do {
-    const ports = portSets[attempts];
-    const tcCommandLine = buildCommandLine(
-      suite,
-      projectPath,
-      assetsPath,
-      configFile,
-      ports,
-    );
-
-    // Log diagnostic info about processes and ports before each attempt
-    console.log(
-      `\n--- Attempt ${attempts + 1}/${MAX_RETRIES + 1} using ports ${ports[0]},${ports[1]} ---`,
-    );
-    try {
-      const lsofOutput = execSync(
-        `lsof -iTCP:${ports[0]} -iTCP:${ports[1]} -sTCP:LISTEN 2>/dev/null || true`,
-      ).toString();
-      if (lsofOutput.trim()) {
-        console.log(
-          `Processes listening on ports ${ports[0]}/${ports[1]}:\n${lsofOutput}`,
-        );
-      } else {
-        console.log(`Ports ${ports[0]}/${ports[1]} are free.`);
-      }
-    } catch (e) {
-      console.log(`Could not check port status: ${e}`);
-    }
     const result = await runTestCafe(
       tcCommandLine,
       projectPath,
