@@ -1,6 +1,6 @@
 import { spawn, execSync } from 'child_process';
 import fs from 'fs';
-import { setTimeout } from 'node:timers';
+import { clearTimeout, setTimeout } from 'node:timers';
 import { URL } from 'node:url';
 import path from 'path';
 import {
