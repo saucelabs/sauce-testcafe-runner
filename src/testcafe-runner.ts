@@ -10,6 +10,7 @@ import {
   loadRunConfig,
   preExec,
   prepareNpmEnv,
+  runWithStdoutWatchdog,
   zip,
 } from 'sauce-testrunner-utils';
 
@@ -321,14 +322,25 @@ async function runTestCafe(
     'testcafe-with-v8-flag-filter.js',
   );
 
+  // stdio is piped (not inherited) so the no-progress watchdog can observe
+  // TestCafe's output. Chunks are still echoed to the parent's stdout/stderr
+  // by runWithStdoutWatchdog, preserving existing log behavior.
   const testcafeProc = spawn(
     nodeBin,
     [testcafeBin, ...(tcCommandLine as string[])],
     {
-      stdio: 'inherit',
+      stdio: ['inherit', 'pipe', 'pipe'],
       cwd: projectPath,
       env: process.env,
     },
+  );
+
+  const noProgressTimeoutSecs = Math.max(
+    1,
+    parseInt(
+      process.env.SAUCE_TESTCAFE_NO_PROGRESS_TIMEOUT_SECS ?? '180',
+      10,
+    ) || 180,
   );
 
   const timeoutPromise = new Promise<boolean>((resolve) => {
@@ -338,14 +350,18 @@ async function runTestCafe(
     }, timeout * 1000);
   });
 
-  const testcafePromise = new Promise<boolean>((resolve) => {
-    testcafeProc.on('close', (code /*, ...args*/) => {
-      resolve(code === 0);
-    });
+  const watchdogPromise = runWithStdoutWatchdog(testcafeProc, {
+    noProgressTimeoutSecs,
+    tag: 'Sauce TestCafe Runner',
+  }).then(({ exitCode, watchdogFired }) => {
+    if (watchdogFired) {
+      return false;
+    }
+    return exitCode === 0;
   });
 
   try {
-    return Promise.race([timeoutPromise, testcafePromise]);
+    return Promise.race([timeoutPromise, watchdogPromise]);
   } catch (e) {
     console.error(`Failed to run TestCafe: ${e}`);
   }
