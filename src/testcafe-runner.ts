@@ -307,11 +307,23 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
+// testcafe-browser-tools enumerates installed Windows browsers by reading
+// HKLM\Software\Clients\StartMenuInternet\*\shell\open\command. On a fresh
+// Sauce VM the subkey can exist before the MSI installer has written the
+// (default) value, so the PowerShell query exits non-zero and TestCafe aborts
+// before any test runs. The result is cached in a module-level variable
+// inside testcafe-browser-tools, so a fresh node process is what gives the
+// retry a real chance.
+const BROWSER_DISCOVERY_RACE_SIGNATURE = /StartMenuInternet/i;
+const BROWSER_DISCOVERY_RETRY_DELAY_MS = 5_000;
+const CHILD_OUTPUT_BUFFER_CAP = 64 * 1024;
+
 async function runTestCafe(
   tcCommandLine: (string | number)[],
   projectPath: string,
   timeout: second,
-) {
+  attempt = 1,
+): Promise<boolean> {
   const nodeBin = process.argv[0];
   const testcafeBin = path.join(
     __dirname,
@@ -343,6 +355,19 @@ async function runTestCafe(
     ) || 180,
   );
 
+  // Buffer child output so we can detect the StartMenuInternet registry race
+  // after the run completes. runWithStdoutWatchdog independently echoes chunks
+  // to the parent's stdout/stderr, so this listener only collects.
+  let outputBuf = '';
+  const buffer = (chunk: unknown) => {
+    outputBuf += String(chunk);
+    if (outputBuf.length > CHILD_OUTPUT_BUFFER_CAP) {
+      outputBuf = outputBuf.slice(-CHILD_OUTPUT_BUFFER_CAP);
+    }
+  };
+  testcafeProc.stdout?.on('data', buffer);
+  testcafeProc.stderr?.on('data', buffer);
+
   const timeoutPromise = new Promise<boolean>((resolve) => {
     setTimeout(() => {
       console.error(`Job timed out after ${timeout} seconds`);
@@ -360,13 +385,26 @@ async function runTestCafe(
     return exitCode === 0;
   });
 
-  try {
-    return Promise.race([timeoutPromise, watchdogPromise]);
-  } catch (e) {
-    console.error(`Failed to run TestCafe: ${e}`);
+  const passed = await Promise.race([timeoutPromise, watchdogPromise]);
+
+  if (
+    !passed &&
+    attempt === 1 &&
+    BROWSER_DISCOVERY_RACE_SIGNATURE.test(outputBuf)
+  ) {
+    // Make sure the prior attempt's child isn't lingering before respawning,
+    // so two TestCafe instances can't race on the same VM.
+    if (!testcafeProc.killed) {
+      testcafeProc.kill('SIGKILL');
+    }
+    console.warn(
+      `TESTCAFE_BROWSER_DISCOVERY_RETRY: TestCafe failed during Windows browser discovery; retrying once after ${BROWSER_DISCOVERY_RETRY_DELAY_MS}ms.`,
+    );
+    await new Promise((r) => setTimeout(r, BROWSER_DISCOVERY_RETRY_DELAY_MS));
+    return runTestCafe(tcCommandLine, projectPath, timeout, attempt + 1);
   }
 
-  return false;
+  return passed;
 }
 
 function zipArtifacts(runCfg: TestCafeConfig) {
