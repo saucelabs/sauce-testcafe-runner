@@ -40,12 +40,27 @@ test('SwagLabs locked user login', async function (t) {
 });
 
 test('SwagLabs standard user login', async function (t) {
-  await t
-    .typeText(login.usernameEl, Users.standard)
-    .typeText(login.passwordEl, Users.password)
-    .click('.btn_action')
-    .takeScreenshot()
-    // Use the assertion to check if the actual header text is equal to the expected one
-    .expect(Selector('#inventory_container').visible)
-    .eql(true);
+  // saucedemo intermittently no-ops the login submit when it is hit repeatedly
+  // within one browser session (an isolated login always works). Retry the full
+  // login — reload, refill (paste), submit — until the inventory page appears,
+  // with a small backoff between attempts. See INT-634.
+  let loggedIn = false;
+  for (let attempt = 1; attempt <= 3 && !loggedIn; attempt++) {
+    if (attempt > 1) {
+      await t.navigateTo('https://www.saucedemo.com/').wait(2000 * attempt);
+    }
+    await t
+      .typeText(login.usernameEl, Users.standard, {
+        replace: true,
+        paste: true,
+      })
+      .typeText(login.passwordEl, Users.password, {
+        replace: true,
+        paste: true,
+      })
+      .click('.btn_action');
+    loggedIn = await Selector('#inventory_container').with({ timeout: 10000 })
+      .exists;
+  }
+  await t.expect(Selector('#inventory_container').visible).eql(true);
 });

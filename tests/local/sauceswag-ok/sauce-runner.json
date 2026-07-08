@@ -27,12 +27,7 @@
       "speed": 1,
       "src": [
         "**/*.test.js"
-      ],
-      "assertionTimeout": 15000,
-      "quarantineMode": {
-        "attemptLimit": 3,
-        "successThreshold": 1
-      }
+      ]
     }
   ],
   "testcafe": {
