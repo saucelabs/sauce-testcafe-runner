@@ -50,6 +50,8 @@ test.skip('SwagLabs standard user login', async function (t) {
     .typeText(login.usernameEl, Users.standard)
     .typeText(login.passwordEl, Users.password)
     .click('.btn_action')
+    .takeScreenshot()
+    // Use the assertion to check if the actual header text is equal to the expected one
     .expect(Selector('#inventory_container').visible)
     .eql(true);
 });
