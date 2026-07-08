@@ -1,4 +1,4 @@
-import { Selector, fixture, test } from 'testcafe';
+import { Selector, ClientFunction, fixture, test } from 'testcafe';
 
 fixture('Getting Started Sauce demo').page('https://www.saucedemo.com/');
 
@@ -39,28 +39,33 @@ test('SwagLabs locked user login', async function (t) {
     .eql(true);
 });
 
+// TEMPORARY CI DIAGNOSTIC (INT-634): fill creds, submit, then log the resulting
+// page state to stdout AND embed it in the assertion message, so the CI log shows
+// what the runner's browser actually gets post-login. Revert once diagnosed.
+const pageState = ClientFunction(() =>
+  JSON.stringify({
+    url: location.href,
+    title: document.title,
+    h3: (document.querySelector('h3') || {}).textContent || null,
+    err:
+      (document.querySelector('[data-test="error"]') || {}).textContent || null,
+    invExists: !!document.querySelector('#inventory_container'),
+    stillLogin: !!document.querySelector('#user-name'),
+    userVal: (document.querySelector('#user-name') || {}).value,
+    cookie: document.cookie,
+    body: (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 300),
+  }),
+);
+
 test('SwagLabs standard user login', async function (t) {
-  // saucedemo intermittently no-ops the login submit when it is hit repeatedly
-  // within one browser session (an isolated login always works). Retry the full
-  // login — reload, refill (paste), submit — until the inventory page appears,
-  // with a small backoff between attempts. See INT-634.
-  let loggedIn = false;
-  for (let attempt = 1; attempt <= 3 && !loggedIn; attempt++) {
-    if (attempt > 1) {
-      await t.navigateTo('https://www.saucedemo.com/').wait(2000 * attempt);
-    }
-    await t
-      .typeText(login.usernameEl, Users.standard, {
-        replace: true,
-        paste: true,
-      })
-      .typeText(login.passwordEl, Users.password, {
-        replace: true,
-        paste: true,
-      })
-      .click('.btn_action');
-    loggedIn = await Selector('#inventory_container').with({ timeout: 10000 })
-      .exists;
-  }
-  await t.expect(Selector('#inventory_container').visible).eql(true);
+  await t
+    .typeText(login.usernameEl, Users.standard, { replace: true, paste: true })
+    .typeText(login.passwordEl, Users.password, { replace: true, paste: true });
+  console.log('DIAG-CI preclick ' + (await pageState()));
+  await t.click('.btn_action').wait(6000);
+  const state = await pageState();
+  console.log('DIAG-CI postclick ' + state);
+  await t
+    .expect(Selector('#inventory_container').visible)
+    .eql(true, 'DIAG-CI ' + state);
 });
