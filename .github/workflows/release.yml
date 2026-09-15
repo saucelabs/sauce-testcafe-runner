@@ -33,14 +33,14 @@ jobs:
           echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         if: ${{ steps.prep.outputs.tag_name == '' }}
         with:
           node-version-file: '.nvmrc'
@@ -138,14 +138,14 @@ jobs:
       - run: Write-Output "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
       - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
@@ -171,7 +171,7 @@ jobs:
 
       - name: Archive Bundle
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: azure/powershell@v2
+        uses: azure/powershell@v3
         with:
           inlineScript: |
             Compress-Archive bundle/ testcafe-windows-amd64.zip
@@ -216,14 +216,14 @@ jobs:
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
       - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
@@ -296,14 +296,14 @@ jobs:
       - run: echo "${{ steps.prep.outputs.release_id }} - ${{ steps.prep.outputs.version }} - ${{ steps.prep.outputs.asset_id }}"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         if: ${{ steps.prep.outputs.asset_id == '' }}
         with:
           ref: ${{ steps.prep.outputs.version }}
 
       - name: Setup Node
         if: ${{ steps.prep.outputs.asset_id == '' }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
@@ -372,7 +372,7 @@ jobs:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
@@ -405,7 +405,7 @@ jobs:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup saucectl
         uses: saucelabs/saucectl-run-action@v4
