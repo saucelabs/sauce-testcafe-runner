@@ -311,6 +311,8 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+          region: us-west-1
+          proxyLocalhost: allow
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}-${{ matrix.browser }}
 
       - name: Test on Sauce
@@ -361,6 +363,8 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+          region: us-west-1
+          proxyLocalhost: allow
           tunnelName: github-testcafe-sc-check-tunnel-${{ matrix.os }}
 
       - name: Test on Sauce
