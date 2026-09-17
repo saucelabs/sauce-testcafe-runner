@@ -307,7 +307,7 @@ jobs:
         working-directory: ./tests/cloud/www/
 
       - name: Start sauce-connect
-        uses: saucelabs/sauce-connect-action@v2
+        uses: saucelabs/sauce-connect-action@v3
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
@@ -357,7 +357,7 @@ jobs:
         working-directory: ./tests/cloud/www/
 
       - name: Start sauce-connect
-        uses: saucelabs/sauce-connect-action@v2
+        uses: saucelabs/sauce-connect-action@v3
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
