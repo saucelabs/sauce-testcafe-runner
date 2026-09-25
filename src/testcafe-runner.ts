@@ -307,16 +307,32 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
-// testcafe-browser-tools enumerates installed Windows browsers by reading
-// HKLM\Software\Clients\StartMenuInternet\*\shell\open\command. On a fresh
-// Sauce VM the subkey can exist before the MSI installer has written the
-// (default) value, so the PowerShell query exits non-zero and TestCafe aborts
-// before any test runs. The result is cached in a module-level variable
-// inside testcafe-browser-tools, so a fresh node process is what gives the
-// retry a real chance.
-const BROWSER_DISCOVERY_RACE_SIGNATURE = /StartMenuInternet/i;
+// testcafe-browser-tools discovers installed Windows browsers with a few
+// PowerShell registry queries. On Sauce VMs those queries intermittently exit
+// with code 2 and no output (root cause unknown), which aborts TestCafe before
+// any test runs. The result is cached in a module-level variable inside
+// testcafe-browser-tools, so a fresh node process is what gives the retry a
+// real chance.
+//
+// patches/testcafe-browser-tools+*.patch makes each query best-effort and logs
+// TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING instead of throwing. We still retry
+// if discovery then missed the browser the suite asked for, or if any
+// discovery query throws anyway (e.g. the patch failed to apply).
+const BROWSER_DISCOVERY_HARD_FAILURE =
+  /Command failed with exit code \d+:[\s\S]*get-installations\.js/;
+const BROWSER_DISCOVERY_REGISTRY_WARNING =
+  /TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING/;
+const TESTCAFE_BROWSER_NOT_FOUND = /Cannot find the browser\./;
 const BROWSER_DISCOVERY_RETRY_DELAY_MS = 5_000;
 const CHILD_OUTPUT_BUFFER_CAP = 64 * 1024;
+
+export function isBrowserDiscoveryFailure(output: string): boolean {
+  return (
+    BROWSER_DISCOVERY_HARD_FAILURE.test(output) ||
+    (BROWSER_DISCOVERY_REGISTRY_WARNING.test(output) &&
+      TESTCAFE_BROWSER_NOT_FOUND.test(output))
+  );
+}
 
 async function runTestCafe(
   tcCommandLine: (string | number)[],
@@ -387,11 +403,7 @@ async function runTestCafe(
 
   const passed = await Promise.race([timeoutPromise, watchdogPromise]);
 
-  if (
-    !passed &&
-    attempt === 1 &&
-    BROWSER_DISCOVERY_RACE_SIGNATURE.test(outputBuf)
-  ) {
+  if (!passed && attempt === 1 && isBrowserDiscoveryFailure(outputBuf)) {
     // Make sure the prior attempt's child isn't lingering before respawning,
     // so two TestCafe instances can't race on the same VM.
     if (!testcafeProc.killed) {
@@ -504,4 +516,9 @@ if (require.main === module) {
     });
 }
 
-module.exports = { buildCommandLine, buildCompilerOptions, run };
+module.exports = {
+  buildCommandLine,
+  buildCompilerOptions,
+  isBrowserDiscoveryFailure,
+  run,
+};
