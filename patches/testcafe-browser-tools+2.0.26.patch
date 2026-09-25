@@ -1,0 +1,26 @@
+diff --git a/node_modules/testcafe-browser-tools/lib/api/get-installations.js b/node_modules/testcafe-browser-tools/lib/api/get-installations.js
+index b359f63..e5cdcaa 100644
+--- a/node_modules/testcafe-browser-tools/lib/api/get-installations.js
++++ b/node_modules/testcafe-browser-tools/lib/api/get-installations.js
+@@ -61,7 +61,20 @@ async function detectMicrosoftEdgeLegacy() {
+ }
+ async function searchInRegistry(registryRoot) {
+     const installations = {};
+-    const registryResult = await getRegistryBrowserProperties(BROWSER_COMMANDS_KEY_GLOB(registryRoot));
++    // SAUCE PATCH (INT-154): the wildcard query is all-or-nothing. If a single
++    // StartMenuInternet subkey is half-written (no '(default)' value yet),
++    // PowerShell exits non-zero and TestCafe aborts before any test runs, even
++    // though stdout still lists every healthy browser. Fall back to that
++    // partial output and log the PowerShell stderr, which names the bad key.
++    let registryResult;
++    try {
++        registryResult = await getRegistryBrowserProperties(BROWSER_COMMANDS_KEY_GLOB(registryRoot));
++    }
++    catch (err) {
++        const stderr = String(err.stderr || '').replace(/\s+/g, ' ').trim().slice(0, 1000);
++        process.stderr.write(`TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING: ${registryRoot} browser query exited with code ${err.exitCode}; continuing with partial results. stderr: ${stderr}\n`);
++        registryResult = { stdout: String(err.stdout || '') };
++    }
+     const data = registryResult.stdout
+         .split(DOUBLE_LINE_WRAP)
+         .map(block => block

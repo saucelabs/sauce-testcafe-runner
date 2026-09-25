@@ -8,6 +8,7 @@ cp package-lock.json bundle/package-lock.json
 cp tsconfig.json bundle/tsconfig.json
 cp "$(which node)" bundle/
 cp ./scripts/win-refresh-wininet.ps1 bundle/scripts/win-refresh-wininet.ps1
+cp -r ./patches/ ./bundle/patches/
 
 pushd bundle/
 npm cache clean --force

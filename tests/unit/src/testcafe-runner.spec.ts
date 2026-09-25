@@ -4,6 +4,7 @@ jest.mock('../../../lib/sauce-testreporter');
 import {
   buildCommandLine,
   buildCompilerOptions,
+  isBrowserDiscoveryFailure,
 } from '../../../src/testcafe-runner';
 import { Suite, CompilerOptions } from '../../../src/type';
 
@@ -396,5 +397,31 @@ describe('.buildCompilerOptions', function () {
     };
     const expected = `typescript.configPath=./tsconfig.json;typescript.customCompilerModulePath=/path/to/custom/compiler;typescript.options.allowUnusedLabels=true;typescript.options.noFallthroughCasesInSwitch=true;typescript.options.allowUmdGlobalAccess=true`;
     expect(buildCompilerOptions(input)).toEqual(expected);
+  });
+});
+
+describe('.isBrowserDiscoveryFailure', function () {
+  const hardFailure =
+    "ERROR Error: Command failed with exit code 2: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -Command Get-Item 'Registry::HKEY_LOCAL_MACHINE\\Software\\Clients\\StartMenuInternet\\*\\shell\\open\\command'";
+  const registryWarning =
+    'TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING: HKEY_LOCAL_MACHINE browser query exited with code 1; continuing with partial results. stderr: Get-ItemProperty : Property (default) does not exist at path HKEY_LOCAL_MACHINE\\Software\\Clients\\StartMenuInternet\\Microsoft Edge\\shell\\open\\command.';
+  const browserNotFound =
+    'ERROR Cannot find the browser. "edge" is neither a known browser alias, nor a path to an executable file.';
+
+  it('detects the unpatched PowerShell hard failure', function () {
+    expect(isBrowserDiscoveryFailure(hardFailure)).toBe(true);
+  });
+  it('detects partial registry results that miss the requested browser', function () {
+    expect(
+      isBrowserDiscoveryFailure(`${registryWarning}\n${browserNotFound}`),
+    ).toBe(true);
+  });
+  it('ignores a registry warning when the run failed for other reasons', function () {
+    expect(
+      isBrowserDiscoveryFailure(`${registryWarning}\n 1 of 3 tests failed`),
+    ).toBe(false);
+  });
+  it('ignores a browser-not-found error without a registry warning', function () {
+    expect(isBrowserDiscoveryFailure(browserNotFound)).toBe(false);
   });
 });

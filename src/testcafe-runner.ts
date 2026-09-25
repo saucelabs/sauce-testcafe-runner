@@ -314,9 +314,27 @@ function isChromiumBased(browser: string) {
 // before any test runs. The result is cached in a module-level variable
 // inside testcafe-browser-tools, so a fresh node process is what gives the
 // retry a real chance.
-const BROWSER_DISCOVERY_RACE_SIGNATURE = /StartMenuInternet/i;
+//
+// patches/testcafe-browser-tools+*.patch makes the query tolerate a bad
+// subkey and fall back to partial results, logging
+// TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING. We still retry if those partial
+// results were missing the browser the suite asked for, or if the unpatched
+// hard failure shows up (e.g. the patch failed to apply).
+const BROWSER_DISCOVERY_HARD_FAILURE =
+  /Command failed with exit code \d+:[^\n]*StartMenuInternet/;
+const BROWSER_DISCOVERY_REGISTRY_WARNING =
+  /TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING/;
+const TESTCAFE_BROWSER_NOT_FOUND = /Cannot find the browser\./;
 const BROWSER_DISCOVERY_RETRY_DELAY_MS = 5_000;
 const CHILD_OUTPUT_BUFFER_CAP = 64 * 1024;
+
+export function isBrowserDiscoveryFailure(output: string): boolean {
+  return (
+    BROWSER_DISCOVERY_HARD_FAILURE.test(output) ||
+    (BROWSER_DISCOVERY_REGISTRY_WARNING.test(output) &&
+      TESTCAFE_BROWSER_NOT_FOUND.test(output))
+  );
+}
 
 async function runTestCafe(
   tcCommandLine: (string | number)[],
@@ -387,11 +405,7 @@ async function runTestCafe(
 
   const passed = await Promise.race([timeoutPromise, watchdogPromise]);
 
-  if (
-    !passed &&
-    attempt === 1 &&
-    BROWSER_DISCOVERY_RACE_SIGNATURE.test(outputBuf)
-  ) {
+  if (!passed && attempt === 1 && isBrowserDiscoveryFailure(outputBuf)) {
     // Make sure the prior attempt's child isn't lingering before respawning,
     // so two TestCafe instances can't race on the same VM.
     if (!testcafeProc.killed) {
@@ -504,4 +518,9 @@ if (require.main === module) {
     });
 }
 
-module.exports = { buildCommandLine, buildCompilerOptions, run };
+module.exports = {
+  buildCommandLine,
+  buildCompilerOptions,
+  isBrowserDiscoveryFailure,
+  run,
+};
