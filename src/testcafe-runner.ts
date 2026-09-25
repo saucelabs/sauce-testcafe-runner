@@ -307,21 +307,19 @@ function isChromiumBased(browser: string) {
   return browser === 'chrome' || browser === 'microsoftedge';
 }
 
-// testcafe-browser-tools enumerates installed Windows browsers by reading
-// HKLM\Software\Clients\StartMenuInternet\*\shell\open\command. On a fresh
-// Sauce VM the subkey can exist before the MSI installer has written the
-// (default) value, so the PowerShell query exits non-zero and TestCafe aborts
-// before any test runs. The result is cached in a module-level variable
-// inside testcafe-browser-tools, so a fresh node process is what gives the
-// retry a real chance.
+// testcafe-browser-tools discovers installed Windows browsers with a few
+// PowerShell registry queries. On Sauce VMs those queries intermittently exit
+// with code 2 and no output (root cause unknown), which aborts TestCafe before
+// any test runs. The result is cached in a module-level variable inside
+// testcafe-browser-tools, so a fresh node process is what gives the retry a
+// real chance.
 //
-// patches/testcafe-browser-tools+*.patch makes the query tolerate a bad
-// subkey and fall back to partial results, logging
-// TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING. We still retry if those partial
-// results were missing the browser the suite asked for, or if the unpatched
-// hard failure shows up (e.g. the patch failed to apply).
+// patches/testcafe-browser-tools+*.patch makes each query best-effort and logs
+// TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING instead of throwing. We still retry
+// if discovery then missed the browser the suite asked for, or if any
+// discovery query throws anyway (e.g. the patch failed to apply).
 const BROWSER_DISCOVERY_HARD_FAILURE =
-  /Command failed with exit code \d+:[^\n]*StartMenuInternet/;
+  /Command failed with exit code \d+:[\s\S]*get-installations\.js/;
 const BROWSER_DISCOVERY_REGISTRY_WARNING =
   /TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING/;
 const TESTCAFE_BROWSER_NOT_FOUND = /Cannot find the browser\./;

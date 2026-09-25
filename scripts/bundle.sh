@@ -13,6 +13,9 @@ cp -r ./patches/ ./bundle/patches/
 pushd bundle/
 npm cache clean --force
 npm ci --production
+# Fail the bundle if patch-package skipped or failed to apply the patch.
+grep -q "SAUCE PATCH" node_modules/testcafe-browser-tools/lib/api/get-installations.js \
+  || { echo "testcafe-browser-tools patch not applied"; exit 1; }
 npm run build
 
 # Sanity tests
