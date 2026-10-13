@@ -89,7 +89,6 @@ jobs:
 
       - name: Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
-        if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
         with:
           token: ${{ github.token }}
@@ -150,7 +149,6 @@ jobs:
         run: npm run build
 
       - uses: FedericoCarboni/setup-ffmpeg@v3
-        if: ${{ steps.prep.outputs.asset_id == '' }}
         id: setup-ffmpeg
         with:
           token: ${{ github.token }}
@@ -206,7 +204,6 @@ jobs:
         run: npm run build
 
       # - uses: FedericoCarboni/setup-ffmpeg@v3
-      #   if: ${{ steps.prep.outputs.asset_id == '' }}
       #   id: setup-ffmpeg
       #   with:
       #     token: ${{ github.token }}
