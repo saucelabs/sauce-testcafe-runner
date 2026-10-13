@@ -164,6 +164,7 @@ jobs:
           gsutil cp ./testcafe-macos-amd64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-amd64-${{ github.run_id }}.zip
 
   build-mac-arm-bundle:
+    # macos-latest is Apple Silicon; this bundle serves the macOS 14 and 15 cloud suites
     runs-on: macos-latest
     needs: [test]
     steps:
@@ -219,12 +220,12 @@ jobs:
           gsutil cp ./testcafe-macos-arm64.zip gs://${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-arm64-${{ github.run_id }}.zip
 
   bundle-test:
-    needs: [build-windows-bundle, build-mac-bundle]
+    needs: [build-windows-bundle, build-mac-bundle, build-mac-arm-bundle]
     strategy:
       max-parallel: 3
       fail-fast: false
       matrix:
-        os: [Win10, Win11, macOS11, macOS12, macOS13]
+        os: [Win10, Win11, macOS11, macOS12, macOS13, macOS14, macOS15]
         browser: [Chrome, Firefox, Safari]
         exclude:
           - os: Win10
@@ -253,7 +254,10 @@ jobs:
         working-directory: ./tests/cloud/
         run: |
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-windows-amd64-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} =~ ^mac ]] || [[ ${{ matrix.os }} =~ ^iPhone ]];then
+          # macOS 14 and later run on Apple Silicon and use the arm64 bundle
+          if [[ ${{ matrix.os }} =~ ^macOS1[45]$ ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-arm64-${{ github.run_id }}.zip
+          elif [[ ${{ matrix.os }} =~ ^mac ]] || [[ ${{ matrix.os }} =~ ^iPhone ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-amd64-${{ github.run_id }}.zip
           fi
 
@@ -263,12 +267,12 @@ jobs:
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   bundle-test-with-sc:
-    needs: [build-windows-bundle, build-mac-bundle]
+    needs: [build-windows-bundle, build-mac-bundle, build-mac-arm-bundle]
     strategy:
       max-parallel: 3
       fail-fast: false
       matrix:
-        os: [Win10, Win11, macOS11, macOS12, macOS13]
+        os: [Win10, Win11, macOS11, macOS12, macOS13, macOS14, macOS15]
         browser: [Chrome, Firefox, Safari]
         exclude:
           - os: Win10
@@ -316,7 +320,10 @@ jobs:
         working-directory: ./tests/cloud/
         run: |
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-windows-amd64-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} =~ ^mac ]] || [[ ${{ matrix.os }} =~ ^iPhone ]];then
+          # macOS 14 and later run on Apple Silicon and use the arm64 bundle
+          if [[ ${{ matrix.os }} =~ ^macOS1[45]$ ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-arm64-${{ github.run_id }}.zip
+          elif [[ ${{ matrix.os }} =~ ^mac ]] || [[ ${{ matrix.os }} =~ ^iPhone ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-amd64-${{ github.run_id }}.zip
           fi
 
@@ -327,12 +334,12 @@ jobs:
             --select-suite "${{ matrix.os }} - ${{ matrix.browser }}"
 
   bundle-test-proxy:
-    needs: [build-windows-bundle, build-mac-bundle]
+    needs: [build-windows-bundle, build-mac-bundle, build-mac-arm-bundle]
     strategy:
       max-parallel: 3
       fail-fast: false
       matrix:
-        os: [Win11, macOS13]
+        os: [Win11, macOS13, macOS15]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -368,7 +375,10 @@ jobs:
         working-directory: ./tests/cloud/
         run: |
           BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-windows-amd64-${{ github.run_id }}.zip
-          if [[ ${{ matrix.os }} =~ ^mac ]];then
+          # macOS 14 and later run on Apple Silicon and use the arm64 bundle
+          if [[ ${{ matrix.os }} =~ ^macOS1[45]$ ]];then
+            BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-arm64-${{ github.run_id }}.zip
+          elif [[ ${{ matrix.os }} =~ ^mac ]];then
             BUNDLE_URL=https://storage.googleapis.com/${{ secrets.GCS_RUNNER_BUCKET }}/testcafe-macos-amd64-${{ github.run_id }}.zip
           fi
 

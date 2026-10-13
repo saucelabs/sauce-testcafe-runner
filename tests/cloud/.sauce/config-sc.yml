@@ -116,6 +116,58 @@ suites:
       - "tests/**/*.test.js"
     speed: 1
 
+  - name: "macOS14 - Chrome"
+    platformName: "macOS 14"
+    armRequired: true
+    browserName: "chrome"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
+  - name: "macOS14 - Firefox"
+    platformName: "macOS 14"
+    armRequired: true
+    browserName: "firefox"
+    browserVersion: "143"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+
+  - name: "macOS14 - Safari"
+    platformName: "macOS 14"
+    armRequired: true
+    browserName: "safari"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+
+  - name: "macOS15 - Chrome"
+    platformName: "macOS 15"
+    armRequired: true
+    browserName: "chrome"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
+  - name: "macOS15 - Firefox"
+    platformName: "macOS 15"
+    armRequired: true
+    browserName: "firefox"
+    browserVersion: "143"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+
+  - name: "macOS15 - Safari"
+    platformName: "macOS 15"
+    armRequired: true
+    browserName: "safari"
+    src:
+      - "tests/**/*.test.js"
+    speed: 1
+
   - name: "iPhone14 - Safari"
     browserName: "safari"
     src:
