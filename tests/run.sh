@@ -21,7 +21,7 @@ for i in "${tests[@]}"; do
     RETURN_CODE=${?}
     popd > /dev/null
 
-    echo "expected_result: ${RETURN_CODE}"
+    echo "expected_result: ${expected_result}, exit code: ${RETURN_CODE}"
     if ([ "${expected_result}" == "success" ] && [ "${RETURN_CODE}" -ne 0 ]) ||
          ([ "${expected_result}" == "failure" ] && [ "${RETURN_CODE}" -eq 0 ]);then
         cat ${tmpfile}
