@@ -91,7 +91,7 @@ jobs:
         uses: FedericoCarboni/setup-ffmpeg@v3
         id: setup-ffmpeg
         with:
-          token: ${{ github.token }}
+          github-token: ${{ github.token }}
 
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
@@ -151,7 +151,7 @@ jobs:
       - uses: FedericoCarboni/setup-ffmpeg@v3
         id: setup-ffmpeg
         with:
-          token: ${{ github.token }}
+          github-token: ${{ github.token }}
 
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
@@ -206,7 +206,7 @@ jobs:
       # - uses: FedericoCarboni/setup-ffmpeg@v3
       #   id: setup-ffmpeg
       #   with:
-      #     token: ${{ github.token }}
+      #     github-token: ${{ github.token }}
 
       - name: Bundle Directory
         run: bash ./scripts/bundle.sh
