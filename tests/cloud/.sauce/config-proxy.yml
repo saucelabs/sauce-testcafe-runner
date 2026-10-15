@@ -12,7 +12,7 @@ sauce:
     build: Release $CI_COMMIT_SHORT_SHA
 
 testcafe:
-  version: 3.7.2
+  version: 3.7.6
 
 suites:
   - name: "Proxy - macOS13"
@@ -24,6 +24,16 @@ suites:
     speed: 1
     browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
     
+  - name: "Proxy - macOS15"
+    platformName: "macOS 15"
+    armRequired: true
+    browserName: "chrome"
+    timeout: 2m
+    src:
+      - "tests/sc/*.test.js"
+    speed: 1
+    browserArgs: ["--disable-safe-browsing", "--disable-web-security", "--disable-notifications", "--deny-permission-prompts", "--disable-features=LocalNetworkAccessChecks"]
+
   - name: "Proxy - Win11"
     platformName: "Windows 11"
     browserName: "chrome"
