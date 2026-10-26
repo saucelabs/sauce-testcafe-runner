@@ -185,7 +185,7 @@ jobs:
           gh release upload ${{ steps.prep.outputs.version }} testcafe-windows-amd64.zip
 
   release-macos-bundle:
-    # macos-latest is arm only which is not supported by the setup-ffmpeg action
+    # bundle.sh copies the runner's node binary, so the amd64 bundle needs an Intel runner
     runs-on: macos-15-intel
     needs: [create-release-draft]
     steps:
@@ -238,13 +238,6 @@ jobs:
         env:
           HUSKY: 0
         if: ${{ steps.prep.outputs.asset_id == '' }}
-
-      - name: Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3
-        if: ${{ steps.prep.outputs.asset_id == '' }}
-        id: setup-ffmpeg
-        with:
-          token: ${{ github.token }}
 
       - name: Bundle Directory
         if: ${{ steps.prep.outputs.asset_id == '' }}
