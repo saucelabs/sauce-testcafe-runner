@@ -1,4 +1,4 @@
-// Exercises patches/testcafe-browser-tools+*.patch (INT-154): Windows browser
+// Exercises patches/testcafe-browser-tools+*.patch: Windows browser
 // discovery must survive failing PowerShell registry queries instead of
 // aborting TestCafe. Guards against a dependency bump where the patch still
 // applies but no longer covers every query.

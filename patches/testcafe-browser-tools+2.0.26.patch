@@ -1,13 +1,13 @@
 diff --git a/node_modules/testcafe-browser-tools/lib/api/get-installations.js b/node_modules/testcafe-browser-tools/lib/api/get-installations.js
-index b359f63..a54d5a8 100644
+index b359f63..e2d7748 100644
 --- a/node_modules/testcafe-browser-tools/lib/api/get-installations.js
 +++ b/node_modules/testcafe-browser-tools/lib/api/get-installations.js
 @@ -59,9 +59,26 @@ async function detectMicrosoftEdgeLegacy() {
          return aliases_1.default['edge-legacy'];
      return null;
  }
-+// SAUCE PATCH (INT-154): on Sauce Windows VMs these PowerShell registry
-+// queries intermittently exit with code 2 and empty stdout/stderr. The cause
++// SAUCE PATCH: on some Windows VMs these PowerShell registry queries
++// intermittently exit with code 2 and empty stdout/stderr. The cause
 +// is unknown: it is not a missing '(default)' value (that exits 0), and
 +// script-level errors exit 1. Unpatched, any failure aborts TestCafe before
 +// a test runs. Instead, treat each query as best-effort: TestCafe still
