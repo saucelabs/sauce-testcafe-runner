@@ -1,0 +1,3 @@
+# patch-package applies these to LF files from the npm tarball; keep them LF
+# on Windows checkouts (core.autocrlf) so the patch still applies.
+patches/*.patch text eol=lf

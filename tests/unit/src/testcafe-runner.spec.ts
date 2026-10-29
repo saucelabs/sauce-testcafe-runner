@@ -4,6 +4,7 @@ jest.mock('../../../lib/sauce-testreporter');
 import {
   buildCommandLine,
   buildCompilerOptions,
+  isBrowserDiscoveryFailure,
 } from '../../../src/testcafe-runner';
 import { Suite, CompilerOptions } from '../../../src/type';
 
@@ -396,5 +397,53 @@ describe('.buildCompilerOptions', function () {
     };
     const expected = `typescript.configPath=./tsconfig.json;typescript.customCompilerModulePath=/path/to/custom/compiler;typescript.options.allowUnusedLabels=true;typescript.options.noFallthroughCasesInSwitch=true;typescript.options.allowUmdGlobalAccess=true`;
     expect(buildCompilerOptions(input)).toEqual(expected);
+  });
+});
+
+describe('.isBrowserDiscoveryFailure', function () {
+  const powershell =
+    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -NoLogo -NonInteractive -Command';
+  const tools =
+    'D:\\sauce-testcafe-runner\\bundle\\node_modules\\testcafe-browser-tools\\src\\api\\get-installations.js';
+  const startMenuInternetFailure = [
+    `ERROR Error: Command failed with exit code 2: ${powershell} Get-Item 'Registry::HKEY_LOCAL_MACHINE\\Software\\Clients\\StartMenuInternet\\*\\shell\\open\\command'`,
+    `    at searchInRegistry (${tools}:80:29)`,
+    `    at findWindowsBrowsers (${tools}:101:39)`,
+  ].join('\n');
+  const edgeLegacyFailure = [
+    `ERROR Error: Command failed with exit code 2: ${powershell} Get-Item 'Registry::HKCU\\Software\\Classes\\ActivatableClasses\\Package\\Microsoft.MicrosoftEdge*'`,
+    `    at detectMicrosoftEdgeLegacy (${tools}:56:28)`,
+    `    at findWindowsBrowsers (${tools}:104:30)`,
+  ].join('\n');
+  const registryWarning =
+    'TESTCAFE_BROWSER_TOOLS_REGISTRY_WARNING: HKEY_LOCAL_MACHINE browser query exited with code 2; continuing with partial results. stderr: (empty)';
+  const browserNotFound =
+    'ERROR Cannot find the browser. "edge" is neither a known browser alias, nor a path to an executable file.';
+
+  it('detects an unpatched StartMenuInternet query failure', function () {
+    expect(isBrowserDiscoveryFailure(startMenuInternetFailure)).toBe(true);
+  });
+  it('detects an unpatched edge-legacy query failure', function () {
+    expect(isBrowserDiscoveryFailure(edgeLegacyFailure)).toBe(true);
+  });
+  it('ignores a command failure outside browser discovery', function () {
+    expect(
+      isBrowserDiscoveryFailure(
+        'Error: Command failed with exit code 1: npm run pre-exec\n    at runPreExec (D:\\bundle\\lib\\hooks.js:10:5)',
+      ),
+    ).toBe(false);
+  });
+  it('detects discovery that missed the requested browser', function () {
+    expect(
+      isBrowserDiscoveryFailure(`${registryWarning}\n${browserNotFound}`),
+    ).toBe(true);
+  });
+  it('ignores a registry warning when the run failed for other reasons', function () {
+    expect(
+      isBrowserDiscoveryFailure(`${registryWarning}\n 1 of 3 tests failed`),
+    ).toBe(false);
+  });
+  it('ignores a browser-not-found error without a registry warning', function () {
+    expect(isBrowserDiscoveryFailure(browserNotFound)).toBe(false);
   });
 });
