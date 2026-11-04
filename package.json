@@ -29,7 +29,7 @@
     "patch-package": "8.0.1",
     "sauce-testrunner-utils": "^3.4.1",
     "shelljs": "^0.10.0",
-    "testcafe": "3.7.6",
+    "testcafe": "3.7.7",
     "testcafe-browser-provider-ios": "0.8.1",
     "testcafe-reporter-saucelabs": "3.6.0",
     "typescript": "^5.9.3",
@@ -46,7 +46,7 @@
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^29.17.0",
-    "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-testcafe": "^0.2.1",
     "husky": "^9.1.7",
     "jest": "^30.5.2",
@@ -54,7 +54,7 @@
     "prettier": "^3.9.10",
     "pretty-quick": "^4.2.2",
     "release-it": "^19.2.4",
-    "ts-jest": "^29.4.14",
-    "typescript-eslint": "^8.71.2"
+    "ts-jest": "^29.4.15",
+    "typescript-eslint": "^8.72.1"
   }
 }
